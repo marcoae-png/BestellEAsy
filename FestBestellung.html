@@ -3141,6 +3141,9 @@ function renderMenu() {
     });
     btn.addEventListener('keydown', e => e.stopPropagation());
   });
+
+  // Warenkorb-Summe und Senden-Button nach jedem Render aktualisieren.
+  updateCartTotal();
 }
 
 
