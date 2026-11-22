@@ -2692,7 +2692,7 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 <h3>Drucker (Netzwerkdrucker)</h3>
 <p class="muted">
   Küche und Theke haben je einen Netzwerkdrucker. Beim Absenden einer Bestellung
-  wird automatisch ein Bon gedruckt, der zusammen mit dem Tablar zum Läufer geht. Die Einstellungen gelten nur für dieses Gerät.
+  wird automatisch ein Bon gedruckt, der zusammen mit dem Tablar zum Läufer geht. Die Einstellungen gelten für alle Geräte dieser Organisation.
 </p>
 
 <div class="panel" style="background:#f3f7f4;box-shadow:none">
@@ -2707,6 +2707,18 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
         <option value="epos">Epson-Netzwerkdrucker (ePOS, direkt)</option>
         <option value="browser">Browser-Druckdialog (jeder Drucker)</option>
       </select>
+    </div>
+    <div>
+      <label for="printProto">Verbindung zum Drucker</label>
+      <select id="printProto">
+        <option value="http">http (Standard)</option>
+        <option value="https">https (verschlüsselt)</option>
+      </select>
+    </div>
+    <div>
+      <label style="display:flex;gap:10px;align-items:center;margin-top:28px">
+        <input type="checkbox" id="printAscii" style="width:auto"> Umlaute ersetzen (ä→ae), falls sie falsch gedruckt werden
+      </label>
     </div>
   </div>
 
@@ -3042,7 +3054,7 @@ if (tab === 'service') {
   loadOpenAmounts();
 }
 
-  if (tab === 'admin') loadAdmin();
+  if (tab === 'admin') { loadAdmin(); fetchPrintCfg(true).then(fillPrintForm); }
   if (tab === 'team') loadTeam();
   if (tab === 'closing') loadClosingHistory();
 
@@ -3253,11 +3265,34 @@ function showSuccessToast(message) {
 
 /* ===================== Drucker-Modul ===================== */
 const PRINT_KEY = 'bestelleasy.printer.v1';
-const printDefaults = { enabled:false, mode:'epos', kitchenIp:'', barIp:'' };
+const printDefaults = { enabled:false, mode:'epos', proto:'http', ascii:false, kitchenIp:'', barIp:'' };
+
+let printCfgCache = null, printCfgFetchedAt = 0;
 
 function loadPrintCfg() {
+  if (printCfgCache) return { ...printDefaults, ...printCfgCache };
   try { return { ...printDefaults, ...(JSON.parse(localStorage.getItem(PRINT_KEY) || '{}')) }; }
   catch (e) { return { ...printDefaults }; }
+}
+
+// Druckereinstellungen gelten pro Organisation (Verein / Mieter) und liegen in Supabase
+async function fetchPrintCfg(force) {
+  if (!sb || !profile?.organization_id) return;
+  if (!force && Date.now() - printCfgFetchedAt < 60000) return;
+  try {
+    const { data, error } = await sb.from('org_printer_settings')
+      .select('enabled, mode, kitchen_ip, bar_ip, proto, ascii')
+      .eq('organization_id', profile.organization_id)
+      .maybeSingle();
+    if (error) throw error;
+    printCfgFetchedAt = Date.now();
+    if (data) {
+      printCfgCache = { enabled: !!data.enabled, mode: data.mode || 'epos',
+        proto: data.proto || 'http', ascii: !!data.ascii,
+        kitchenIp: data.kitchen_ip || '', barIp: data.bar_ip || '' };
+      try { localStorage.setItem(PRINT_KEY, JSON.stringify(printCfgCache)); } catch (e) {}
+    }
+  } catch (e) { console.warn('Druckereinstellungen nicht geladen:', e.message); }
 }
 
 function fillPrintForm() {
@@ -3265,19 +3300,33 @@ function fillPrintForm() {
   if (!$('printEnabled')) return;
   $('printEnabled').checked = !!c.enabled;
   $('printMode').value = c.mode;
+  $('printProto').value = c.proto;
+  $('printAscii').checked = !!c.ascii;
   $('printKitchenIp').value = c.kitchenIp;
   $('printBarIp').value = c.barIp;
 }
 
-function savePrintForm() {
+async function savePrintForm() {
   const c = {
     enabled: $('printEnabled').checked,
     mode: $('printMode').value,
+    proto: $('printProto').value,
+    ascii: $('printAscii').checked,
     kitchenIp: $('printKitchenIp').value.trim(),
     barIp: $('printBarIp').value.trim()
   };
-  try { localStorage.setItem(PRINT_KEY, JSON.stringify(c)); $('printerMsg').textContent = '✓ Gespeichert.'; }
-  catch (e) { $('printerMsg').textContent = 'Speichern nicht möglich: ' + e.message; }
+  printCfgCache = c;
+  try { localStorage.setItem(PRINT_KEY, JSON.stringify(c)); } catch (e) {}
+  if (!sb || !profile?.organization_id) { $('printerMsg').textContent = 'Nur auf diesem Gerät gespeichert.'; return; }
+  const { error } = await sb.from('org_printer_settings').upsert({
+    organization_id: profile.organization_id,
+    enabled: c.enabled, mode: c.mode, proto: c.proto, ascii: c.ascii, kitchen_ip: c.kitchenIp, bar_ip: c.barIp,
+    updated_at: new Date().toISOString()
+  });
+  printCfgFetchedAt = Date.now();
+  $('printerMsg').textContent = error
+    ? '⚠ Nur auf diesem Gerät gespeichert (Supabase: ' + error.message + ')'
+    : '✓ Gespeichert für alle Geräte dieser Organisation.';
 }
 
 const STATION_TITLE = { kitchen:'KÜCHE', bar:'THEKE' };
@@ -3295,7 +3344,9 @@ function ticketLines(job) {
 
 function eposXml(job) {
   const t = ticketLines(job);
-  const x = v => String(v).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]));
+  const ascii = !!loadPrintCfg().ascii;
+  const tr = v => ascii ? String(v).replace(/[äöüÄÖÜßéèà]/g, c => ({'ä':'ae','ö':'oe','ü':'ue','Ä':'Ae','Ö':'Oe','Ü':'Ue','ß':'ss','é':'e','è':'e','à':'a'}[c])) : String(v);
+  const x = v => tr(v).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]));
   let body = '<text align="center" width="2" height="2" em="true"/>' +
     '<text>' + x(t.head) + '&#10;</text>' +
     '<text width="3" height="3"/><text>' + x(t.table) + '&#10;</text>' +
@@ -3307,15 +3358,26 @@ function eposXml(job) {
     '<epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print">' + body + '</epos-print></s:Body></s:Envelope>';
 }
 
-async function sendEpos(ip, job) {
+async function sendEpos(ip, job, proto) {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 6000);
+  const timer = setTimeout(() => ctrl.abort(), 8000);
   try {
-    await fetch('http://' + ip + '/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000', {
-      method: 'POST', mode: 'no-cors', signal: ctrl.signal,
-      headers: { 'Content-Type': 'text/xml; charset=utf-8' },
+    const url = (proto === 'https' ? 'https://' : 'http://') + ip +
+      '/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000';
+    const res = await fetch(url, {
+      method: 'POST', signal: ctrl.signal,
+      headers: {
+        'Content-Type': 'text/xml; charset=utf-8',
+        'If-Modified-Since': 'Thu, 01 Jan 1970 00:00:00 GMT',
+        'SOAPAction': '""'
+      },
       body: eposXml(job)
     });
+    const txt = await res.text();
+    if (!/success="true"/.test(txt)) {
+      const m = txt.match(/code="([^"]*)"/);
+      throw new Error('Drucker meldet Fehler' + (m && m[1] ? ' (' + m[1] + ')' : ''));
+    }
   } finally { clearTimeout(timer); }
 }
 
@@ -3339,11 +3401,16 @@ async function printJob(job, cfg) {
   if (cfg.mode === 'browser') { browserPrint(job); return null; }
   const ip = cfg[ipKey];
   if (!ip) return STATION_TITLE[job.station] + ': keine IP eingetragen';
-  try { await sendEpos(ip, job); return null; }
-  catch (e) { return STATION_TITLE[job.station] + ' (' + ip + '): ' + (e.name === 'AbortError' ? 'Zeitüberschreitung' : e.message); }
+  try { await sendEpos(ip, job, cfg.proto); return null; }
+  catch (e) {
+    const grund = e.name === 'AbortError' ? 'keine Antwort (IP, Netzwerk oder Drucker aus?)'
+      : (e instanceof TypeError ? 'keine Verbindung (IP prüfen; bei https-Seite: Browser-Freigabe «Lokales Netzwerk» erlauben oder Verbindung auf https stellen)' : e.message);
+    return STATION_TITLE[job.station] + ' (' + ip + '): ' + grund;
+  }
 }
 
 async function printOrderTickets(orderNo, table, method, cartItems) {
+  await fetchPrintCfg();
   const cfg = loadPrintCfg();
   if (!cfg.enabled) return;
 
@@ -3367,15 +3434,15 @@ async function printOrderTickets(orderNo, table, method, cartItems) {
 async function testPrint(station) {
   const cfg = { ...loadPrintCfg(), enabled:true };
   const err = await printJob({ station, orderNo:'TEST', table:'0', time:Date.now(), payment:'Test',
-    items:[{ name:'Testdruck', quantity:1 }] }, cfg);
+    items:[{ name:'Testdruck äöü ÄÖÜ ß', quantity:1 }, { name:'Bratwurst, Getränk', quantity:2 }] }, cfg);
   $('printerMsg').textContent = err ? '⚠ ' + err : '✓ Testdruck gesendet.';
 }
 
 document.addEventListener('click', e => {
   const id = e.target.closest('button')?.id;
   if (id === 'savePrinterBtn') savePrintForm();
-  if (id === 'testPrintKitchenBtn') { savePrintForm(); testPrint('kitchen'); }
-  if (id === 'testPrintBarBtn') { savePrintForm(); testPrint('bar'); }
+  if (id === 'testPrintKitchenBtn') { savePrintForm().then(() => testPrint('kitchen')); }
+  if (id === 'testPrintBarBtn') { savePrintForm().then(() => testPrint('bar')); }
 });
 document.addEventListener('DOMContentLoaded', fillPrintForm);
 fillPrintForm();
