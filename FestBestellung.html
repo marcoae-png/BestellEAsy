@@ -2689,6 +2689,60 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
 <hr style="margin:28px 0;border:0;border-top:1px solid #d8e1da">
 
+<h3>Drucker (Netzwerkdrucker)</h3>
+<p class="muted">
+  Pro Station kann ein Netzwerkdrucker eingetragen werden. Beim Absenden einer Bestellung
+  wird automatisch ein Bon gedruckt. Die Einstellungen gelten nur für dieses Gerät.
+</p>
+
+<div class="panel" style="background:#f3f7f4;box-shadow:none">
+  <label style="display:flex;gap:10px;align-items:center;font-weight:700">
+    <input type="checkbox" id="printEnabled" style="width:auto"> Drucken aktivieren
+  </label>
+
+  <div class="grid" style="margin-top:12px">
+    <div>
+      <label for="printMode">Druckart</label>
+      <select id="printMode">
+        <option value="epos">Epson-Netzwerkdrucker (ePOS, direkt)</option>
+        <option value="browser">Browser-Druckdialog (jeder Drucker)</option>
+      </select>
+    </div>
+    <div>
+      <label for="printCopies">Läufer-Bon</label>
+      <select id="printRunnerContent">
+        <option value="all">Komplette Bestellung</option>
+        <option value="none">Kein Läufer-Bon</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:12px">
+    <div>
+      <label for="printKitchenIp">🍽️ Küche – IP-Adresse (Essen)</label>
+      <input id="printKitchenIp" placeholder="z. B. 192.168.1.50">
+    </div>
+    <div>
+      <label for="printBarIp">🍺 Theke – IP-Adresse (Getränke)</label>
+      <input id="printBarIp" placeholder="z. B. 192.168.1.51">
+    </div>
+    <div>
+      <label for="printRunnerIp">🏃 Läufer – IP-Adresse</label>
+      <input id="printRunnerIp" placeholder="z. B. 192.168.1.52">
+    </div>
+  </div>
+
+  <div class="actions" style="margin-top:14px">
+    <button type="button" id="savePrinterBtn">Druckereinstellungen speichern</button>
+    <button type="button" id="testPrintKitchenBtn" class="secondary">Testdruck Küche</button>
+    <button type="button" id="testPrintBarBtn" class="secondary">Testdruck Theke</button>
+    <button type="button" id="testPrintRunnerBtn" class="secondary">Testdruck Läufer</button>
+  </div>
+  <div id="printerMsg" class="foot"></div>
+</div>
+
+<hr style="margin:28px 0;border:0;border-top:1px solid #d8e1da">
+
 <h3>Bestellungen zurücksetzen</h3>
 
 <p class="muted">
@@ -3208,6 +3262,143 @@ function showSuccessToast(message) {
 
 
 
+
+/* ===================== Drucker-Modul ===================== */
+const PRINT_KEY = 'bestelleasy.printer.v1';
+const printDefaults = { enabled:false, mode:'epos', kitchenIp:'', barIp:'', runnerIp:'', runnerContent:'all' };
+
+function loadPrintCfg() {
+  try { return { ...printDefaults, ...(JSON.parse(localStorage.getItem(PRINT_KEY) || '{}')) }; }
+  catch (e) { return { ...printDefaults }; }
+}
+
+function fillPrintForm() {
+  const c = loadPrintCfg();
+  if (!$('printEnabled')) return;
+  $('printEnabled').checked = !!c.enabled;
+  $('printMode').value = c.mode;
+  $('printKitchenIp').value = c.kitchenIp;
+  $('printBarIp').value = c.barIp;
+  $('printRunnerIp').value = c.runnerIp;
+  $('printRunnerContent').value = c.runnerContent;
+}
+
+function savePrintForm() {
+  const c = {
+    enabled: $('printEnabled').checked,
+    mode: $('printMode').value,
+    kitchenIp: $('printKitchenIp').value.trim(),
+    barIp: $('printBarIp').value.trim(),
+    runnerIp: $('printRunnerIp').value.trim(),
+    runnerContent: $('printRunnerContent').value
+  };
+  try { localStorage.setItem(PRINT_KEY, JSON.stringify(c)); $('printerMsg').textContent = '✓ Gespeichert.'; }
+  catch (e) { $('printerMsg').textContent = 'Speichern nicht möglich: ' + e.message; }
+}
+
+const STATION_TITLE = { kitchen:'KÜCHE', bar:'THEKE', runner:'LÄUFER' };
+
+function ticketLines(job) {
+  const d = new Date(job.time || Date.now());
+  const zeit = d.toLocaleString('de-CH', { dateStyle:'short', timeStyle:'short' });
+  return {
+    head: STATION_TITLE[job.station] + (job.orderNo ? '  #' + job.orderNo : ''),
+    table: 'TISCH ' + job.table,
+    sub: zeit + (job.payment ? '  |  ' + job.payment : ''),
+    items: job.items.map(i => i.quantity + ' x ' + i.name)
+  };
+}
+
+function eposXml(job) {
+  const t = ticketLines(job);
+  const x = v => String(v).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]));
+  let body = '<text align="center" width="2" height="2" em="true"/>' +
+    '<text>' + x(t.head) + '&#10;</text>' +
+    '<text width="3" height="3"/><text>' + x(t.table) + '&#10;</text>' +
+    '<text width="1" height="1" em="false"/><text>' + x(t.sub) + '&#10;</text>' +
+    '<text>------------------------------&#10;</text><text align="left" width="2" height="2"/>';
+  t.items.forEach(l => { body += '<text>' + x(l) + '&#10;</text>'; });
+  body += '<text width="1" height="1"/><text>&#10;&#10;</text><feed line="3"/><cut type="feed"/>';
+  return '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body>' +
+    '<epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print">' + body + '</epos-print></s:Body></s:Envelope>';
+}
+
+async function sendEpos(ip, job) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 6000);
+  try {
+    await fetch('http://' + ip + '/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000', {
+      method: 'POST', mode: 'no-cors', signal: ctrl.signal,
+      headers: { 'Content-Type': 'text/xml; charset=utf-8' },
+      body: eposXml(job)
+    });
+  } finally { clearTimeout(timer); }
+}
+
+function browserPrint(job) {
+  const t = ticketLines(job);
+  const w = window.open('', '_blank', 'width=360,height=600');
+  if (!w) throw new Error('Pop-up wurde blockiert.');
+  w.document.write('<html><head><title>' + esc(t.head) + '</title><style>' +
+    'body{font-family:monospace;width:72mm;margin:4mm}h1{font-size:26px;margin:0;text-align:center}' +
+    'h2{font-size:38px;margin:6px 0;text-align:center}p{margin:0;text-align:center;font-size:13px}' +
+    'hr{border:0;border-top:2px dashed #000}li{list-style:none;font-size:22px;font-weight:bold;margin:4px 0}ul{padding:0}' +
+    '</style></head><body><h1>' + esc(t.head) + '</h1><h2>' + esc(t.table) + '</h2><p>' + esc(t.sub) + '</p><hr><ul>' +
+    t.items.map(l => '<li>' + esc(l) + '</li>').join('') + '</ul></body></html>');
+  w.document.close(); w.focus();
+  setTimeout(() => { w.print(); w.close(); }, 300);
+}
+
+async function printJob(job, cfg) {
+  if (!job.items.length) return null;
+  const ipKey = { kitchen:'kitchenIp', bar:'barIp', runner:'runnerIp' }[job.station];
+  if (cfg.mode === 'browser') { browserPrint(job); return null; }
+  const ip = cfg[ipKey];
+  if (!ip) return STATION_TITLE[job.station] + ': keine IP eingetragen';
+  try { await sendEpos(ip, job); return null; }
+  catch (e) { return STATION_TITLE[job.station] + ' (' + ip + '): ' + (e.name === 'AbortError' ? 'Zeitüberschreitung' : e.message); }
+}
+
+async function printOrderTickets(orderNo, table, method, cartItems) {
+  const cfg = loadPrintCfg();
+  if (!cfg.enabled) return;
+
+  const items = cartItems.map(i => {
+    const m = menu.find(x => x.id === i.menu_item_id) || {};
+    return { name: i.name || m.name || '?', quantity: i.quantity, category: m.category || '' };
+  });
+  const food = items.filter(i => !isDrinkCategory(i));
+  const drinks = items.filter(i => isDrinkCategory(i));
+  const base = { orderNo, table, time: Date.now(), payment: method === 'twint' ? 'TWINT' : 'Bar' };
+
+  const jobs = [
+    { ...base, station:'kitchen', items: food },
+    { ...base, station:'bar', items: drinks }
+  ];
+  if (cfg.runnerContent === 'all') jobs.push({ ...base, station:'runner', items });
+
+  const errors = (await Promise.all(jobs.map(j => printJob(j, cfg)))).filter(Boolean);
+  if (errors.length) say('Druckproblem: ' + errors.join(' · '), true);
+}
+
+async function testPrint(station) {
+  const cfg = { ...loadPrintCfg(), enabled:true };
+  const err = await printJob({ station, orderNo:'TEST', table:'0', time:Date.now(), payment:'Test',
+    items:[{ name:'Testdruck', quantity:1 }] }, cfg);
+  $('printerMsg').textContent = err ? '⚠ ' + err : '✓ Testdruck gesendet.';
+}
+
+document.addEventListener('click', e => {
+  const id = e.target.closest('button')?.id;
+  if (id === 'savePrinterBtn') savePrintForm();
+  if (id === 'testPrintKitchenBtn') { savePrintForm(); testPrint('kitchen'); }
+  if (id === 'testPrintBarBtn') { savePrintForm(); testPrint('bar'); }
+  if (id === 'testPrintRunnerBtn') { savePrintForm(); testPrint('runner'); }
+});
+document.addEventListener('DOMContentLoaded', fillPrintForm);
+fillPrintForm();
+/* =================== Ende Drucker-Modul =================== */
+
 async function submitOrder() {
   if (!cart.size) {
     say('Bitte zuerst Artikel auswählen.', true);
@@ -3270,6 +3461,9 @@ const method = methodEl ? methodEl.value : 'cash';
     });
 
     if (error) throw error;
+
+    const gedruckteArtikel = Array.from(cart.values());
+    printOrderTickets(data, table, method, gedruckteArtikel).catch(e => console.error('Druck:', e));
 
     cart.clear();
     renderMenu();
@@ -4023,11 +4217,16 @@ function renderOrders() {
 
   const isDrink = isDrinkCategory;
 
+  // Älteste Bestellung oben, neue Bestellungen erscheinen unten
+  const sortedOrders = [...orders].sort(
+    (x, y) => new Date(x.created_at) - new Date(y.created_at)
+  );
+
   // KÜCHE
   const ordersList = $('ordersList');
 
   if (ordersList) {
-    const kitchenOrders = orders.filter(o => {
+    const kitchenOrders = sortedOrders.filter(o => {
       const items = (o.order_items || []).filter(i => !isDrink(i));
 
       return items.length > 0 &&
@@ -4048,7 +4247,7 @@ function renderOrders() {
   const barList = $('barList');
 
   if (barList) {
-    const barOrders = orders.filter(o => {
+    const barOrders = sortedOrders.filter(o => {
       const items = (o.order_items || []).filter(isDrink);
 
       return items.length > 0 &&
@@ -4076,7 +4275,7 @@ function renderOrders() {
   const foodJobs = [];
   const drinkJobs = [];
 
-  orders.forEach(o => {
+  sortedOrders.forEach(o => {
     const items = o.order_items || [];
     const foodItems = items.filter(i => !isDrink(i));
     const drinkItems = items.filter(isDrink);
