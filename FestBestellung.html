@@ -1657,6 +1657,19 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 <p class="muted">Hast du von deinem Admin einen Einladungscode bekommen? Gib ihn hier ein. Du erhältst automatisch die dafür vorgesehene Rolle.</p>
 <div class="grid"><div><label for="inviteCode">Einladungscode</label><input id="inviteCode" type="text" maxlength="20" autocomplete="off" autocapitalize="characters" placeholder="z. B. 3F9A1C7B2D"></div></div>
 <div class="actions" style="margin-top:12px"><button id="joinOrgBtn" class="secondary" type="button">Mit Code beitreten</button></div></section>
+<section id="licensePanel" class="panel hidden">
+<h2 class="section-title">Abo erforderlich</h2>
+<p id="licenseReason" class="muted"></p>
+<div id="twintBox" class="msg"></div>
+<div class="grid">
+  <div class="totalbox"><strong>Standard</strong>CHF 200 / Monat<div class="muted">Bestellungen, Küche, Theke, Läufer, Abrechnung, Tagesabschluss</div>
+    <div class="actions" style="margin-top:10px"><a id="buyStandard" class="legal-link" target="_blank" rel="noopener">Zahlung per E-Mail melden</a></div></div>
+  <div class="totalbox"><strong>Mit Drucker</strong>CHF 300 / Monat<div class="muted">Alles aus Standard plus automatischer Bon-Druck für Küche und Theke</div>
+    <div class="actions" style="margin-top:10px"><a id="buyPrinter" class="legal-link" target="_blank" rel="noopener">Zahlung per E-Mail melden</a></div></div>
+</div>
+<p class="foot">Nach Zahlungseingang wird dein Zugang freigeschaltet (in der Regel am selben Tag). Danach hier «Neu prüfen» drücken.</p>
+<div class="actions" style="margin-top:10px"><button id="licenseReloadBtn" type="button" class="secondary">Neu prüfen</button></div>
+</section>
 <section id="appPanel" class="hidden">
 <nav class="tabs" id="tabs"><button type="button" data-tab="service" class="active">Neue Bestellung</button><button type="button" data-tab="orders" class="">Küche</button><button type="button" data-tab="bar" class="">Theke / Ausschank</button><button type="button" data-tab="runner" class="">Läufer</button><button type="button" data-tab="closing" class="">Tagesabschluss</button><button type="button" data-tab="admin" class="">Menü verwalten</button></nav>
 
@@ -2687,6 +2700,7 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
       </table>
     </div>
 
+<div id="printerSection">
 <hr style="margin:28px 0;border:0;border-top:1px solid #d8e1da">
 
 <h3>Drucker (Netzwerkdrucker)</h3>
@@ -2740,6 +2754,8 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
   </div>
   <div id="printerMsg" class="foot"></div>
 </div>
+</div>
+<div id="printerLocked" class="msg hidden">🔒 Drucken ist im Plan «Mit Drucker» (CHF 300 / Monat) enthalten. Zum Wechseln den Plan unter «Lizenz» ändern lassen.</div>
 
 <hr style="margin:28px 0;border:0;border-top:1px solid #d8e1da">
 
@@ -2871,7 +2887,7 @@ async function connectTest(){const c=getConfig();if(!validConfig(c)){say('Bitte 
 
 
 
-async function onSignedIn(user){currentUser=user;try{await loadProfile();if(!profile.organization_id){showOrgOnboarding();autoJoinPending();return;}clearPendingInvite();await loadOrgName();$('orgPanel')?.classList.add('hidden');$('loginPanel').classList.add('hidden');$('appPanel').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');$('userLabel').textContent=profile.display_name||profile.email||user.email;renderTabs();await loadMenu();await refreshOrders();await loadAdmin();await loadClosingHistory();showTab(firstTab());}catch(e){say('Daten konnten nicht geladen werden: '+e.message+' — bitte Supabase-Berechtigungen prüfen.',true);}}
+async function onSignedIn(user){currentUser=user;try{await loadProfile();if(!profile.organization_id){showOrgOnboarding();autoJoinPending();return;}clearPendingInvite();await loadOrgName();if(!(await checkLicense()))return;$('licensePanel')?.classList.add('hidden');$('orgPanel')?.classList.add('hidden');$('loginPanel').classList.add('hidden');$('appPanel').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');$('userLabel').textContent=profile.display_name||profile.email||user.email;renderTabs();await loadMenu();await refreshOrders();await loadAdmin();await loadClosingHistory();showTab(firstTab());}catch(e){say('Daten konnten nicht geladen werden: '+e.message+' — bitte Supabase-Berechtigungen prüfen.',true);}}
 function firstTab(){return ['service','orders','closing','admin'].find(allowed) || 'orders';}
 
 
@@ -3263,6 +3279,85 @@ function showSuccessToast(message) {
 
 
 
+/* ===================== Lizenz / Abo ===================== */
+// Bezahllinks von Payrexx oder Stripe hier eintragen. Leer = E-Mail an den Betreiber.
+const LICENSE_PAY_LINKS = { standard: '', printer: '' };
+const LICENSE_CONTACT = 'marco.aebersold@bluewin.ch';
+// TWINT-Zahlung: Nummer und optional Bild-URL deines TWINT-QR-Codes hier eintragen.
+const TWINT_NUMBER = '0797180401';   // z. B. '079 123 45 67'
+const TWINT_QR_URL = '';   // z. B. 'https://marcoae-png.github.io/bfs-delegiertenversammlung/twint-qr.png'
+let license = { plan: 'none', paid_until: null, active: false, printer_allowed: false };
+
+function licenseHref(plan) {
+  const link = LICENSE_PAY_LINKS[plan];
+  if (link) {
+    // Vereins-ID und E-Mail mitgeben, damit die Zahlung automatisch zugeordnet wird
+    const u = new URL(link);
+    if (profile?.organization_id) u.searchParams.set('client_reference_id', profile.organization_id);
+    if (profile?.email) u.searchParams.set('prefilled_email', profile.email);
+    return u.toString();
+  }
+  const name = plan === 'printer' ? 'Mit Drucker (CHF 300/Monat)' : 'Standard (CHF 200/Monat)';
+  return 'mailto:' + LICENSE_CONTACT + '?subject=' + encodeURIComponent('BestellEAsy Abo ' + name) +
+    '&body=' + encodeURIComponent('Bitte Abo ' + name + ' für «' + (profile?.org_name || '') + '» freischalten.');
+}
+
+function applyLicenseUI() {
+  const ps = $('printerSection'), pl = $('printerLocked');
+  if (ps) ps.classList.toggle('hidden', !license.printer_allowed);
+  if (pl) pl.classList.toggle('hidden', license.printer_allowed);
+  const lbl = $('orgLabel');
+  if (lbl && license.paid_until) {
+    const d = new Date(license.paid_until + 'T00:00:00');
+    const tage = Math.ceil((d - new Date()) / 86400000);
+    const txt = (profile?.org_name || '') + (profile?.role === 'admin' ? ' (Abo bis ' + d.toLocaleDateString('de-CH') + ')' : '');
+    lbl.textContent = txt;
+    if (profile?.role === 'admin' && tage >= 0 && tage <= 5)
+      say('Dein Abo läuft in ' + tage + ' Tag(en) ab (' + d.toLocaleDateString('de-CH') + '). Bitte rechtzeitig verlängern.', true);
+  }
+}
+
+async function checkLicense() {
+  try {
+    const { data, error } = await sb.rpc('get_license_status');
+    if (error) throw error;
+    const r = Array.isArray(data) ? data[0] : data;
+    license = r || { plan: 'none', paid_until: null, active: false, printer_allowed: false };
+  } catch (e) {
+    console.error('checkLicense:', e);
+    license = { plan: 'none', paid_until: null, active: false, printer_allowed: false };
+    say('Lizenz konnte nicht geprüft werden: ' + (e?.message || e), true);
+  }
+  if (!license.active) {
+    $('appPanel')?.classList.add('hidden');
+    $('loginPanel')?.classList.add('hidden');
+    $('orgPanel')?.classList.add('hidden');
+    $('licensePanel')?.classList.remove('hidden');
+    $('logoutBtn')?.classList.remove('hidden');
+    if ($('userLabel')) $('userLabel').textContent = profile?.display_name || profile?.email || '';
+    $('licenseReason').textContent = license.paid_until
+      ? 'Das Abo von «' + (profile?.org_name || 'deinem Verein') + '» ist am ' +
+        new Date(license.paid_until + 'T00:00:00').toLocaleDateString('de-CH') + ' abgelaufen.'
+      : 'Für «' + (profile?.org_name || 'deinen Verein') + '» ist noch kein Abo aktiv.';
+    const mitt = (profile?.org_name || '') + ', ' + (profile?.email || '');
+    $('twintBox').innerHTML =
+      '<strong>So bezahlst du per TWINT:</strong><br>' +
+      '1. Standard: CHF 200 oder Mit Drucker: CHF 300 pro Monat.<br>' +
+      (TWINT_NUMBER ? '2. Sende den Betrag per TWINT an <strong>' + esc(TWINT_NUMBER) + '</strong>' : '2. Sende den Betrag per TWINT an den Betreiber') +
+      (TWINT_QR_URL ? ' oder scanne diesen QR-Code:<br><img src="' + esc(TWINT_QR_URL) + '" alt="TWINT QR-Code" style="max-width:200px;margin:8px 0;display:block">' : '.<br>') +
+      '<br>3. Schreibe in die Mitteilung: <strong>' + esc(mitt) + '</strong>';
+    $('buyStandard').href = licenseHref('standard');
+    $('buyPrinter').href = licenseHref('printer');
+    return false;
+  }
+  applyLicenseUI();
+  return true;
+}
+document.addEventListener('click', e => {
+  if (e.target.closest('#licenseReloadBtn') && currentUser) onSignedIn(currentUser);
+});
+/* =================== Ende Lizenz =================== */
+
 /* ===================== Drucker-Modul ===================== */
 const PRINT_KEY = 'bestelleasy.printer.v1';
 const printDefaults = { enabled:false, mode:'epos', proto:'http', ascii:false, kitchenIp:'', barIp:'' };
@@ -3410,6 +3505,7 @@ async function printJob(job, cfg) {
 }
 
 async function printOrderTickets(orderNo, table, method, cartItems) {
+  if (!license.printer_allowed) return;
   await fetchPrintCfg();
   const cfg = loadPrintCfg();
   if (!cfg.enabled) return;
@@ -4938,6 +5034,7 @@ async function logout() {
   orders = [];
 
   $('appPanel')?.classList.add('hidden');
+  $('licensePanel')?.classList.add('hidden');
   $('logoutBtn')?.classList.add('hidden');
   if ($('userLabel')) $('userLabel').textContent = '';
 
