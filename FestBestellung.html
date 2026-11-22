@@ -2755,7 +2755,7 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
   <div id="printerMsg" class="foot"></div>
 </div>
 </div>
-<div id="printerLocked" class="msg hidden">🔒 Drucken ist im Plan «Mit Drucker» (CHF 300 / Monat) enthalten. Zum Wechseln den Plan unter «Lizenz» ändern lassen.</div>
+<div id="printerLocked" class="msg hidden">🔒 Drucken ist im Plan «Mit Drucker» (CHF 300 / Monat) enthalten. Zum Wechseln bitte per <a href="mailto:marco.aebersold@bluewin.ch?subject=BestellEAsy%20Wechsel%20auf%20Mit%20Drucker" style="color:inherit;font-weight:700">E-Mail</a> melden.</div>
 
 <hr style="margin:28px 0;border:0;border-top:1px solid #d8e1da">
 
@@ -3284,7 +3284,7 @@ function showSuccessToast(message) {
 const LICENSE_PAY_LINKS = { standard: '', printer: '' };
 const LICENSE_CONTACT = 'marco.aebersold@bluewin.ch';
 // TWINT-Zahlung: Nummer und optional Bild-URL deines TWINT-QR-Codes hier eintragen.
-const TWINT_NUMBER = '0797180401';   // z. B. '079 123 45 67'
+const TWINT_NUMBER = '';   // z. B. '079 123 45 67'
 const TWINT_QR_URL = '';   // z. B. 'https://marcoae-png.github.io/bfs-delegiertenversammlung/twint-qr.png'
 let license = { plan: 'none', paid_until: null, active: false, printer_allowed: false };
 
