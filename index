@@ -1,0 +1,5316 @@
+<!DOCTYPE html>
+<!-- saved from url=(0076)https://marcoae-png.github.io/bfs-delegiertenversammlung/FestBestellung.html -->
+<html lang="de-CH"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BestellEAsy App</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23245c3b'/%3E%3Cpath d='M17 10h30a3 3 0 0 1 3 3v40l-6-4-6 4-6-4-6 4-6-4-6 4V13a3 3 0 0 1 3-3z' fill='%23ffffff'/%3E%3Cpath d='M23 28l7 7 12-13' fill='none' stroke='%23f3a22b' stroke-width='5.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#245c3b">
+<!-- Supabase JavaScript v2 über CDN laden; kein lokaler FestBestellung_files-Ordner nötig -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#17211b;background:#f3f6f3;--green:#245c3b;--light:#e5eee8;--orange:#f3a22b;--red:#b52f2f}*{box-sizing:border-box}body{margin:0}header{background:var(--green);color:white;padding:16px 20px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}h1{font-size:1.35rem;margin:0}header small{opacity:.85}.wrap{max-width:1200px;margin:auto;padding:18px}.panel{background:white;border-radius:14px;padding:18px;margin:0 0 16px;box-shadow:0 2px 10px #17211b0d}.hidden{display:none!important}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}label{display:block;font-weight:650;font-size:.92rem;margin:0 0 6px}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5cd;border-radius:8px;background:white}button{border:0;border-radius:9px;padding:11px 14px;background:var(--green);color:white;font-weight:700;cursor:pointer}button.secondary{background:#e8eee9;color:#183b27}button.warn{background:var(--orange);color:#2a200d}button.danger{background:var(--red)}button:disabled{opacity:.45;cursor:not-allowed}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tabs button[data-tab="service"]{background:#1769aa;color:#fff}.tabs button[data-tab="service"]:hover{background:#12558a}.tabs button[data-tab="orders"]{background:#7b3fa1;color:#fff}.tabs button[data-tab="orders"]:hover{background:#633180}.tabs button.active{outline:3px solid #b6d4c0;outline-offset:2px}.muted{color:#657168}.msg{padding:10px 12px;border-radius:8px;margin:10px 0;background:#e9f1eb}.msg.error{background:#fde8e8;color:#842323}.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}.item{border:1px solid #d8e1da;border-radius:10px;padding:14px;background:#fff;text-align:left;color:#17211b;cursor:pointer;transition:border-color .12s,background .12s,transform .08s;min-height:125px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start}.item:hover{border-color:var(--green);background:#f1f7f2}.item:active{transform:scale(.98)}.item:focus-visible{outline:3px solid #8ab99a;outline-offset:2px}.item.selected{border:2px solid var(--green);background:#eaf4ed;padding:13px}.item h3{font-size:1rem;margin:0 0 6px}.price{font-weight:800;color:var(--green)}.tile-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin-top:auto;padding-top:12px}.cart-count{font-size:.85rem;font-weight:800;background:#e5eee8;border-radius:20px;padding:5px 8px}.tile-hint{font-size:.78rem;color:#657168}.order{border:1px solid #d7dfd9;border-left:7px solid #a5b5aa;border-radius:10px;padding:13px;margin:10px 0}.order.progress{border-left-color:var(--orange);background:#fff8e9}.order.done{border-left-color:#26804a;background:#e8f7ed}.order-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf1ed;font-size:.82rem;font-weight:700}.pill.orange{background:#ffedc8}.pill.green{background:#d9f1e0}.pill.red{background:#ffe1e1}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;border-bottom:1px solid #e3e9e4;padding:9px 7px;vertical-align:top}.right{text-align:right}.big{font-size:1.35rem;font-weight:800}.foot{font-size:.82rem;color:#66716a;margin-top:12px}.statusline{font-size:.9rem}.section-title{margin:0 0 12px;font-size:1.1rem}.totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.totalbox{padding:14px;background:#f3f7f4;border-radius:10px}.totalbox strong{display:block;font-size:1.2rem;margin-top:4px}@media(max-width:600px){.wrap{padding:10px}.panel{padding:13px}header{padding:14px}}
+
+
+
+
+@media(max-width:600px){
+  .wrap{padding:10px}
+  .panel{padding:13px}
+  header{padding:14px}
+}
+
+/* Logo und Überschrift im Kopfbereich */
+header {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 15px;
+}
+
+header .kopf-logo {
+  display: block;
+  width: 100px;
+  height: 75px;
+  object-fit: contain;
+  flex: 0 0 100px;
+}
+
+header .kopf-titel {
+  flex: 1 1 auto;
+}
+
+header .actions {
+  margin-left: auto;
+}
+
+@media (max-width: 600px) {
+  header .kopf-logo {
+    width: 65px;
+    height: 55px;
+    flex-basis: 65px;
+  }
+}
+
+
+
+
+/* Passwortfeld mit eigenem Auge */
+.password-wrap {
+  position: relative;
+}
+
+.password-wrap input {
+  padding-right: 48px;
+}
+
+
+/* Eigenes Auge grösser darstellen */
+.password-wrap .password-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: auto;
+  margin: 0;
+  padding: 6px;
+  font-size: 28px;
+  line-height: 1;
+  background: transparent;
+  color: #17211b;
+  border: 0;
+  box-shadow: none;
+}
+
+
+/* Zusätzliches Browser-Auge in Edge ausblenden */
+#password::-ms-reveal,
+#password::-ms-clear {
+  display: none;
+}
+
+
+/* Küche: grössere und besser lesbare Bestellungen */
+#ordersView {
+  font-size: 18px;
+}
+
+#ordersView .order {
+  padding: 20px;
+  margin: 14px 0;
+  border-radius: 14px;
+}
+
+#ordersView .order h2,
+#ordersView .order h3 {
+  font-size: 1.4rem;
+}
+
+#ordersView .order button {
+  font-size: 18px;
+  padding: 14px 20px;
+  min-height: 50px;
+}
+
+#ordersView .pill {
+  font-size: 1rem;
+  padding: 7px 12px;
+}
+
+#ordersView .section-title {
+  font-size: 1.5rem;
+}
+
+
+/* Läufer: Tischnummer gross und gut sichtbar */
+#runnerView .order-top {
+  align-items: center;
+}
+
+#runnerView .order {
+  padding: 20px;
+}
+
+#runnerView .order strong,
+#runnerView .order .table-number {
+  font-size: 2rem;
+  font-weight: 900;
+}
+
+#runnerView .order h2,
+#runnerView .order h3 {
+  font-size: 1.4rem;
+}
+
+
+#ordersView .order button {
+  display: block;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 85px;
+  padding: 22px 30px;
+  font-size: 24px;
+  font-weight: 700;
+  box-sizing: border-box;
+  white-space: normal;
+}
+
+#ordersView .order .actions,
+#ordersView .order .actions > div {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+#ordersView .order {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+#ordersView .kitchen-item-essen {
+  background: #fff0b3;
+  color: #594000;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 6px 0;
+}
+
+#ordersView .kitchen-item-getraenke {
+  background: #cde8ff;
+  color: #084b7a;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 6px 0;
+}
+
+#ordersView .kitchen-item-dessert {
+  background: #eadcff;
+  color: #512b85;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 6px 0;
+}
+
+#ordersView .kitchen-item-sonstiges {
+  background: #f0f0f0;
+  color: #333333;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 6px 0;
+}
+
+/* Bestellungen in Arbeit: orange */
+.order.in-progress {
+  background-color: #fff0d6 !important;
+  border: 2px solid #f59e0b !important;
+}
+
+/* Fertig gemeldete Bestellung: grün */
+.order.done {
+  background-color: #dcfce7 !important;
+  border: 2px solid #22c55e !important;
+}
+
+/* Statusfarben auch bei verschachtelten Elementen gut lesbar */
+.order.in-progress h3 {
+  color: #9a3412;
+}
+
+.order.done h3 {
+  color: #166534;
+}
+
+
+
+/* Grundgestaltung der Navigation */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.tabs button {
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, filter 0.15s;
+  color: #fff;
+}
+
+.tabs button:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+/* Neue Bestellung – Blau */
+.tabs button[data-tab="service"] {
+  background: #2563eb;
+}
+
+/* Küche – Orange */
+.tabs button[data-tab="orders"] {
+  background: #ea580c;
+}
+
+/* Theke / Ausschank – Violett */
+.tabs button[data-tab="bar"] {
+  background: #7c3aed;
+}
+
+/* Läufer – Grün */
+.tabs button[data-tab="runner"] {
+  background: #15803d;
+}
+
+/* Tagesabschluss – Dunkelgrau */
+.tabs button[data-tab="closing"] {
+  background: #475569;
+}
+
+/* Menü verwalten – Dunkelrot */
+.tabs button[data-tab="admin"] {
+  background: #b91c1c;
+}
+
+/* Aktiver Reiter */
+.tabs button.active {
+  border-color: #111827;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.22);
+  filter: brightness(1.12);
+}
+
+/* Auf Handys gut bedienbar */
+@media (max-width: 600px) {
+  .tabs button {
+    flex: 1 1 140px;
+    min-height: 48px;
+    padding: 12px;
+  }
+}
+
+
+
+
+/* Auslieferung: Bestellung orange markieren */
+#runnerView .order.in-delivery {
+  background-color: #fff0d6;
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+}
+
+
+
+
+/* Kategorien klar voneinander trennen */
+.menu-category {
+  width: 100%;
+  margin: 0 0 32px;
+}
+
+.menu-category-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 0 0 12px;
+  border-bottom: 3px solid var(--border, #ddd);
+  font-size: 1.4rem;
+  line-height: 1.4;
+}
+
+.menu-category-count {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+/* Jede Artikelkarte bekommt die ganze verfügbare Breite */
+
+
+
+/* Kategorie über die ganze Breite */
+.menu-category {
+  width: 100%;
+  margin: 0 0 30px;
+}
+
+.menu-category-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 0 0 10px;
+  border-bottom: 2px solid #d8dfd9;
+  font-size: 1.35rem;
+}
+
+.menu-category-count {
+  margin-left: auto;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #647067;
+}
+
+/* Eine Karte pro Zeile, volle Breite */
+.menu-category-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.menu-category-grid .menu-item-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 125px;
+  padding: 16px 20px;
+  border: 1px solid #dce4dd;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+/* Dezente Farben je nach Kategorie */
+.menu-category-essen .menu-item-card {
+  background: #fff8e6;
+  border-color: #eadbb2;
+}
+
+.menu-category-getränke .menu-item-card {
+  background: #edf6ff;
+  border-color: #c9dff2;
+}
+
+.menu-category-dessert .menu-item-card {
+  background: #f7f0ff;
+  border-color: #e0d0f1;
+}
+
+.menu-category-sonstiges .menu-item-card {
+  background: #f3f5f3;
+  border-color: #dce1dc;
+}
+
+/* Artikelname und Preis */
+.menu-item-card h3 {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.menu-item-card .price {
+  margin-bottom: 14px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* Hinweis und Stückzahl */
+.menu-item-card .tile-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(80, 90, 80, 0.16);
+}
+
+.menu-item-card .tile-hint {
+  font-size: 0.95rem;
+}
+
+.menu-item-card .cart-count {
+  font-size: 1rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Ausgewählte Karte */
+.menu-item-card.selected {
+  border: 2px solid #56805c;
+  box-shadow: 0 0 0 2px rgba(49, 95, 54, 0.08);
+}
+
+.menu-item-card:focus-visible {
+  outline: 3px solid #315f36;
+  outline-offset: 2px;
+}
+
+/* Handy */
+@media (max-width: 600px) {
+  .menu-item-card {
+    padding: 14px;
+    min-height: 120px;
+  }
+
+  .menu-item-card h3 {
+    font-size: 1.05rem;
+  }
+}
+
+
+
+/* Handy: Artikelkarten in den drei Kategorien */
+@media (max-width: 600px) {
+  #menuGrid .item {
+    padding: 8px 5px;
+    min-height: 100px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  #menuGrid .item h3 {
+    font-size: 12px;
+  }
+
+  #menuGrid .item .price {
+    font-size: 12px;
+  }
+
+  #menuGrid .item .tile-bottom {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  #menuGrid .item .tile-hint {
+    font-size: 10px;
+  }
+}
+
+
+
+/* Drei Kategorien nebeneinander */
+#menuGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: none;
+  align-items: start;
+  box-sizing: border-box;
+}
+
+/* Jede Kategorie belegt eine Spalte */
+#menuGrid .menu-category {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* Artikel innerhalb der Kategorie untereinander */
+#menuGrid .menu-category-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+/* Artikelkarten füllen ihre Kategorie */
+#menuGrid .item {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Auf schmalen Bildschirmen untereinander */
+@media (max-width: 700px) {
+  #menuGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =====================================
+   FESTBESTELLUNG – HANDY KOMPAKT
+   ===================================== */
+@media (max-width: 600px) {
+
+  /* Weniger Platz für Aussenabstände */
+  .wrap {
+    padding: 5px;
+  }
+
+  .panel {
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+
+  /* Kategorien nebeneinander */
+  #menuGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    width: 100%;
+  }
+
+  #menuGrid .menu-category {
+    min-width: 0;
+    margin: 0;
+  }
+
+  #menuGrid .menu-category-title {
+    font-size: 13px;
+    line-height: 1.2;
+    margin: 0 0 7px;
+    overflow-wrap: anywhere;
+  }
+
+  /* Artikel untereinander in jeder Kategorie */
+  #menuGrid .menu-category-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  /* Kompakte Artikelkarten */
+  #menuGrid .item {
+    min-width: 0;
+    min-height: 0;
+    padding: 8px 5px;
+    border-radius: 8px;
+    gap: 4px;
+    overflow-wrap: anywhere;
+  }
+
+  #menuGrid .item h3 {
+    font-size: 12px;
+    line-height: 1.25;
+    margin: 0 0 5px;
+  }
+
+  #menuGrid .item .price {
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  #menuGrid .item .tile-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-top: 5px;
+  }
+
+  #menuGrid .item .tile-hint {
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  #menuGrid .item .cart-count {
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* Navigation kompakter */
+  .tabs {
+    gap: 5px;
+  }
+
+  .tabs button {
+    flex: 1 1 auto;
+    min-height: 42px;
+    padding: 8px 5px;
+    font-size: 12px;
+  }
+
+  /* Eingabefelder und Aktionen */
+  input,
+  select,
+  .actions button {
+    min-height: 42px;
+  }
+}
+
+
+#runnerView .order.in-delivery {
+  background: #fff0d6 !important;
+  border: 2px solid #f59e0b !important;
+  border-radius: 12px;
+}
+
+
+
+
+
+.station-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.pending-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: #c62828;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.pending-count.zero {
+  background: #388e3c;
+}
+
+
+
+button[data-edit-menu] {
+  background-color: #f57c00;
+  color: #ffffff;
+  border: 1px solid #e66d00;
+}
+
+button[data-edit-menu]:hover {
+  background-color: #e66d00;
+}
+
+button[data-edit-menu]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+
+#tableNumber {
+  width: 100%;
+  min-height: 50px;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 10px 14px;
+  border: 2px solid #4f8a45;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #222222;
+  cursor: pointer;
+}
+
+
+.payment-toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translate(-50%, -20px);
+  z-index: 999999;
+  background: #315f36;
+  color: #fff;
+  padding: 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.payment-toast.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 600px) {
+  .payment-toast {
+    top: 16px;
+    width: calc(100vw - 32px);
+    font-size: 15px;
+    padding: 14px 16px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+.success-toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  z-index: 99999;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 16px 22px;
+  border: 1px solid #a7dfb5;
+  border-radius: 14px;
+  background: #e4f5e8;
+  color: #176534;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  opacity: 0;
+  transform: translate(-50%, -15px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.success-toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+
+
+
+/* =====================================
+   LÄUFER – ESSEN UND GETRÄNKE
+   ===================================== */
+
+/* Der übergeordnete Bereich nutzt die ganze verfügbare Breite */
+#runnerView,
+#runnerView .panel,
+#runnerList {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Zwei gleich breite Spalten */
+#runnerList .runner-stations {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  box-sizing: border-box;
+  align-items: stretch;
+}
+
+/* Beide Farbblöcke */
+#runnerList .runner-section {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 14px;
+}
+
+/* ESSEN – Orange */
+#runnerList .runner-food {
+  background: #fff1e6;
+  border: 2px solid #f0a05b;
+}
+
+#runnerList .runner-food h2 {
+  color: #a64b08;
+}
+
+/* GETRÄNKE – Blau */
+#runnerList .runner-drinks {
+  background: #eaf3ff;
+  border: 2px solid #79aee8;
+}
+
+#runnerList .runner-drinks h2 {
+  color: #1556a6;
+}
+
+/* Bestellungen füllen den jeweiligen Block */
+#runnerList .runner-orders {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+#runnerList .runner-orders .order {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Auf schmalen Handys untereinander */
+@media (max-width: 600px) {
+  #runnerList .runner-stations {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+
+
+
+
+
+
+
+#drinkPaymentMethod {
+  background-color: #dc3545;
+  color: #ffffff;
+  border: 2px solid #b02a37;
+  font-weight: 700;
+}
+
+
+#drinkPaymentMethod {
+  width: 140px;
+  max-width: 100%;
+  padding: 9px 14px;
+  border-radius: 12px;
+  background-color: #dc3545;
+  color: #ffffff;
+  border: 2px solid #b02a37;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+
+
+
+/* Logo-Animation direkt auf der Startseite */
+#startupSplash {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  pointer-events: none;
+
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+#startupSplash img {
+  width: min(75vw, 420px);
+  max-height: 65vh;
+  object-fit: contain;
+  animation: logoStart 1.15s ease-in-out forwards;
+}
+
+#startupSplash.hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+
+@keyframes logoStart {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 0;
+  }
+
+  12% {
+    transform: translateY(0) scale(1.1) rotate(0deg);
+    opacity: 1;
+  }
+
+  55% {
+    transform: translateY(0) scale(1) rotate(720deg);
+    opacity: 1;
+  }
+
+  75% {
+    transform: translateY(30px) scale(1.05) rotate(900deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(120vh) scale(0.75) rotate(1080deg);
+    opacity: 0;
+  }
+}
+
+
+/* Läuferbereiche näher an den Aktualisieren-Button */
+#runnerList {
+  margin-top: 6px !important;
+}
+
+#runnerList .runner-stations {
+  margin-top: 0 !important;
+  gap: 12px;
+}
+
+
+
+
+
+
+.open-amounts-box {
+  margin: 10px 0;
+  padding: 12px;
+  border: 1px solid #e5a0a0;
+  border-radius: 10px;
+  background: #fff4f4;
+}
+
+.open-amounts-box label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+#openAmountsSummary {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #b42318;
+}
+
+
+
+
+
+
+/* Getränke-Unterteilung: klare, kompakte Zwischenüberschriften */
+#menuGrid .drink-subgroup {
+  margin: 0 0 14px;
+}
+#menuGrid .drink-subgroup-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: .95rem;
+  line-height: 1.25;
+  background: #e8eef3;
+  color: #263746;
+}
+#menuGrid .drink-subgroup-warm .drink-subgroup-title {
+  background: #cfe5fb;
+  color: #164b7a;
+  border: 1px solid #9fc8ef;
+}
+
+/* Warme Getränke dezent blau hervorheben */
+#menuGrid .drink-subgroup-warm .menu-item-card {
+  background: #e8f3ff;
+  border-color: #a9cfee;
+}
+#menuGrid .drink-subgroup-warm .menu-item-card:hover {
+  background: #dceeff;
+  border-color: #78b3e5;
+}
+#menuGrid .drink-subgroup-warm .menu-item-card.selected {
+  background: #d5eaff;
+  border-color: #347fbd;
+}
+#menuGrid .drink-subgroup-count {
+  margin-left: auto;
+  font-size: .75rem;
+  font-weight: 400;
+  opacity: .75;
+}
+
+/* Getränkeübersicht extra kompakt: fünf Spalten auf breiten Bildschirmen */
+#menuGrid .menu-category-getränke .menu-category-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+  align-items: stretch;
+}
+
+#menuGrid .menu-category-getränke .item {
+  min-height: 0;
+  padding: 4px 5px;
+  gap: 1px;
+  border-radius: 6px;
+}
+
+#menuGrid .menu-category-getränke .item h3 {
+  font-size: .82rem;
+  line-height: 1.15;
+  margin: 0 0 2px;
+}
+
+#menuGrid .menu-category-getränke .item .price {
+  font-size: .76rem;
+  line-height: 1.05;
+  margin: 0;
+}
+
+#menuGrid .menu-category-getränke .item .tile-bottom {
+  padding-top: 2px;
+  margin-top: 1px;
+  gap: 2px;
+}
+
+#menuGrid .menu-category-getränke .item .tile-hint {
+  font-size: .68rem;
+  line-height: 1.1;
+}
+
+#menuGrid .menu-category-getränke .item .cart-count {
+  font-size: .72rem;
+  padding: 2px 5px;
+}
+
+@media (max-width: 1200px) {
+  #menuGrid .menu-category-getränke .menu-category-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 800px) {
+  #menuGrid .menu-category-getränke .menu-category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  /* Handy: drei Spalten, damit die Serviceperson weniger scrollen muss */
+  #menuGrid .menu-category-getränke .menu-category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3px;
+  }
+  #menuGrid .menu-category-getränke .item {
+    padding: 4px 4px;
+    border-radius: 5px;
+  }
+  #menuGrid .menu-category-getränke .item h3 {
+    font-size: .72rem;
+    line-height: 1.08;
+    margin-bottom: 1px;
+    overflow-wrap: anywhere;
+  }
+  #menuGrid .menu-category-getränke .item .price {
+    font-size: .68rem;
+    line-height: 1;
+  }
+  #menuGrid .menu-category-getränke .item .tile-hint {
+    display: none;
+  }
+  #menuGrid .menu-category-getränke .item .tile-bottom {
+    padding-top: 1px;
+    margin-top: 0;
+  }
+  #menuGrid .menu-category-getränke .item .cart-count {
+    font-size: .66rem;
+    padding: 1px 4px;
+  }
+}
+
+@media (max-width: 360px) {
+  #menuGrid .menu-category-getränke .menu-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #menuGrid .menu-category-getränke .item {
+    padding: 5px 6px;
+  }
+  #menuGrid .menu-category-getränke .item h3 {
+    font-size: .78rem;
+  }
+}
+
+
+/* Getränke: den Hinweis „+ 1 Stück hinzufügen“ ausblenden;
+   Antippen der ganzen Kachel erhöht weiterhin die Menge im Warenkorb. */
+#menuGrid .menu-category-getränke .tile-hint {
+  display: none !important;
+}
+#menuGrid .menu-category-getränke .item .tile-bottom {
+  padding-top: 1px;
+  margin-top: 0;
+}
+
+
+/* Neue Bestellung: zwei Hauptspalten – Essen links, Getränke rechts.
+   Dessert erscheint direkt unter Essen; Sonstiges bleibt links darunter. */
+#menuGrid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 14px !important;
+  align-items: start;
+}
+#menuGrid > .menu-category-essen { grid-column: 1; grid-row: 1; }
+#menuGrid > .menu-category-getränke { grid-column: 2; grid-row: 1 / span 3; }
+#menuGrid > .menu-category-dessert { grid-column: 1; grid-row: 2; }
+#menuGrid > .menu-category-sonstiges { grid-column: 1; grid-row: 3; }
+#menuGrid > .menu-category {
+  min-width: 0;
+  margin: 0 !important;
+}
+#menuGrid .menu-category-title {
+  font-size: 1.05rem;
+  gap: 5px;
+  margin-bottom: 8px;
+  padding-bottom: 7px;
+}
+#menuGrid .menu-category-count { font-size: .72rem; }
+/* Innerhalb der zwei Hauptbereiche weiterhin mehrere Kacheln pro Reihe. */
+#menuGrid .menu-category-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+#menuGrid .item {
+  min-width: 0;
+  min-height: 0;
+  padding: 8px 9px;
+  gap: 3px;
+}
+#menuGrid .item h3 {
+  font-size: .9rem;
+  line-height: 1.2;
+  margin: 0 0 3px;
+}
+#menuGrid .item .price {
+  font-size: .82rem;
+  line-height: 1.15;
+  margin: 0;
+}
+#menuGrid .item .tile-bottom {
+  padding-top: 4px;
+  margin-top: 3px;
+  gap: 3px;
+}
+#menuGrid .menu-category-getränke .menu-category-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+#menuGrid .drink-subgroup { margin-bottom: 9px; }
+#menuGrid .drink-subgroup-title {
+  font-size: .82rem;
+  margin: 0 0 5px;
+}
+@media (max-width: 600px) {
+  /* Handy: zwei klare Hauptbereiche nebeneinander, ohne horizontales Scrollen. */
+  #menuGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 8px !important;
+    padding: 0 2px;
+    align-items: start;
+  }
+  #menuGrid > .menu-category { min-width: 0; }
+  #menuGrid .menu-category-title {
+    font-size: 12px;
+    line-height: 1.2;
+    gap: 3px;
+    margin-bottom: 6px;
+    padding-bottom: 5px;
+    overflow-wrap: anywhere;
+  }
+  #menuGrid .menu-category-count { font-size: 9px; }
+  /* Drei Kacheln pro Bereich bleiben erhalten, Kacheln sind aber besser lesbar. */
+  #menuGrid .menu-category-grid,
+  #menuGrid .menu-category-getränke .menu-category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+  #menuGrid .item {
+    min-width: 0;
+    padding: 6px 3px;
+    border-radius: 7px;
+    gap: 2px;
+    min-height: 48px;
+    box-sizing: border-box;
+  }
+  #menuGrid .item h3 {
+    font-size: 10px;
+    line-height: 1.2;
+    margin: 0 0 2px;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+  #menuGrid .item .price {
+    font-size: 9px;
+    line-height: 1.1;
+    font-weight: 600;
+    white-space: normal;
+  }
+  #menuGrid .item .tile-bottom { padding-top: 2px; margin-top: 1px; gap: 2px; }
+  #menuGrid .item .cart-count { font-size: 9px; padding: 2px 4px; }
+  #menuGrid .drink-subgroup { margin-bottom: 7px; }
+  #menuGrid .drink-subgroup-title { font-size: 10px; margin-bottom: 4px; }
+}
+@media (max-width: 370px) {
+  #menuGrid { gap: 5px !important; }
+  #menuGrid .menu-category-grid,
+  #menuGrid .menu-category-getränke .menu-category-grid { gap: 3px; }
+  #menuGrid .item { padding: 5px 2px; }
+  #menuGrid .item h3 { font-size: 9px; }
+  #menuGrid .item .price { font-size: 8px; }
+}
+
+
+/* Neue Bestellung: Getränke oben, Essen darunter – beide Bereiche nutzen die volle Breite. */
+.wrap { max-width: 1550px; }
+#menuGrid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 16px !important;
+  align-items: start;
+}
+#menuGrid > .menu-category-getränke { grid-column: 1; grid-row: 1; }
+#menuGrid > .menu-category-essen { grid-column: 1; grid-row: 2; }
+#menuGrid > .menu-category-dessert { grid-column: 1; grid-row: 3; }
+#menuGrid > .menu-category-sonstiges { grid-column: 1; grid-row: 4; }
+#menuGrid > .menu-category { min-width: 0; width: 100%; margin: 0 !important; }
+#menuGrid .menu-category-getränke .menu-category-grid {
+  /* Schmalere Getränkekacheln: mehr Artikel nebeneinander */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 9px;
+}
+#menuGrid .menu-category-essen .menu-category-grid,
+#menuGrid .menu-category-dessert .menu-category-grid,
+#menuGrid .menu-category-sonstiges .menu-category-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+#menuGrid .item { padding: 12px 13px; }
+#menuGrid .item h3 { font-size: 1.08rem; line-height: 1.3; }
+#menuGrid .item .price { font-size: 1rem; }
+#menuGrid .item .tile-hint { font-size: .9rem; }
+#menuGrid .item .cart-count { font-size: .95rem; }
+@media (max-width: 800px) {
+  #menuGrid .menu-category-getränke .menu-category-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+  #menuGrid .menu-category-essen .menu-category-grid,
+  #menuGrid .menu-category-dessert .menu-category-grid,
+  #menuGrid .menu-category-sonstiges .menu-category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+}
+@media (max-width: 480px) {
+  #menuGrid { gap: 12px !important; padding: 0; }
+  #menuGrid .menu-category-getränke .menu-category-grid,
+  #menuGrid .menu-category-essen .menu-category-grid,
+  #menuGrid .menu-category-dessert .menu-category-grid,
+  #menuGrid .menu-category-sonstiges .menu-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  #menuGrid .item { padding: 10px 8px; min-height: 0; }
+  #menuGrid .item h3 { font-size: .98rem; line-height: 1.25; overflow-wrap: anywhere; }
+  #menuGrid .item .price { font-size: .9rem; }
+  #menuGrid .item .tile-hint { font-size: .78rem; }
+  #menuGrid .item .cart-count { font-size: .82rem; }
+}
+
+/* Kalte Getränke: Kacheln leicht grünlich gestalten */
+#menuGrid .drink-subgroup-kalt .menu-item-card,
+#menuGrid .drink-subgroup-kalt .item {
+  background: #d9eee2 !important;
+  border-color: #8bbda0 !important;
+}
+#menuGrid .drink-subgroup-kalt .menu-item-card h3,
+#menuGrid .drink-subgroup-kalt .item h3 {
+  color: #24563a !important;
+}
+#menuGrid .drink-subgroup-kalt .menu-item-card .price,
+#menuGrid .drink-subgroup-kalt .item .price {
+  color: #2d6946 !important;
+}
+#menuGrid .drink-subgroup-kalt .menu-item-card:hover,
+#menuGrid .drink-subgroup-kalt .item:hover {
+  background: #c5e4d1 !important;
+  border-color: #6ba783 !important;
+}
+#menuGrid .drink-subgroup-kalt .menu-item-card.selected,
+#menuGrid .drink-subgroup-kalt .item.selected {
+  background: #b0d9bf !important;
+  border: 2px solid #397a52 !important;
+}
+
+/* Warme Getränke bleiben blau */
+#menuGrid .drink-subgroup-warm .menu-item-card,
+#menuGrid .drink-subgroup-warm .item {
+  background: #e8f3ff !important;
+  border-color: #a9cfee !important;
+}
+#menuGrid .drink-subgroup-warm .menu-item-card h3,
+#menuGrid .drink-subgroup-warm .item h3 {
+  color: #164b7a !important;
+}
+#menuGrid .drink-subgroup-warm .menu-item-card .price,
+#menuGrid .drink-subgroup-warm .item .price {
+  color: #205f91 !important;
+}
+#menuGrid .drink-subgroup-warm .menu-item-card:hover,
+#menuGrid .drink-subgroup-warm .item:hover {
+  background: #dceeff !important;
+  border-color: #78b3e5 !important;
+}
+#menuGrid .drink-subgroup-warm .menu-item-card.selected,
+#menuGrid .drink-subgroup-warm .item.selected {
+  background: #d5eaff !important;
+  border: 2px solid #347fbd !important;
+}
+
+/* Überschrift „Warme Getränke“ wieder gelb – die Getränkekacheln bleiben blau. */
+#menuGrid .drink-subgroup-warm > .drink-subgroup-title {
+  background: #ffd84d !important;
+  color: #493700 !important;
+  border: 1px solid #e5b900;
+  border-radius: 9px;
+  padding: 9px 12px;
+}
+
+
+/* Neue Bestellung: grössere Schrift in den Bestellungskacheln */
+#menuGrid .menu-category .item h3 {
+  font-size: 1.3rem !important;
+  line-height: 1.25 !important;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+#menuGrid .menu-category .item .price {
+  font-size: 1.2rem !important;
+  line-height: 1.2 !important;
+}
+#menuGrid .menu-category .item .tile-hint { font-size: 1rem !important; }
+#menuGrid .menu-category .item .cart-count {
+  font-size: 1.1rem !important;
+  padding: 3px 9px !important;
+}
+#menuGrid .menu-category .item { padding: 12px 13px !important; }
+#menuGrid .menu-category-getränke .item { padding: 10px 11px !important; }
+/* weniger Spalten, damit die grössere Schrift Platz hat */
+#menuGrid .menu-category-getränke .menu-category-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+#menuGrid .menu-category-essen .menu-category-grid,
+#menuGrid .menu-category-dessert .menu-category-grid,
+#menuGrid .menu-category-sonstiges .menu-category-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+@media (max-width: 1000px) {
+  #menuGrid .menu-category-getränke .menu-category-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  #menuGrid .menu-category-essen .menu-category-grid,
+  #menuGrid .menu-category-dessert .menu-category-grid,
+  #menuGrid .menu-category-sonstiges .menu-category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 600px) {
+  #menuGrid .menu-category .item h3 { font-size: 1.4rem !important; line-height: 1.2 !important; hyphens: auto; }
+  #menuGrid .menu-category .item .price { font-size: 1.25rem !important; }
+  #menuGrid .menu-category .item .tile-hint { font-size: 1rem !important; }
+  #menuGrid .menu-category .item .cart-count { font-size: 1.15rem !important; padding: 3px 10px !important; }
+  #menuGrid .menu-category .item { padding: 14px 10px !important; min-height: 90px !important; }
+  #menuGrid .menu-category-title { font-size: 1.3rem !important; }
+  #menuGrid .drink-subgroup-title { font-size: 1.1rem !important; }
+  #menuGrid .menu-category-getränke .menu-category-grid,
+  #menuGrid .menu-category-essen .menu-category-grid,
+  #menuGrid .menu-category-dessert .menu-category-grid,
+  #menuGrid .menu-category-sonstiges .menu-category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+}
+
+/* Minus-Button: einzelnes Stück wieder entfernen */
+#menuGrid .tile-count-wrap { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
+#menuGrid .tile-minus {
+  min-width: 44px; min-height: 44px; padding: 0 !important;
+  border-radius: 50% !important;
+  background: #b52f2f !important; color: #fff !important;
+  font-size: 1.6rem !important; line-height: 1 !important; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+#menuGrid .tile-minus:active { transform: scale(.92); }
+
+/* Gratisgetränke: eigene Sparte unter den warmen Getränken (lila) */
+#menuGrid .drink-subgroup-gratis { margin-top: 14px; }
+#menuGrid .drink-subgroup-gratis > .drink-subgroup-title {
+  background: #e6dcf5 !important;
+  color: #3f2a63 !important;
+  border: 1px solid #b9a3dc;
+  border-radius: 9px;
+  padding: 9px 12px;
+}
+#menuGrid .drink-subgroup-gratis .menu-item-card,
+#menuGrid .drink-subgroup-gratis .item {
+  background: #f3edfb !important;
+  border-color: #b9a3dc !important;
+}
+#menuGrid .drink-subgroup-gratis .menu-item-card h3,
+#menuGrid .drink-subgroup-gratis .item h3 { color: #3f2a63 !important; }
+#menuGrid .drink-subgroup-gratis .menu-item-card .price,
+#menuGrid .drink-subgroup-gratis .item .price { color: #5a3d8a !important; }
+#menuGrid .drink-subgroup-gratis .menu-item-card:hover,
+#menuGrid .drink-subgroup-gratis .item:hover { background: #e9defa !important; border-color: #8f72c4 !important; }
+#menuGrid .drink-subgroup-gratis .menu-item-card.selected,
+#menuGrid .drink-subgroup-gratis .item.selected { background: #dccbf3 !important; border: 2px solid #6f4cab !important; }
+
+/* Offene Beträge: grün wenn nichts offen, rot (Standard) bei offenen Beträgen */
+.open-amounts-box.open-amounts-ok {
+  border-color: #8bc9a2;
+  background: #eaf7ef;
+}
+
+/* Total + «Bestellung senden» laufen beim Scrollen durch die Karte mit */
+.cart-bar {
+  position: fixed !important;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  margin: 0 !important;
+  background: #fff;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  border-top: 2px solid #b6d4c0;
+  box-shadow: 0 -6px 16px rgba(23, 33, 27, .18);
+  transition: transform .2s ease;
+}
+.cart-bar.cart-bar-hidden { transform: translateY(120%); pointer-events: none; }
+/* Platz unter der Karte, damit die feste Leiste nichts verdeckt */
+.order-area { padding-bottom: 90px; }
+.cart-bar .big { font-size: 1.5rem; }
+.cart-bar #submitOrderBtn {
+  font-size: 1.15rem;
+  padding: 14px 20px;
+  min-height: 52px;
+}
+@media (max-width: 600px) {
+  .cart-bar #submitOrderBtn { flex: 1; margin-left: 12px; }
+}
+
+/* Handy: Kopfbereich darf umbrechen, damit die Seite nicht breiter als der Bildschirm wird
+   (sonst rutscht die feste «Bestellung senden»-Leiste aus dem sichtbaren Bereich) */
+@media (max-width: 600px) {
+  header { flex-wrap: wrap !important; gap: 8px 12px !important; }
+  header .kopf-titel { flex: 1 1 140px !important; min-width: 0 !important; }
+  header .kopf-titel h1 { font-size: 1.1rem !important; overflow-wrap: anywhere; }
+  header .actions { margin-left: 0 !important; width: 100%; justify-content: space-between; }
+  #userLabel { min-width: 0; overflow-wrap: anywhere; }
+}
+
+/* Registrierung: Umschalter Anmelden / Registrieren */
+.auth-switch { display: flex; gap: 8px; margin: 4px 0 14px; }
+.auth-switch .auth-tab {
+  flex: 1; background: #e5eee8; color: #245c3b;
+  border: 1px solid #b6d4c0; font-weight: 700;
+}
+.auth-switch .auth-tab.active { background: #245c3b; color: #fff; }
+#forgotLink { color: #245c3b; font-weight: 600; }
+
+/* Navigation: ruhig und einheitlich. Aktiver Reiter in Markengrün, Stationen nur mit dezentem Farbpunkt. */
+#tabs { gap: 6px; margin: 14px 0 16px; }
+#tabs button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: #ffffff; color: #1f4b32;
+  border: 1px solid #cfdcd3; border-radius: 10px;
+  font-weight: 600; letter-spacing: .01em;
+  filter: none; transform: none; box-shadow: none; outline: 0;
+  transition: background-color .15s, border-color .15s, color .15s, box-shadow .15s;
+}
+#tabs button::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--dot, #8aa396); flex: 0 0 auto;
+}
+#tabs button[data-tab="service"] { --dot: #3b82a6; }
+#tabs button[data-tab="orders"]  { --dot: #d08a3c; }
+#tabs button[data-tab="bar"]     { --dot: #7d6bb0; }
+#tabs button[data-tab="runner"]  { --dot: #4f9a6b; }
+#tabs button[data-tab="closing"] { --dot: #6b7a85; }
+#tabs button[data-tab="admin"]   { --dot: #a65b5b; }
+#tabs button[data-tab="team"]    { --dot: #4a7fb5; }
+#tabs button:hover { background: #f1f6f2; border-color: #a9c1b2; filter: none; transform: none; }
+#tabs button:focus-visible { outline: 3px solid #8ab99a; outline-offset: 2px; }
+#tabs button.active {
+  background: #245c3b; color: #ffffff; border-color: #245c3b;
+  box-shadow: 0 2px 6px rgba(36, 92, 59, .28); filter: none; outline: 0;
+}
+#tabs button.active::before { box-shadow: 0 0 0 2px rgba(255, 255, 255, .9); }
+#tabs button.active:focus-visible { outline: 3px solid #8ab99a; outline-offset: 2px; }
+
+/* Kopfbereich: Slogan unter dem Titel, Vereinsname neben dem Benutzer */
+#headerSlogan { display: block; opacity: .9; font-size: .9rem; }
+#orgLabel { font-weight: 700; }
+#orgLabel:not(:empty)::after { content: " ·"; margin: 0 4px 0 2px; font-weight: 400; opacity: .8; }
+
+/* Impressum und Datenschutz */
+.site-foot { text-align: center; padding: 18px 12px 110px; font-size: .88rem; color: #66716a; }
+.site-foot button, .legal-link {
+  background: none; color: #245c3b; text-decoration: underline;
+  padding: 4px 10px; font-weight: 600; font-size: .88rem; border-radius: 6px;
+}
+dialog.legal {
+  width: min(720px, calc(100vw - 24px)); max-height: 88vh; padding: 0;
+  border: 0; border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.3); color: #17211b;
+}
+dialog.legal::backdrop { background: rgba(0,0,0,.45); }
+.legal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 20px; border-bottom: 1px solid #e3e9e4; position: sticky; top: 0; background: #fff; }
+.legal-head h2 { margin: 0; font-size: 1.25rem; }
+.legal-body { padding: 6px 20px 20px; overflow: auto; max-height: calc(88vh - 70px); line-height: 1.5; }
+.legal-body h3 { margin: 18px 0 6px; font-size: 1.02rem; }
+.legal-body p, .legal-body ul { margin: 0 0 8px; }
+.platzhalter { background: #fff3a3; padding: 0 3px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+
+
+
+
+<!-- Animierter Startbildschirm -->
+
+
+
+
+
+
+
+
+
+<header>
+<img class="kopf-logo" alt="BestellEAsy App" src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%2075%22%3E%0A%3Crect%20x=%2216%22%20y=%223%22%20width=%2268%22%20height=%2269%22%20rx=%2216%22%20fill=%22%23ffffff%22/%3E%0A%3Cpath%20d=%22M32%2016h36a3%203%200%200%201%203%203v37l-5-3.5-5%203.5-5-3.5-5%203.5-5-3.5-5%203.5-5-3.5-5%203.5V19a3%203%200%200%201%203-3z%22%20fill=%22%23245c3b%22/%3E%0A%3Cpath%20d=%22M38%2031l8%208%2016-17%22%20fill=%22none%22%20stroke=%22%23f3a22b%22%20stroke-width=%226.5%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22/%3E%0A%3C/svg%3E" alt="Logo">
+
+
+
+  <div class="kopf-titel">
+    <h1>BestellEAsy App</h1>
+    <small id="headerSlogan">Bestellen war noch nie so einfach</small>
+  </div>
+
+  <div class="actions">
+    <span id="orgLabel" class="statusline"></span>
+    <span id="userLabel" class="statusline"></span>
+    <button id="logoutBtn" class="secondary hidden" type="button">
+      Abmelden
+    </button>
+  </div>
+</header>
+ 
+
+
+<main class="wrap">
+<div id="notice" class="msg hidden" role="status"></div>
+<section id="configPanel" class="panel hidden">
+
+
+<h2 class="section-title">Einmalige Verbindung einrichten</h2>
+<p class="muted">Die Bestellungen und Menüartikel werden dauerhaft in deiner Supabase-Datenbank gespeichert – nicht nur auf diesem Gerät. Die Verbindung muss pro Browser/Gerät einmal eingerichtet werden. Niemals den <b>service_role</b>-Key eintragen.</p>
+<div class="grid"><div><label for="projectUrl">Supabase Project URL</label><input id="projectUrl" value="https://mkdsxgckckzxqaupilrp.supabase.co" placeholder="https://xxxxxxxx.supabase.co" autocomplete="url"></div><div><label for="anonKey">Public anon/publishable key</label><input id="anonKey" value="sb_publishable_dDoTEWtrcI8ulfVD4UiZZg_JsirepVu" placeholder="eyJ... oder sb_publishable_..." autocomplete="off"></div></div>
+<div class="actions" style="margin-top:12px"><button id="saveConfigBtn" type="button">Verbindung speichern</button><button id="testConfigBtn" class="secondary" type="button">Verbindung testen</button></div><p class="foot">URL und öffentlicher Key werden nach dem Speichern in diesem Browser gemerkt. Bestelldaten liegen zentral in Supabase und sind nach Anmeldung auf allen verbundenen Geräten verfügbar. Auf gemeinsam genutzten Geräten nach dem Einsatz abmelden.</p>
+</section>
+<section id="loginPanel" class="panel hidden"><h2 class="section-title" id="loginTitle">Anmelden</h2><div id="inviteBanner" class="msg hidden">Du wurdest in einen Verein eingeladen. Registriere dich (oder melde dich an), danach trittst du automatisch bei.</div><div id="authSwitch" class="auth-switch"><button type="button" id="showLoginBtn" class="auth-tab active">Anmelden</button><button type="button" id="showRegisterBtn" class="auth-tab">Registrieren</button></div><div class="grid"><div id="emailWrap"><label for="email">E-Mail</label><input id="email" type="email" autocomplete="username"></div><div><label for="password">Passwort</label>
+
+
+
+<div class="password-wrap">
+  <input id="password" type="password" autocomplete="current-password">
+  <button id="togglePassword" class="password-toggle" type="button" aria-label="Passwort anzeigen" title="Passwort anzeigen">👁</button>
+</div>
+
+
+
+</div><div id="password2Wrap" class="hidden"><label for="password2">Passwort wiederholen</label><input id="password2" type="password" autocomplete="new-password"></div></div><div class="actions" style="margin-top:12px"><button id="loginBtn" type="button">Anmelden</button><button id="registerBtn" class="hidden" type="button">Konto erstellen</button><button id="saveNewPwBtn" class="hidden" type="button">Neues Passwort speichern</button></div><p class="muted" id="forgotWrap"><a href="#" id="forgotLink">Passwort vergessen?</a></p><p class="muted" id="registerHint" style="display:none">Mindestens 8 Zeichen. Wir schicken dir eine E-Mail zur Bestätigung. Danach legst du deinen Anlass an und wirst automatisch Admin oder trittst mit einem Einladungscode bei. Mit der Registrierung nimmst du die <a href="#" data-legal="datenschutz">Datenschutzerklärung</a> zur Kenntnis.</p><p class="muted"><strong>Herzlich willkommen in der BestellEAsy App!</strong></p></section>
+<section id="orgPanel" class="panel hidden"><h2 class="section-title">Deinen Anlass anlegen</h2><p class="muted">Wie heisst dein Verein oder Anlass? Der Name erscheint oben in der App. Du wirst Admin und kannst danach das Menü einrichten.</p><div class="grid"><div><label for="orgName">Name des Vereins oder Anlasses</label><input id="orgName" type="text" maxlength="80" placeholder="z. B. Dorffest Eriz"></div></div><div class="actions" style="margin-top:12px"><button id="createOrgBtn" type="button">Weiter</button></div>
+<hr style="margin:22px 0;border:0;border-top:1px solid #d8e1da">
+<h2 class="section-title">Oder: einem bestehenden Verein beitreten</h2>
+<p class="muted">Hast du von deinem Admin einen Einladungscode bekommen? Gib ihn hier ein. Du erhältst automatisch die dafür vorgesehene Rolle.</p>
+<div class="grid"><div><label for="inviteCode">Einladungscode</label><input id="inviteCode" type="text" maxlength="20" autocomplete="off" autocapitalize="characters" placeholder="z. B. 3F9A1C7B2D"></div></div>
+<div class="actions" style="margin-top:12px"><button id="joinOrgBtn" class="secondary" type="button">Mit Code beitreten</button></div></section>
+<section id="appPanel" class="hidden">
+<nav class="tabs" id="tabs"><button type="button" data-tab="service" class="active">Neue Bestellung</button><button type="button" data-tab="orders" class="">Küche</button><button type="button" data-tab="bar" class="">Theke / Ausschank</button><button type="button" data-tab="runner" class="">Läufer</button><button type="button" data-tab="closing" class="">Tagesabschluss</button><button type="button" data-tab="admin" class="">Menü verwalten</button></nav>
+
+
+<section id="serviceView" class="panel">
+  <h2 class="section-title">Neue Bestellung</h2>
+
+  <div class="grid">
+    <div>
+      <label for="tableNumber">Tisch</label>
+      <select id="tableNumber"><option value="1">Tisch 1</option><option value="2">Tisch 2</option><option value="3">Tisch 3</option><option value="4">Tisch 4</option><option value="5">Tisch 5</option><option value="6">Tisch 6</option><option value="7">Tisch 7</option><option value="8">Tisch 8</option><option value="9">Tisch 9</option><option value="10">Tisch 10</option><option value="11">Tisch 11</option><option value="12">Tisch 12</option><option value="13">Tisch 13</option><option value="14">Tisch 14</option><option value="15">Tisch 15</option><option value="16">Tisch 16</option><option value="17">Tisch 17</option><option value="18">Tisch 18</option><option value="19">Tisch 19</option><option value="20">Tisch 20</option><option value="21">Tisch 21</option><option value="22">Tisch 22</option><option value="23">Tisch 23</option><option value="24">Tisch 24</option><option value="25">Tisch 25</option><option value="26">Tisch 26</option><option value="27">Tisch 27</option><option value="28">Tisch 28</option><option value="29">Tisch 29</option><option value="30">Tisch 30</option></select>
+
+      <div class="open-amounts-box open-amounts-ok">
+        <label>Offene Beträge – alle Tische</label>
+        <div id="openAmountsSummary" style="color: rgb(22, 128, 60);">✓ Keine offenen Beträge.</div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="order-area">
+  <div class="menu-heading-actions" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <h3 style="margin:0">Karte</h3>
+    <button id="clearSelectionBtn" type="button" class="secondary">Auswahl löschen</button>
+  </div>
+  <div id="menuGrid" class="menu-grid">
+      <section class="menu-category menu-category-essen">
+        <h2 class="menu-category-title">
+          <span aria-hidden="true">🍽️</span>
+          Essen
+          <span class="menu-category-count">2 Artikel</span>
+        </h2>
+
+        <div class="menu-category-grid">
+          
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Schaf Ragout hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="9eb1d9bd-94d0-4810-9f82-28e7382faf7a">
+        <div class="menu-item-content">
+          <h3>Schaf Ragout</h3>
+          <div class="price">CHF&nbsp;0.00</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Schaf Ragout 1/2 hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="26fd1572-cc95-4241-9530-e88535236bbe">
+        <div class="menu-item-content">
+          <h3>Schaf Ragout 1/2</h3>
+          <div class="price">CHF&nbsp;0.00</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+        </div>
+      </section>
+    
+      <section class="menu-category menu-category-getränke">
+        <h2 class="menu-category-title">
+          <span aria-hidden="true">🥤</span>
+          Getränke
+          <span class="menu-category-count">21 Artikel</span>
+        </h2>
+
+        <div class="menu-category-grid">
+          
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Bier 5 dl hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="f708366c-9c19-4823-9683-3f64ff463757">
+        <div class="menu-item-content">
+          <h3>Bier 5 dl</h3>
+          <div class="price">CHF&nbsp;6.00</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Bier 5 dl Alkoholfrei hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="e8424c7c-00e4-4e45-912c-14d301f316a5">
+        <div class="menu-item-content">
+          <h3>Bier 5 dl Alkoholfrei</h3>
+          <div class="price">CHF&nbsp;6.00</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Bier klein 3.3 dl hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="4c293cfb-eebb-4a79-8187-d363fda54b41">
+        <div class="menu-item-content">
+          <h3>Bier klein 3.3 dl</h3>
+          <div class="price">CHF&nbsp;5.00</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Cola hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="09ec3061-3b47-4899-865d-7ab096959e43">
+        <div class="menu-item-content">
+          <h3>Cola</h3>
+          <div class="price">CHF&nbsp;4.50</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Cola Zero hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="cc237b02-bbfe-4715-bbb0-8ffe35650bb5">
+        <div class="menu-item-content">
+          <h3>Cola Zero</h3>
+          <div class="price">CHF&nbsp;4.50</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Grapefruit hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="e430cbdc-4e9f-4b2f-9ffe-f5c58e7e7805">
+        <div class="menu-item-content">
+          <h3>Grapefruit</h3>
+          <div class="price">CHF&nbsp;4.50</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Kaffee crème hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="6dbe771a-a3ce-46e0-a3b9-0c0528c9178e">
+        <div class="menu-item-content">
+          <h3>Kaffee crème</h3>
+          <div class="price">CHF&nbsp;3.50</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Minaral ohne Gas hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="a501f956-97ba-4571-82f7-144f3deaa91b">
+        <div class="menu-item-content">
+          <h3>Minaral ohne Gas</h3>
+          <div class="price">CHF&nbsp;4.50</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Mineral mit Gas hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="debba0b2-17c4-4286-83e3-5a0c6d50d785">
+        <div class="menu-item-content">
+          <h3>Mineral mit Gas</h3>
+          <div class="price">CHF&nbsp;4.50</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Orange hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="7d283b11-2143-4dde-bcab-bf131788214d">
+        <div class="menu-item-content">
+          <h3>Orange</h3>
+          <div class="price">CHF&nbsp;4.50</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Ramseier Bügu Alkoholfrei 4.9 dl hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="ce2b35b3-9c2a-4f87-b914-4284ecc8f2ad">
+        <div class="menu-item-content">
+          <h3>Ramseier Bügu Alkoholfrei 4.9 dl</h3>
+          <div class="price">CHF&nbsp;6.00</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Ramseier Bügu Most 4.9 dl hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="f420c2e2-02a8-4f91-bb5e-f7e8a0c7f64e">
+        <div class="menu-item-content">
+          <h3>Ramseier Bügu Most 4.9 dl</h3>
+          <div class="price">CHF&nbsp;6.00</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Rivella Blau hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="94f02576-5e2b-4c18-8d51-7b7f4d633035">
+        <div class="menu-item-content">
+          <h3>Rivella Blau</h3>
+          <div class="price">CHF&nbsp;4.50</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Rivella Rot hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="565eed9f-b91b-4abf-94dc-ad2dd489e383">
+        <div class="menu-item-content">
+          <h3>Rivella Rot</h3>
+          <div class="price">CHF&nbsp;4.50</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Rotwein: Pinot Noir 5 dl hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="fbdcd7a3-144f-499f-a257-bc822d7e7a43">
+        <div class="menu-item-content">
+          <h3>Rotwein: Pinot Noir 5 dl</h3>
+          <div class="price">CHF&nbsp;18.00</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Schäfelerkafi mit Nidle hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="ef42c4b6-25c1-4f63-8a30-3fa69afc0cdf">
+        <div class="menu-item-content">
+          <h3>Schäfelerkafi mit Nidle</h3>
+          <div class="price">CHF&nbsp;7.00</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Tee (Früchte) hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="b4192d0c-4f75-4054-9454-f4e7123d7215">
+        <div class="menu-item-content">
+          <h3>Tee (Früchte)</h3>
+          <div class="price">CHF&nbsp;3.50</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Tee (Minze) hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="e4df4c00-3c21-4622-92fd-d8159e4203a8">
+        <div class="menu-item-content">
+          <h3>Tee (Minze)</h3>
+          <div class="price">CHF&nbsp;3.50</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Tee (Schwarz) hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="95e2bbac-323b-4b48-abcf-659746a92463">
+        <div class="menu-item-content">
+          <h3>Tee (Schwarz)</h3>
+          <div class="price">CHF&nbsp;3.50</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Weisswein: Johannisberg 5 dl hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="c7729dab-6573-424b-a1c2-8af6e5494ca7">
+        <div class="menu-item-content">
+          <h3>Weisswein: Johannisberg 5 dl</h3>
+          <div class="price">CHF&nbsp;18.00</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+      <article class="item menu-item-card " role="button" tabindex="0" aria-label="Zwetschgen Luz (37.5 % vol.) hinzufügen, aktueller Warenkorb: 0 Stück" data-add-item="b0ba3d54-d081-4c68-882a-093c8e4bc634">
+        <div class="menu-item-content">
+          <h3>Zwetschgen Luz (37.5 % vol.)</h3>
+          <div class="price">CHF&nbsp;6.00</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="cart-count">0 Stk.</span>
+        </div>
+      </article>
+    
+        </div>
+      </section>
+    </div>
+
+  <div class="actions cart-bar" style="justify-content:space-between;margin-top:14px">
+    <div>
+      <span class="muted">Total</span>
+      <div id="cartTotal" class="big">CHF&nbsp;0.00</div>
+    </div>
+    <button id="submitOrderBtn" type="button" disabled="">
+      Bestellung senden
+    </button>
+  </div>
+  </div>
+
+  <hr style="margin:24px 0">
+
+  <h3 id="drinkPaymentHeading" style="scroll-margin-top:12px">Getränke abrechnen</h3>
+  <p class="muted">
+    Offene Getränkebestellungen auswählen und pro Person abrechnen.
+    Bereits bezahlte Menüs bleiben unberücksichtigt.
+  </p>
+
+  <div id="drinkPaymentList">
+      <article class="order">
+        <h3>Tisch 1</h3>
+        <p>Offener Betrag:
+          <strong>CHF&nbsp;0.00</strong>
+        </p>
+        <p class="muted">
+          Keine offenen kostenpflichtigen Artikel von heute.
+        </p>
+      </article>
+    </div>
+</section>
+
+
+
+
+<section id="ordersView" class="panel hidden">
+  <h2 class="station-heading">
+    <span>Bestellungen Küche</span>
+    <span id="kitchenPendingCount" class="pending-count zero">0</span>
+  </h2>
+
+  <div id="ordersList"><p class="muted">Keine offenen Küchenbestellungen.</p></div>
+</section>
+
+<section id="barView" class="panel hidden">
+  <h2 class="station-heading">
+    <span>Bestellungen Theke / Ausschank</span>
+    <span id="barPendingCount" class="pending-count zero">0</span>
+  </h2>
+
+  <div id="barList"><p class="muted">Keine offenen Getränkebestellungen.</p></div>
+</section>
+
+<section id="runnerView" class="panel hidden">
+  <h2 class="station-heading">
+    <span>Bereit zum Ausliefern</span>
+    <span id="runnerPendingCount" class="pending-count zero">0</span>
+  </h2>
+
+  <p class="muted">
+    Hier erscheinen Bestellungen, sobald Küche und Theke fertig sind.
+  </p>
+
+  <button type="button" id="refreshRunnerBtn" class="warn">
+    Läuferliste aktualisieren
+  </button>
+
+  <div id="runnerList">
+    <div class="runner-stations">
+      <section class="runner-section runner-food">
+        <h2>🍽️ ESSEN (0)</h2>
+        <div class="runner-orders">
+          <p class="muted runner-empty">Kein fertiges Essen zum Ausliefern.</p>
+        </div>
+      </section>
+
+      <section class="runner-section runner-drinks">
+        <h2>🥤 GETRÄNKE (0)</h2>
+        <div class="runner-orders">
+          <p class="muted runner-empty">Keine fertigen Getränke zum Ausliefern.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+</section>
+
+
+
+
+
+
+
+
+
+
+
+<section id="closingView" class="panel hidden"><h2 class="section-title">Tagesabschluss</h2><div class="grid"><div><label for="closingDate">Datum</label><input id="closingDate" type="date"></div><div><label for="closingNotes">Bemerkungen (optional)</label><input id="closingNotes" placeholder="z. B. Kasse übergeben"></div></div><div class="actions" style="margin-top:12px"><button id="previewClosingBtn" class="secondary" type="button">Abrechnung berechnen</button><button id="saveClosingBtn" type="button">Tagesabschluss speichern</button></div><div id="closingSummary" style="margin-top:14px"></div><div id="closingHistory" style="margin-top:18px"><h3>Letzte Tagesabschlüsse</h3><p class="muted">Noch keine Tagesabschlüsse.</p></div></section>
+
+<section id="adminView" class="panel hidden">
+  <h2 class="section-title">Administration</h2>
+
+
+<h3>Menüartikel</h3>
+
+<div class="grid">
+  <div>
+    <label for="menuName">Artikelname</label>
+    <input id="menuName" placeholder="z. B. Bratwurst">
+  </div>
+
+  <div>
+    <label for="menuCategory">Kategorie</label>
+    <select id="menuCategory">
+      <option>Essen</option>
+      <option>Getränke</option>
+      <option>Dessert</option>
+      <option>Sonstiges</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="menuPrice">Preis in CHF</label>
+    <input id="menuPrice" type="number" min="0" step="0.05" placeholder="8.50">
+  </div>
+</div>
+
+<div class="actions" style="margin:10px 0 18px">
+  <button id="addMenuBtn" type="button">
+    Artikel hinzufügen
+  </button>
+</div>
+
+<!-- Bearbeitungsformular oben über der Artikelliste -->
+<div id="editMenuForm" class="panel hidden">
+  <h3>Menüartikel bearbeiten</h3>
+
+  <input type="hidden" id="editMenuId" value="b0ba3d54-d081-4c68-882a-093c8e4bc634">
+
+  <div class="grid">
+    <div>
+      <label for="editMenuName">Artikelname</label>
+      <input type="text" id="editMenuName" placeholder="Artikelname" required="">
+    </div>
+
+    <div>
+      <label for="editMenuCategory">Kategorie</label>
+      <select id="editMenuCategory" required="">
+        <option value="Essen">Essen</option>
+        <option value="Getränke">Getränke</option>
+        <option value="Dessert">Dessert</option>
+        <option value="Sonstiges">Sonstiges</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="editMenuPrice">Preis in CHF</label>
+      <input type="number" id="editMenuPrice" min="0" step="0.05" required="">
+    </div>
+  </div>
+
+  <div class="actions" style="margin-top:10px">
+    <button type="button" id="saveMenuEdit">
+      Speichern
+    </button>
+
+    <button type="button" id="cancelMenuEdit" class="secondary">
+      Abbrechen
+    </button>
+  </div>
+</div>
+
+<!-- Artikelliste nur einmal vorhanden -->
+<div id="adminMenuList">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Artikel</th>
+            <th>Kategorie</th>
+            <th>Preis</th>
+            <th>Aktiv</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+            <tr>
+              <td>Schaf Ragout</td>
+              <td>Essen</td>
+              <td>CHF&nbsp;0.00</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="9eb1d9bd-94d0-4810-9f82-28e7382faf7a">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="9eb1d9bd-94d0-4810-9f82-28e7382faf7a" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="9eb1d9bd-94d0-4810-9f82-28e7382faf7a">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Schaf Ragout 1/2</td>
+              <td>Essen</td>
+              <td>CHF&nbsp;0.00</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="26fd1572-cc95-4241-9530-e88535236bbe">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="26fd1572-cc95-4241-9530-e88535236bbe" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="26fd1572-cc95-4241-9530-e88535236bbe">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Bier 5 dl</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;6.00</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="f708366c-9c19-4823-9683-3f64ff463757">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="f708366c-9c19-4823-9683-3f64ff463757" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="f708366c-9c19-4823-9683-3f64ff463757">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Bier 5 dl Alkoholfrei</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;6.00</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="e8424c7c-00e4-4e45-912c-14d301f316a5">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="e8424c7c-00e4-4e45-912c-14d301f316a5" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="e8424c7c-00e4-4e45-912c-14d301f316a5">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Bier klein 3.3 dl</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;5.00</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="4c293cfb-eebb-4a79-8187-d363fda54b41">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="4c293cfb-eebb-4a79-8187-d363fda54b41" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="4c293cfb-eebb-4a79-8187-d363fda54b41">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Cola</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;4.50</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="09ec3061-3b47-4899-865d-7ab096959e43">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="09ec3061-3b47-4899-865d-7ab096959e43" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="09ec3061-3b47-4899-865d-7ab096959e43">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Cola Zero</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;4.50</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="cc237b02-bbfe-4715-bbb0-8ffe35650bb5">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="cc237b02-bbfe-4715-bbb0-8ffe35650bb5" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="cc237b02-bbfe-4715-bbb0-8ffe35650bb5">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Grapefruit</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;4.50</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="e430cbdc-4e9f-4b2f-9ffe-f5c58e7e7805">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="e430cbdc-4e9f-4b2f-9ffe-f5c58e7e7805" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="e430cbdc-4e9f-4b2f-9ffe-f5c58e7e7805">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Kaffee crème</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;3.50</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="6dbe771a-a3ce-46e0-a3b9-0c0528c9178e">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="6dbe771a-a3ce-46e0-a3b9-0c0528c9178e" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="6dbe771a-a3ce-46e0-a3b9-0c0528c9178e">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Minaral ohne Gas</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;4.50</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="a501f956-97ba-4571-82f7-144f3deaa91b">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="a501f956-97ba-4571-82f7-144f3deaa91b" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="a501f956-97ba-4571-82f7-144f3deaa91b">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Mineral mit Gas</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;4.50</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="debba0b2-17c4-4286-83e3-5a0c6d50d785">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="debba0b2-17c4-4286-83e3-5a0c6d50d785" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="debba0b2-17c4-4286-83e3-5a0c6d50d785">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Orange</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;4.50</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="7d283b11-2143-4dde-bcab-bf131788214d">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="7d283b11-2143-4dde-bcab-bf131788214d" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="7d283b11-2143-4dde-bcab-bf131788214d">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Ramseier Bügu Alkoholfrei 4.9 dl</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;6.00</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="ce2b35b3-9c2a-4f87-b914-4284ecc8f2ad">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="ce2b35b3-9c2a-4f87-b914-4284ecc8f2ad" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="ce2b35b3-9c2a-4f87-b914-4284ecc8f2ad">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Ramseier Bügu Most 4.9 dl</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;6.00</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="f420c2e2-02a8-4f91-bb5e-f7e8a0c7f64e">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="f420c2e2-02a8-4f91-bb5e-f7e8a0c7f64e" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="f420c2e2-02a8-4f91-bb5e-f7e8a0c7f64e">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Rivella Blau</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;4.50</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="94f02576-5e2b-4c18-8d51-7b7f4d633035">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="94f02576-5e2b-4c18-8d51-7b7f4d633035" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="94f02576-5e2b-4c18-8d51-7b7f4d633035">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Rivella Rot</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;4.50</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="565eed9f-b91b-4abf-94dc-ad2dd489e383">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="565eed9f-b91b-4abf-94dc-ad2dd489e383" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="565eed9f-b91b-4abf-94dc-ad2dd489e383">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Rotwein: Pinot Noir 5 dl</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;18.00</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="fbdcd7a3-144f-499f-a257-bc822d7e7a43">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="fbdcd7a3-144f-499f-a257-bc822d7e7a43" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="fbdcd7a3-144f-499f-a257-bc822d7e7a43">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Schäfelerkafi mit Nidle</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;7.00</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="ef42c4b6-25c1-4f63-8a30-3fa69afc0cdf">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="ef42c4b6-25c1-4f63-8a30-3fa69afc0cdf" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="ef42c4b6-25c1-4f63-8a30-3fa69afc0cdf">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Tee (Früchte)</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;3.50</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="b4192d0c-4f75-4054-9454-f4e7123d7215">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="b4192d0c-4f75-4054-9454-f4e7123d7215" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="b4192d0c-4f75-4054-9454-f4e7123d7215">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Tee (Minze)</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;3.50</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="e4df4c00-3c21-4622-92fd-d8159e4203a8">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="e4df4c00-3c21-4622-92fd-d8159e4203a8" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="e4df4c00-3c21-4622-92fd-d8159e4203a8">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Tee (Schwarz)</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;3.50</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="95e2bbac-323b-4b48-abcf-659746a92463">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="95e2bbac-323b-4b48-abcf-659746a92463" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="95e2bbac-323b-4b48-abcf-659746a92463">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Weisswein: Johannisberg 5 dl</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;18.00</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="c7729dab-6573-424b-a1c2-8af6e5494ca7">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="c7729dab-6573-424b-a1c2-8af6e5494ca7" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="c7729dab-6573-424b-a1c2-8af6e5494ca7">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+            <tr>
+              <td>Zwetschgen Luz (37.5 % vol.)</td>
+              <td>Getränke</td>
+              <td>CHF&nbsp;6.00</td>
+              <td>Ja</td>
+              <td>
+                <button type="button" class="secondary" data-edit-menu="b0ba3d54-d081-4c68-882a-093c8e4bc634">
+                  Bearbeiten
+                </button>
+
+                <button type="button" class="secondary" data-toggle-menu="b0ba3d54-d081-4c68-882a-093c8e4bc634" data-active="true">
+                  Deaktivieren
+                </button>
+
+                <button type="button" class="danger" data-delete-menu="b0ba3d54-d081-4c68-882a-093c8e4bc634">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          
+        </tbody>
+      </table>
+    </div>
+
+<hr style="margin:28px 0;border:0;border-top:1px solid #d8e1da">
+
+<h3>Bestellungen zurücksetzen</h3>
+
+<p class="muted">
+  Löscht alle heutigen Bestellungen einschliesslich Positionen.
+  Menüartikel bleiben erhalten.
+</p>
+
+<button type="button" id="resetTodayOrdersBtn" class="danger">
+  Heutige Bestellungen zurücksetzen
+</button>
+</section>
+
+<section id="teamView" class="panel hidden">
+<h2 class="section-title">Team &amp; Einladungen</h2>
+<p class="muted">Erzeuge einen Code und gib ihn deinen Helferinnen und Helfern. Sie registrieren sich, geben den Code ein und landen mit der gewählten Rolle in deinem Verein.</p>
+<div class="grid">
+  <div><label for="inviteRole">Rolle</label>
+    <select id="inviteRole">
+      <option value="service">Service (Bestellungen, Läufer)</option>
+      <option value="kitchen">Küche / Theke</option>
+      <option value="closing">Tagesabschluss</option>
+      <option value="admin">Admin</option>
+    </select></div>
+  <div><label for="inviteDays">Gültig (Tage)</label><input id="inviteDays" type="number" min="1" max="60" value="7"></div>
+  <div><label for="inviteUses">Max. Personen</label><input id="inviteUses" type="number" min="1" max="200" value="20"></div>
+</div>
+<div class="actions" style="margin:10px 0 14px"><button id="createInviteBtn" type="button">Einladungscode erzeugen</button></div>
+<div id="inviteList"></div>
+<h3 style="margin-top:20px">Mitglieder</h3>
+<div id="memberList"></div>
+</section>
+
+<div class="foot">BestellEAsy App · Bei vertraulichen Daten nur mit persönlichen Benutzerkonten und aktivierten Datenbankrichtlinien verwenden.</div>
+</section></main>
+
+<footer class="site-foot">
+  <button type="button" data-legal="impressum">Impressum</button> ·
+  <button type="button" data-legal="datenschutz">Datenschutz</button>
+</footer>
+
+<dialog id="legalDialog" class="legal" aria-labelledby="legalTitle">
+  <div class="legal-head">
+    <h2 id="legalTitle"></h2>
+    <button type="button" class="secondary" id="legalClose">Schliessen</button>
+  </div>
+
+  <div class="legal-body" id="legal-impressum" hidden>
+    <h3>Betreiber der App</h3>
+    <p>Marco Aebersold<br>
+       Ried 71<br>
+       3616 Schwarzenegg<br>
+       Schweiz</p>
+    <h3>Kontakt</h3>
+    <p>E-Mail: marco.aebersold@bluewin.ch</p>
+    <h3>Haftungsausschluss</h3>
+    <p>Die App wird mit Sorgfalt betrieben. Für die Richtigkeit, Vollständigkeit und ständige Verfügbarkeit
+       wird keine Gewähr übernommen. Der Betreiber haftet nicht für Schäden, die aus der
+       Nutzung oder einem Ausfall der App entstehen, soweit gesetzlich zulässig. Die Angaben zu Preisen,
+       Beträgen und Abrechnungen sind durch die jeweiligen Vereine zu prüfen.</p>
+  </div>
+
+  <div class="legal-body" id="legal-datenschutz" hidden>
+    <p class="muted">Stand: 22.11.2026</p>
+    <h3>1. Verantwortlich</h3>
+    <p>Marco Aebersold (Adresse siehe Impressum), E-Mail: marco.aebersold@bluewin.ch.
+       Marco Aebersold stellt die BestellEAsy App bereit. Die Daten eines Anlasses (Menü, Bestellungen,
+       Abrechnungen) werden vom jeweiligen Verein bzw. Anlass erfasst und genutzt.</p>
+
+    <h3>2. Welche Daten bearbeitet werden</h3>
+    <ul>
+      <li>Konto: E-Mail-Adresse und Passwort (das Passwort wird nicht im Klartext gespeichert) sowie, falls angegeben, ein Anzeigename.</li>
+      <li>Zugehörigkeit: Name des Vereins bzw. Anlasses, Rolle (zum Beispiel Admin, Service, Küche, Tagesabschluss) und, bei Einladungen, der verwendete Einladungscode.</li>
+      <li>Betrieb: Menüartikel und Preise, Bestellungen (Tisch, Artikel, Mengen, Beträge, Zahlungsart Bar oder TWINT, Zeitpunkte, bearbeitende Person), Statusmeldungen von Küche, Theke und Läufern sowie Tagesabschlüsse.</li>
+      <li>Technische Daten: Beim Aufruf der Seite werden durch die eingesetzten Dienste technisch bedingt die IP-Adresse und Angaben zum Browser verarbeitet.</li>
+    </ul>
+    <p>Gästedaten wie Namen oder Zahlungsdaten (Kartennummern, TWINT-Konten) werden nicht erfasst. Die Zahlungsart wird nur als Vermerk gespeichert.</p>
+
+    <h3>3. Zweck</h3>
+    <p>Die Daten dienen ausschliesslich dem Betrieb der App: Anmeldung, Aufnahme und Verteilung von Bestellungen,
+       Abrechnung und Tagesabschluss sowie der Sicherheit und Fehlerbehebung.</p>
+
+    <h3>4. Wer Zugriff hat</h3>
+    <p>Mitglieder eines Vereins sehen die Daten ihres eigenen Vereins im Rahmen ihrer Rolle. Admins sehen zusätzlich Name
+       und E-Mail-Adresse der Mitglieder ihres Vereins. Die Daten verschiedener Vereine sind voneinander getrennt.</p>
+
+    <h3>5. Eingesetzte Dienstleister</h3>
+    <ul>
+      <li><strong>Supabase</strong> (Datenbank und Anmeldung). Standort der Datenbank: Frankfurt (EU).</li>
+      <li><strong>GitHub Pages</strong> (Bereitstellung der Webseite).</li>
+      <li><strong>jsDelivr</strong> (Auslieferung der Programmbibliothek für die Datenbankanbindung; dabei wird die IP-Adresse übermittelt).</li>
+      <li>Für die Bestätigungs-E-Mails bei der Registrierung wird ein E-Mail-Versand verwendet: Supabase (integrierter E-Mail-Versand).</li>
+    </ul>
+    <p>Diese Anbieter können Daten auch ausserhalb der Schweiz bearbeiten, insbesondere in der EU und in den USA.
+       Sie stützen sich dabei in der Regel auf anerkannte Garantien wie Standardvertragsklauseln.</p>
+
+    <h3>6. Speicherung im Browser</h3>
+    <p>Die App speichert im Browser nur technisch notwendige Angaben: die Anmeldesitzung und die Verbindungseinstellungen.
+       Es werden keine Tracking- oder Werbe-Cookies und keine Analysewerkzeuge eingesetzt.</p>
+
+    <h3>7. Aufbewahrung</h3>
+    <p>Kontodaten werden gespeichert, bis das Konto gelöscht wird. Bestelldaten und Tagesabschlüsse werden
+       <span class="platzhalter">[z. B. bis 30 Tage nach dem Anlass bzw. gemäss gesetzlichen Aufbewahrungspflichten]</span>
+       aufbewahrt. Admins können heutige Bestellungen in der App zurücksetzen.</p>
+
+    <h3>8. Ihre Rechte</h3>
+    <p>Sie können Auskunft über Ihre Daten verlangen sowie Berichtigung oder Löschung beantragen. Schreiben Sie dazu an
+       marco.aebersold@bluewin.ch. Zudem können Sie sich beim Eidgenössischen Datenschutz- und
+       Öffentlichkeitsbeauftragten (EDÖB) beschweren.</p>
+  </div>
+</dialog>
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const CONFIG_KEY = 'festbestellung.supabase.config.v1';
+let sb = null, currentUser = null, profile = null, menu = [], cart = new Map(), orders = [], recentlyDone = new Set(), activeTab = 'service';
+const money = n => new Intl.NumberFormat('de-CH',{style:'currency',currency:'CHF'}).format(Number(n||0));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function say(text, error=false){const el=$('notice');el.textContent=text;el.className='msg'+(error?' error':'');el.classList.remove('hidden');}
+function clearSay(){ $('notice').classList.add('hidden'); }
+function getConfig(){return {url:$('projectUrl').value.trim().replace(/\/$/,''),key:$('anonKey').value.trim()};}
+function setConfigUI(c){$('projectUrl').value=c?.url||'https://mkdsxgckckzxqaupilrp.supabase.co';$('anonKey').value=c?.key||'';}
+function validConfig(c){return /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(c.url) && c.key.length>20;}
+async function initConnection(){const c=getConfig();if(!validConfig(c)){say('Bitte eine gültige Supabase-URL und den öffentlichen anon/publishable Key eingeben.',true);return false;}if(!window.supabase||typeof window.supabase.createClient!=='function'){say('Supabase-Bibliothek wurde nicht geladen. Bitte Internetverbindung prüfen und die Seite neu laden.',true);return false;}sb=window.supabase.createClient(c.url,c.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});sb.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY'){recoveryMode=true;showRecoveryForm();}});try{const {error}=await sb.auth.getSession();if(error)throw error;localStorage.setItem(CONFIG_KEY,JSON.stringify(c));$('configPanel').classList.add('hidden');$('loginPanel').classList.remove('hidden');return true;}catch(e){say('Verbindung fehlgeschlagen: '+e.message,true);return false;}}
+async function connectTest(){const c=getConfig();if(!validConfig(c)){say('Bitte URL und Public Key korrekt eintragen.',true);return;}if(!window.supabase||typeof window.supabase.createClient!=='function'){say('Supabase-Bibliothek wurde nicht geladen. Bitte Internetverbindung prüfen und die Seite neu laden.',true);return;}try{const test=window.supabase.createClient(c.url,c.key);const {error}=await test.auth.getSession();if(error)say('Verbindungstest fehlgeschlagen: '+error.message,true);else say('Supabase ist erreichbar. Anmeldung benötigt ein gültiges Benutzerkonto.');}catch(e){say('Verbindungstest fehlgeschlagen: '+e.message,true);}}
+
+
+
+async function onSignedIn(user){currentUser=user;try{await loadProfile();if(!profile.organization_id){showOrgOnboarding();autoJoinPending();return;}clearPendingInvite();await loadOrgName();$('orgPanel')?.classList.add('hidden');$('loginPanel').classList.add('hidden');$('appPanel').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');$('userLabel').textContent=profile.display_name||profile.email||user.email;renderTabs();await loadMenu();await refreshOrders();await loadAdmin();await loadClosingHistory();showTab(firstTab());}catch(e){say('Daten konnten nicht geladen werden: '+e.message+' — bitte Supabase-Berechtigungen prüfen.',true);}}
+function firstTab(){return ['service','orders','closing','admin'].find(allowed) || 'orders';}
+
+
+
+
+
+
+function allowed(tab) {
+  const erlaubt = {
+    admin:   ['service', 'orders', 'bar', 'runner', 'closing', 'admin', 'team'],
+    service: ['service', 'orders', 'bar', 'runner'],
+    kitchen: ['orders', 'bar'],
+    closing: ['closing']
+  }[profile?.role] || ['service', 'orders', 'bar', 'runner'];
+  return erlaubt.includes(tab);
+}
+
+
+
+function updatePendingCounter(elementId, count) {
+  const counter = document.getElementById(elementId);
+  if (!counter) return;
+
+  counter.textContent = String(count);
+  counter.classList.toggle('zero', count === 0);
+}
+
+
+
+
+
+
+
+async function loadOpenAmounts() {
+  const el = document.getElementById('openAmountsSummary');
+  if (!el) {
+    console.error('Element openAmountsSummary nicht gefunden.');
+    return;
+  }
+
+  // Ladehinweis nur beim ersten Laden zeigen (kein Flackern bei der Auto-Aktualisierung)
+  if (el.dataset.loaded !== '1') el.textContent = 'Offene Beträge werden geladen …';
+
+  try {
+    const { data, error } = await sb.rpc('get_open_table_amounts');
+
+    if (error) throw error;
+
+    el.dataset.loaded = '1';
+
+    const rows = data || [];
+    const total = rows.reduce(
+      (sum, row) => sum + Number(row.open_amount || 0),
+      0
+    );
+
+    if (!rows.length || total <= 0) {
+      el.style.color = '#16803c';
+      el.closest('.open-amounts-box')?.classList.add('open-amounts-ok');
+      el.textContent = '✓ Keine offenen Beträge.';
+      return 0;
+    }
+
+    el.style.color = '#b42318';
+    el.closest('.open-amounts-box')?.classList.remove('open-amounts-ok');
+
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;
+                  gap:8px;font-size:0.9rem;margin-bottom:4px">
+        <span>Gesamt offen</span>
+        <strong>CHF ${total.toFixed(2)}</strong>
+      </div>
+      <div style="font-size:0.75rem;color:#666;margin-bottom:4px">
+        ${rows.length} offene ${rows.length === 1 ? 'Tisch' : 'Tische'}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px 12px;font-size:0.8rem">
+        ${rows.map(row => `
+          <span>
+            Tisch ${row.table_number}:
+            <strong>CHF ${Number(row.open_amount).toFixed(2)}</strong>
+          </span>
+        `).join('')}
+      </div>
+    `;
+    return total;
+  } catch (err) {
+    console.error('loadOpenAmounts:', err);
+    el.textContent = 'Fehler beim Laden der offenen Beträge.';
+    return null;
+  }
+}
+
+
+
+
+
+
+
+
+
+function renderTabs() {
+  const all = [
+    ['service', 'Neue Bestellung'],
+    ['orders', 'Küche'],
+    ['bar', 'Theke / Ausschank'],
+    ['runner', 'Läufer'],
+    ['closing', 'Tagesabschluss'],
+    ['admin', 'Menü verwalten'],
+    ['team', 'Team']
+  ];
+
+  const tabs = $('tabs');
+  if (!tabs) {
+    console.error('HTML-Element #tabs fehlt.');
+    return;
+  }
+
+  tabs.innerHTML = all
+    .filter(([tab]) => allowed(tab))
+    .map(([tab, name]) =>
+      `<button type="button" data-tab="${tab}" class="${tab === activeTab ? 'active' : ''}">${name}</button>`
+    )
+    .join('');
+
+  tabs.querySelectorAll('button').forEach(button => {
+    button.addEventListener('click', () => showTab(button.dataset.tab));
+  });
+
+  const tableNumber = $('tableNumber');
+  if (tableNumber) {
+    tableNumber.innerHTML = Array.from(
+      { length: 30 },
+      (_, i) => `<option value="${i + 1}">Tisch ${i + 1}</option>`
+    ).join('');
+  }
+
+  const closingDate = $('closingDate');
+  if (closingDate) {
+    closingDate.value = new Date().toLocaleDateString('en-CA');
+  }
+
+  console.log(
+    'Erzeugte Tabs:',
+    [...tabs.querySelectorAll('button')].map(button => button.dataset.tab)
+  );
+}
+
+
+
+
+
+
+
+
+function showTab(tab) {
+  if (!allowed(tab)) return;
+
+  activeTab = tab;
+
+  // Alle Ansichten ausblenden und nur den aktiven Bereich anzeigen
+  ['service', 'orders', 'bar', 'runner', 'closing', 'admin', 'team']
+    .forEach(t => {
+      const view = $(t + 'View');
+      if (view) {
+        view.classList.toggle('hidden', t !== tab);
+      }
+    });
+
+  // Aktiven Reiter markieren
+  $('tabs').querySelectorAll('button').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+
+
+if (['service', 'orders', 'bar', 'runner'].includes(tab)) {
+  refreshOrders();
+}
+
+if (tab === 'service') {
+  loadOpenAmounts();
+}
+
+  if (tab === 'admin') loadAdmin();
+  if (tab === 'team') loadTeam();
+  if (tab === 'closing') loadClosingHistory();
+
+  clearSay();
+}
+
+
+
+
+
+
+async function loadMenu(){const {data,error}=await sb.from('menu_items').select('id,name,category,price,active').eq('active',true).order('category').order('name');if(error)throw error;menu=data||[];renderMenu();}
+
+
+
+
+function renderMenu() {
+  const menuGrid = $('menuGrid');
+  if (!menuGrid) return;
+
+  const kategorien = ['Essen', 'Getränke', 'Dessert'];
+  const kategorienIcons = {
+    'Essen': '🍽️',
+    'Getränke': '🥤',
+    'Dessert': '🍰',
+    'Sonstiges': '📦'
+  };
+
+  function artikelHTML(m) {
+    const q = cart.get(m.id)?.quantity || 0;
+
+    return `
+      <article
+        class="item menu-item-card ${q ? 'selected' : ''}"
+        role="button"
+        tabindex="0"
+        aria-label="${esc(m.name)} hinzufügen, aktueller Warenkorb: ${q} Stück"
+        data-add-item="${esc(String(m.id))}"
+      >
+        <div class="menu-item-content">
+          <h3>${esc(m.name)}</h3>
+          <div class="price">${money(m.price)}</div>
+        </div>
+
+        <div class="tile-bottom">
+          <span class="tile-hint">
+            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
+          </span>
+          <span class="tile-count-wrap">
+            ${q ? `<button type="button" class="tile-minus" data-remove-item="${esc(String(m.id))}" aria-label="${esc(m.name)} entfernen">−</button>` : ''}
+            <span class="cart-count">${q} Stk.</span>
+          </span>
+        </div>
+      </article>
+    `;
+  }
+
+  function kategorieHTML(kategorie, artikel) {
+    if (!artikel.length) return '';
+
+    // Getränke für den Service in kalte und warme Getränke aufteilen.
+    if (kategorie === 'Getränke') {
+      const istWarm = m => /kaffee|kafi|tee|espresso|cappuccino|latte|schoggi|heiss|getränk warm|punsch|zwetschgen luz/i.test(String(m.name || ''));
+      const istGratis = m => Number(m.price) === 0 || /gratis/i.test(String(m.name || ''));
+      const gratisGetraenke = artikel.filter(istGratis);
+      const bezahlteGetraenke = artikel.filter(m => !istGratis(m));
+      const warmeGetraenke = bezahlteGetraenke.filter(istWarm);
+      const kalteGetraenke = bezahlteGetraenke.filter(m => !istWarm(m));
+      const untergruppeHTML = (titel, icon, liste, klasse) => !liste.length ? '' : `
+        <div class="drink-subgroup drink-subgroup-${klasse}">
+          <h3 class="drink-subgroup-title"><span aria-hidden="true">${icon}</span> ${titel}<span class="drink-subgroup-count">${liste.length}</span></h3>
+          <div class="menu-category-grid">${liste.map(artikelHTML).join('')}</div>
+        </div>`;
+
+      return `
+        <section class="menu-category menu-category-getränke">
+          <h2 class="menu-category-title">
+            <span aria-hidden="true">🥤</span>
+            Getränke
+            <span class="menu-category-count">${artikel.length} Artikel</span>
+          </h2>
+          ${untergruppeHTML('Kalte Getränke', '🧊', kalteGetraenke, 'kalt')}
+          ${untergruppeHTML('Warme Getränke', '☕', warmeGetraenke, 'warm')}
+          ${untergruppeHTML('Gratisgetränke', '🎁', gratisGetraenke, 'gratis')}
+        </section>
+      `;
+    }
+
+    return `
+      <section class="menu-category menu-category-${kategorie.toLowerCase()}">
+        <h2 class="menu-category-title">
+          <span aria-hidden="true">${kategorienIcons[kategorie] || '📦'}</span>
+          ${esc(kategorie)}
+          <span class="menu-category-count">${artikel.length} Artikel</span>
+        </h2>
+
+        <div class="menu-category-grid">
+          ${artikel.map(artikelHTML).join('')}
+        </div>
+      </section>
+    `;
+  }
+
+  const kategorienHTML = kategorien.map(kategorie => {
+    const artikel = menu.filter(m =>
+      String(m.category || '').trim().toLowerCase() ===
+      kategorie.toLowerCase()
+    );
+
+    return kategorieHTML(kategorie, artikel);
+  }).join('');
+
+  const sonstige = menu.filter(m =>
+    !kategorien.some(k =>
+      String(m.category || '').trim().toLowerCase() ===
+      k.toLowerCase()
+    )
+  );
+
+  const sonstigeHTML = kategorieHTML('Sonstiges', sonstige);
+
+  menuGrid.innerHTML = menu.length
+    ? kategorienHTML + sonstigeHTML
+    : '<p class="muted">Noch keine aktiven Menüartikel vorhanden. Admin muss zuerst Artikel erfassen.</p>';
+
+  menuGrid.querySelectorAll('[data-remove-item]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      removeFromCart(btn.dataset.removeItem);
+    });
+    btn.addEventListener('keydown', e => e.stopPropagation());
+  });
+
+  menuGrid.querySelectorAll('[data-add-item]').forEach(tile => {
+    const hinzufuegen = () => addToCart(tile.dataset.addItem);
+
+    tile.addEventListener('click', hinzufuegen);
+
+    tile.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        hinzufuegen();
+      }
+    });
+  });
+
+  updateCartTotal();
+}
+
+
+
+
+
+
+
+
+function clearSelection() {
+  cart.clear();
+  renderMenu();
+}
+
+function addToCart(id){
+  const item=menu.find(m=>m.id===id);
+  if(!item)return;
+  const current=cart.get(id)?.quantity||0;
+  if(current>=99){say('Maximal 99 Stück pro Produkt möglich.',true);return;}
+  cart.set(id,{menu_item_id:id,quantity:current+1,name:item.name,price:Number(item.price)});
+  renderMenu();
+}
+function removeFromCart(id){
+  const cur=cart.get(id);
+  if(!cur)return;
+  if(cur.quantity<=1)cart.delete(id);
+  else cart.set(id,{...cur,quantity:cur.quantity-1});
+  renderMenu();
+}
+function updateCartTotal(){let total=0;for(const v of cart.values())total+=v.quantity*v.price;$('cartTotal').textContent=money(total);$('submitOrderBtn').disabled=cart.size===0;}
+
+
+
+
+
+function showSuccessToast(message) {
+  let toast = document.getElementById('successToast');
+
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'successToast';
+    toast.className = 'success-toast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = message;
+  toast.classList.remove('show');
+
+  clearTimeout(toast.hideTimer);
+
+  requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+
+  toast.hideTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
+
+
+
+async function submitOrder() {
+  if (!cart.size) {
+    say('Bitte zuerst Artikel auswählen.', true);
+    return;
+  }
+
+
+
+
+
+const tableEl = $('tableNumber');
+const methodEl = $('paymentMethod');
+const button = $('submitOrderBtn');
+
+if (!tableEl || !button) {
+  console.error('Fehlendes Element:', {
+    tableNumber: !!tableEl,
+    paymentMethod: !!methodEl,
+    submitOrderBtn: !!button
+  });
+
+  say('Bestellung nicht möglich: Tischwahl oder Bestellbutton fehlt.', true);
+  return;
+}
+
+
+
+console.log('Feldprüfung:', {
+  tableNumber: !!tableEl,
+  paymentMethod: !!methodEl,
+  submitOrderBtn: !!button
+});
+
+
+ if (!tableEl || !button) {
+  console.error('Fehlendes Element:', {
+    tableNumber: !!tableEl,
+    submitOrderBtn: !!button
+  });
+
+  say('Bestellung nicht möglich: Tischwahl oder Bestellbutton fehlt.', true);
+  return;
+}
+
+ const table = Number(tableEl.value);
+const method = methodEl ? methodEl.value : 'cash';
+
+  const items = Array.from(cart.values()).map(i => ({
+    menu_item_id: i.menu_item_id,
+    quantity: i.quantity
+  }));
+
+  button.disabled = true;
+
+  try {
+    const { data, error } = await sb.rpc('create_order', {
+      p_table_number: table,
+      p_payment_method: method,
+      p_items: items
+    });
+
+    if (error) throw error;
+
+    cart.clear();
+    renderMenu();
+
+    showSuccessToast(
+      '✓ Bestellung #' + data + ' wurde an die Küche gesendet.'
+    );
+
+    await refreshOrders();
+await loadOpenAmounts();
+
+    // Nach dem Senden direkt zur Getränkeabrechnung scrollen
+    requestAnimationFrame(() => {
+      const ziel = $('drinkPaymentHeading');
+      if (ziel) ziel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  } catch (e) {
+    console.error('submitOrder:', e);
+    say('Bestellung konnte nicht gespeichert werden: ' + e.message, true);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+
+
+ 
+
+async function refreshOrders() {
+  if (!sb || !profile) return;
+
+  try {
+    const { data, error } = await sb
+      .from('orders')
+  
+.select(`
+  id,
+  table_no,
+  table_number,
+  status,
+  kitchen_status,
+  bar_status,
+  runner_status,
+  runner_food_status,
+  runner_drink_status,
+  food_delivered_at,
+  drinks_delivered_at,
+  payment_method,
+  payment_status,
+  total,
+  created_at,
+  delivered_at,
+  order_items(
+    id,
+    name_snapshot,
+    name,
+    category,
+    quantity,
+    unit_price,
+    line_total
+  )
+`)
+
+      .order('created_at', { ascending: false })
+      .limit(150);
+
+    if (error) throw error;
+
+    const geladeneBestellungen = data || [];
+    const orderIds = geladeneBestellungen.map(o => o.id);
+
+    // Bereits verbuchte Teilzahlungen aus Supabase laden
+    let zahlungen = [];
+
+    if (orderIds.length && ['admin', 'service'].includes(profile.role)) {
+      const { data: paymentData, error: paymentError } =
+        await sb.rpc('get_drink_payment_status', {
+          p_order_ids: orderIds
+        });
+
+      if (paymentError) throw paymentError;
+      zahlungen = paymentData || [];
+    }
+
+    const zahlungenNachPosition = new Map(
+      zahlungen.map(p => [
+        String(p.order_item_id),
+        {
+          paid_quantity: Number(p.paid_quantity || 0),
+          paid_amount: Number(p.paid_amount || 0)
+        }
+      ])
+    );
+
+    const normalisiereStatus = status => ({
+      'Neu': 'new',
+      'In Arbeit': 'in_progress',
+      'Erledigt': 'done',
+      'new': 'new',
+      'in_progress': 'in_progress',
+      'done': 'done'
+    })[status] || 'new';
+
+    orders = geladeneBestellungen.map(o => ({
+      ...o,
+
+      order_no: o.order_no ?? o.id,
+      table_number: o.table_number ?? o.table_no,
+
+      status: normalisiereStatus(o.status),
+      kitchen_status: normalisiereStatus(o.kitchen_status),
+      bar_status: normalisiereStatus(o.bar_status),
+
+      runner_status: o.runner_status || 'ready',
+      runner_food_status: o.runner_food_status || 'pending',
+      runner_drink_status: o.runner_drink_status || 'pending',
+
+      payment_method:
+        String(o.payment_method || '').toLowerCase() === 'twint'
+          ? 'twint'
+          : 'cash',
+
+      order_items: (o.order_items || []).map(i => {
+        const bezahlt =
+          zahlungenNachPosition.get(String(i.id)) || {
+            paid_quantity: 0,
+            paid_amount: 0
+          };
+
+        const menge = Number(i.quantity || 0);
+        const einzelpreis = Number(i.unit_price || 0);
+        const bezahlteMenge = Number(bezahlt.paid_quantity || 0);
+        const bezahlterBetrag = Number(bezahlt.paid_amount || 0);
+
+        const offeneMenge = Math.max(
+          0,
+          menge - bezahlteMenge
+        );
+
+        const offenerBetrag = Math.max(
+          0,
+          Math.round(offeneMenge * einzelpreis * 100) / 100
+        );
+
+        return {
+          ...i,
+
+          name_snapshot: i.name_snapshot || i.name || 'Artikel',
+
+          line_total: i.line_total == null
+            ? menge * einzelpreis
+            : Number(i.line_total),
+
+          paid_quantity: bezahlteMenge,
+          paid_amount: bezahlterBetrag,
+
+          // Nur Artikel mit positivem Preis sind verrechenbar
+          open_quantity: einzelpreis > 0 ? offeneMenge : 0,
+          open_amount: einzelpreis > 0 ? offenerBetrag : 0
+        };
+      })
+    }));
+
+    renderOrders();
+    renderDrinkPayments();
+
+  } catch (e) {
+    console.error('refreshOrders:', e);
+
+    say(
+      'Bestellungen konnten nicht geladen werden: ' + e.message,
+      true
+    );
+  }
+}
+
+
+
+
+
+
+function orderHTML(o) {
+  const status =
+    o.status === 'new' ? 'Neu' :
+    o.status === 'in_progress' ? 'In Arbeit' :
+    'Erledigt';
+
+  const next = o.status === 'new' ? 'in_progress' : 'done';
+  const paymentLabel = o.payment_method === 'twint' ? 'TWINT' : 'Bar';
+
+  // Artikel anhand ihrer Kategorie einfärben
+  function artikelKlasse(i) {
+    const kategorie = String(i.category || i.category_snapshot || '')
+      .trim()
+      .toLowerCase();
+
+    if (kategorie === 'essen' || kategorie.includes('food')) {
+      return 'kitchen-item-essen';
+    }
+
+    if (
+      kategorie === 'getränke' ||
+      kategorie === 'getraenke' ||
+      kategorie.includes('drink')
+    ) {
+      return 'kitchen-item-getraenke';
+    }
+
+    if (kategorie === 'dessert') {
+      return 'kitchen-item-dessert';
+    }
+
+    return 'kitchen-item-sonstiges';
+  }
+
+  return `
+    <article
+      class="order ${o.status === 'in_progress' ? 'progress' : ''} ${o.status === 'done' ? 'done' : ''}"
+      data-order="${esc(String(o.id))}"
+    >
+      <div class="order-top">
+        <div>
+          <strong>Bestellung #${esc(String(o.order_no ?? o.id))}</strong>
+          · Tisch ${esc(String(o.table_number ?? '?'))}
+          <div class="muted">
+            ${new Date(o.created_at).toLocaleString('de-CH', {
+              dateStyle: 'short',
+              timeStyle: 'short'
+            })}
+          </div>
+        </div>
+
+        <div class="actions">
+          <span class="pill ${o.status === 'in_progress' ? 'orange' : o.status === 'done' ? 'green' : ''}">
+            ${status}
+          </span>
+          <span class="pill">Zahlungsart: ${paymentLabel}</span>
+          <strong>${money(o.total)}</strong>
+        </div>
+      </div>
+
+      <ul>
+        ${(o.order_items || []).map(i => `
+          <li class="${artikelKlasse(i)}">
+            <strong>${esc(String(i.quantity))} × ${esc(String(i.name_snapshot || i.name || 'Artikel'))}</strong>
+            <span class="muted">(${money(i.line_total)})</span>
+          </li>
+        `).join('')}
+      </ul>
+
+      <div class="actions">
+        ${o.status !== 'done'
+          ? `<button
+                type="button"
+                data-status="${esc(String(o.id))}"
+                data-next="${next}"
+                class="${next === 'done' ? 'warn' : ''}"
+              >${o.status === 'new' ? '1. Klick – In Arbeit' : '2. Klick – Erledigt'}</button>`
+          : '<span class="muted">Abgeschlossen</span>'
+        }
+      </div>
+    </article>
+  `;
+}
+
+
+
+
+
+
+
+let drinkPaymentSelection = new Map();
+
+
+function renderDrinkPayments() {
+  const container = $('drinkPaymentList');
+  const tableSelect = $('tableNumber');
+
+  if (!container || !tableSelect) return;
+
+  const table = String(tableSelect.value || '');
+
+  if (!table) {
+    container.innerHTML =
+      '<p class="muted">Bitte zuerst einen Tisch auswählen.</p>';
+    return;
+  }
+
+
+const tableOrders = orders.filter(o =>
+  String(o.table_number ?? o.table_no ?? '') === table
+);
+
+
+
+  const lines = [];
+
+  tableOrders.forEach(order => {
+    (order.order_items || []).forEach(item => {
+      const unitPrice = Number(item.unit_price || 0);
+
+      // Nur kostenpflichtige Artikel abrechnen
+      if (unitPrice <= 0) return;
+
+      const quantity = Number(item.quantity || 0);
+      const paidQuantity = Number(item.paid_quantity || 0);
+
+      const openQuantity = Math.max(
+        0,
+        Number(
+          item.open_quantity ?? (quantity - paidQuantity)
+        )
+      );
+
+      if (openQuantity <= 0) return;
+
+      const id = String(item.id);
+
+      const selected = Math.min(
+        openQuantity,
+        Number(drinkPaymentSelection.get(id) || 0)
+      );
+
+      lines.push({
+        id,
+        orderId: order.id,
+        orderNo: order.order_no ?? order.id,
+        name: item.name_snapshot || item.name || 'Artikel',
+        quantity: openQuantity,
+        unitPrice,
+        selected
+      });
+    });
+  });
+
+  const money = amount =>
+    new Intl.NumberFormat('de-CH', {
+      style: 'currency',
+      currency: 'CHF'
+    }).format(amount);
+
+  const openTotal = lines.reduce(
+    (sum, item) => sum + item.quantity * item.unitPrice,
+    0
+  );
+
+  const selectedTotal = lines.reduce(
+    (sum, item) => sum + item.selected * item.unitPrice,
+    0
+  );
+
+  if (!lines.length) {
+    container.innerHTML = `
+      <article class="order">
+        <h3>Tisch ${esc(table)}</h3>
+        <p>Offener Betrag:
+          <strong>${money(0)}</strong>
+        </p>
+        <p class="muted">
+          Keine offenen kostenpflichtigen Artikel von heute.
+        </p>
+      </article>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <article class="order">
+      <h3>Tisch ${esc(table)} – Artikel abrechnen</h3>
+
+      <div class="grid">
+        <div>
+          <span class="muted">Noch offen am Tisch</span>
+          <div class="big">${money(openTotal)}</div>
+        </div>
+        <div>
+          <span class="muted">Diese Person bezahlt</span>
+          <div class="big">${money(selectedTotal)}</div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px">
+        ${lines.map(item => `
+          <div class="drink-payment-row"
+               style="display:flex;align-items:center;gap:8px;
+                      justify-content:space-between;padding:10px 0;
+                      border-bottom:1px solid #ddd">
+
+            <div style="flex:1;min-width:0">
+              <strong>${esc(String(item.name))}</strong>
+              <div class="muted">
+                ${money(item.unitPrice)} pro Stück ·
+                ${item.quantity} offen
+              </div>
+              <div>
+                ${money(item.selected * item.unitPrice)}
+              </div>
+            </div>
+
+            <button type="button"
+              data-drink-step="-1"
+              data-drink-item="${esc(item.id)}"
+              ${item.selected <= 0 ? 'disabled' : ''}>−</button>
+
+            <strong style="min-width:24px;text-align:center">
+              ${item.selected}
+            </strong>
+
+            <button type="button"
+              data-drink-step="1"
+              data-drink-item="${esc(item.id)}"
+              ${item.selected >= item.quantity ? 'disabled' : ''}>+</button>
+          </div>
+        `).join('')}
+      </div>
+
+      <div style="margin-top:16px">
+        <label for="drinkPaymentMethod">
+          Zahlungsart dieser Person
+        </label>
+        <select id="drinkPaymentMethod">
+          <option value="Bar">Bar</option>
+          <option value="TWINT">TWINT</option>
+        </select>
+      </div>
+
+      <div class="actions" style="margin-top:14px">
+        <button type="button"
+          data-drink-pay="true"
+          ${selectedTotal <= 0 ? 'disabled' : ''}>
+          Zahlung bestätigen · ${money(selectedTotal)}
+        </button>
+      </div>
+
+      <p class="foot">
+        Erst nach tatsächlichem Zahlungseingang bestätigen.
+        Der offene Betrag wird danach neu geladen.
+      </p>
+    </article>
+  `;
+
+  container.onclick = async event => {
+    const stepButton = event.target.closest('[data-drink-step]');
+
+    if (stepButton) {
+      const id = String(stepButton.dataset.drinkItem);
+      const line = lines.find(item => item.id === id);
+
+      if (!line) return;
+
+      const step = Number(stepButton.dataset.drinkStep);
+
+      const next = Math.max(
+        0,
+        Math.min(line.quantity, line.selected + step)
+      );
+
+      if (next === 0) {
+        drinkPaymentSelection.delete(id);
+      } else {
+        drinkPaymentSelection.set(id, next);
+      }
+
+      renderDrinkPayments();
+      return;
+    }
+
+    const payButton = event.target.closest('[data-drink-pay]');
+
+    if (!payButton || payButton.disabled) return;
+
+    const selectedItems = lines
+      .filter(item => item.selected > 0)
+      .map(item => ({
+        order_item_id: Number(item.id),
+        quantity: item.selected
+      }));
+
+    if (!selectedItems.length) {
+      say('Bitte zuerst Artikel auswählen.', true);
+      return;
+    }
+
+    const paymentMethod = $('drinkPaymentMethod')?.value;
+
+    const amount = selectedItems.reduce((sum, item) => {
+      const line = lines.find(
+        x => x.id === String(item.order_item_id)
+      );
+
+      return sum + item.quantity * (line?.unitPrice || 0);
+    }, 0);
+
+
+    const originalText = payButton.textContent;
+    payButton.disabled = true;
+    payButton.textContent = 'Zahlung wird gespeichert …';
+
+    try {
+      const { data, error } = await sb.rpc(
+        'register_drink_payment_batch',
+        {
+          p_items: selectedItems,
+          p_payment_method: paymentMethod
+        }
+      );
+
+
+      if (error) throw error;
+
+      const result = Array.isArray(data) ? data[0] : data;
+
+      drinkPaymentSelection.clear();
+
+      await refreshOrders();
+
+
+      // Erfolgsmeldung anzeigen
+      showPaymentToast(
+        `✓ ${paymentMethod}-Zahlung von ${money(
+          Number(result?.paid_amount ?? amount)
+        )} erfolgreich gespeichert`
+      );
+
+      // Auswahl zurücksetzen
+      drinkPaymentSelection.clear();
+
+      // Daten aktualisieren
+      await refreshOrders();
+      await loadOpenAmounts();
+      renderDrinkPayments();
+
+      // Nur nach oben scrollen, wenn an DIESEM Tisch nichts mehr offen ist
+      // (andere Tische / andere Nutzer spielen dafür keine Rolle)
+      if (!container.querySelector('[data-drink-pay]')) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+    } catch (e) {
+      console.error('Artikelzahlung fehlgeschlagen:', {
+        message: e?.message,
+        details: e?.details,
+        hint: e?.hint,
+        code: e?.code,
+        error: e
+      });
+
+      say(
+        'Zahlung konnte nicht gespeichert werden: ' +
+        (e?.message || 'Unbekannter Fehler'),
+        true
+      );
+
+      payButton.disabled = false;
+      payButton.textContent = originalText;
+    }
+  };
+}
+
+// Beim Tischwechsel Auswahl der vorherigen Person zurücksetzen
+$('tableNumber')?.addEventListener('change', () => {
+  drinkPaymentSelection.clear();
+  renderDrinkPayments();
+  loadOpenAmounts();
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function showPaymentToast(message) {
+  let toast = document.getElementById('paymentToast');
+
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'paymentToast';
+    toast.className = 'payment-toast';
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = message;
+  toast.classList.add('show');
+
+  clearTimeout(toast.hideTimer);
+
+  toast.hideTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2000);
+}
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function stationOrderHTML(order, station) {
+  const isDrink = item =>
+    String(item.category || '').trim().toLowerCase()
+      === 'getränke';
+
+  const items = (order.order_items || []).filter(item =>
+    station === 'bar' ? isDrink(item) : !isDrink(item)
+  );
+
+  if (!items.length) return '';
+
+  const status = station === 'bar'
+    ? order.bar_status
+    : order.kitchen_status;
+
+  const normalizedStatus = String(status || '')
+    .trim()
+    .toLowerCase();
+
+  const done = [
+    'done', 'erledigt', 'fertig', 'abgeschlossen'
+  ].includes(normalizedStatus);
+
+  const inProgress = [
+    'in_progress', 'in arbeit'
+  ].includes(normalizedStatus);
+
+  const next = inProgress ? 'done' : 'in_progress';
+
+  const stationName = station === 'bar'
+    ? 'Theke / Getränke'
+    : 'Küche / Essen';
+
+  return `
+    <article class="order ${
+      done ? 'done' : inProgress ? 'in-progress' : ''
+    }">
+      <h3>Bestellung #${esc(String(
+        order.order_no ?? order.id
+      ))}</h3>
+
+      <p><strong>Tisch ${esc(String(
+        order.table_number ?? order.table_no ?? '?'
+      ))}</strong></p>
+
+      <p class="muted">${stationName}</p>
+
+      <ul>
+        ${items.map(item => `
+          <li>
+            ${esc(String(item.quantity))} ×
+            ${esc(String(
+              item.name_snapshot || item.name || 'Artikel'
+            ))}
+          </li>
+        `).join('')}
+      </ul>
+
+      <button type="button"
+        data-station="${station}"
+        data-station-order="${esc(String(order.id))}"
+        data-next="${next}"
+        ${done ? 'disabled' : ''}>
+        ${done ? 'Erledigt'
+          : inProgress ? 'Fertig melden' : 'In Arbeit'}
+      </button>
+    </article>
+  `;
+}
+
+
+
+
+
+
+
+
+
+
+
+function bindStationButtons(container) {
+  container.querySelectorAll('[data-station-order]').forEach(button => {
+    button.addEventListener('click', async () => {
+      if (button.disabled) return;
+
+      const orderId = button.dataset.stationOrder;
+      const station = button.dataset.station;
+      const nextStatus = button.dataset.next;
+
+      button.disabled = true;
+
+      try {
+        await setStationStatus(
+          orderId,
+          station,
+          nextStatus
+        );
+
+        // Status und Stationslisten nach dem Speichern aktualisieren
+        await refreshOrders();
+await loadOpenAmounts();
+
+      } catch (e) {
+        button.disabled = false;
+
+        say(
+          'Status konnte nicht geändert werden: ' +
+          (e?.message || String(e)),
+          true
+        );
+      }
+    });
+  });
+}
+
+
+
+
+
+function renderOrders() {
+  const isDone = status =>
+    ['done', 'erledigt', 'fertig', 'abgeschlossen'].includes(
+      String(status || '').trim().toLowerCase()
+    );
+
+  const isDrink = item =>
+    String(item.category || '').trim().toLowerCase() === 'getränke';
+
+  // KÜCHE
+  const ordersList = $('ordersList');
+
+  if (ordersList) {
+    const kitchenOrders = orders.filter(o => {
+      const items = (o.order_items || []).filter(i => !isDrink(i));
+
+      return items.length > 0 &&
+        (!isDone(o.kitchen_status) ||
+          recentlyDone.has('kitchen-' + String(o.id)));
+    });
+
+    updatePendingCounter('kitchenPendingCount', kitchenOrders.length);
+
+    ordersList.innerHTML = kitchenOrders.length
+      ? kitchenOrders.map(o => stationOrderHTML(o, 'kitchen')).join('')
+      : '<p class="muted">Keine offenen Küchenbestellungen.</p>';
+
+    bindStationButtons(ordersList);
+  }
+
+  // THEKE
+  const barList = $('barList');
+
+  if (barList) {
+    const barOrders = orders.filter(o => {
+      const items = (o.order_items || []).filter(isDrink);
+
+      return items.length > 0 &&
+        (!isDone(o.bar_status) ||
+          recentlyDone.has('bar-' + String(o.id)));
+    });
+
+    updatePendingCounter('barPendingCount', barOrders.length);
+
+    barList.innerHTML = barOrders.length
+      ? barOrders.map(o => stationOrderHTML(o, 'bar')).join('')
+      : '<p class="muted">Keine offenen Getränkebestellungen.</p>';
+
+    bindStationButtons(barList);
+  }
+
+  // LÄUFER
+  const runnerList = $('runnerList');
+
+  if (!runnerList) {
+    console.error('HTML-Element runnerList wurde nicht gefunden.');
+    return;
+  }
+
+  const foodJobs = [];
+  const drinkJobs = [];
+
+  orders.forEach(o => {
+    const items = o.order_items || [];
+    const foodItems = items.filter(i => !isDrink(i));
+    const drinkItems = items.filter(isDrink);
+
+    if (
+      foodItems.length &&
+      isDone(o.kitchen_status) &&
+      o.runner_food_status !== 'delivered'
+    ) {
+      foodJobs.push({ order: o, items: foodItems });
+    }
+
+    if (
+      drinkItems.length &&
+      isDone(o.bar_status) &&
+      o.runner_drink_status !== 'delivered'
+    ) {
+      drinkJobs.push({ order: o, items: drinkItems });
+    }
+  });
+
+  updatePendingCounter(
+    'runnerPendingCount',
+    foodJobs.length + drinkJobs.length
+  );
+
+  const renderJob = (job, station) => {
+    const o = job.order;
+    const status = station === 'food'
+      ? o.runner_food_status
+      : o.runner_drink_status;
+
+    const inDelivery = status === 'in_delivery';
+    const title = station === 'food' ? 'ESSEN' : 'GETRÄNKE';
+
+    return `
+      <article class="order ${inDelivery ? 'in-delivery' : ''}">
+        <h3>${title} – Bestellung #${esc(String(o.order_no ?? o.id))}</h3>
+        <p><strong>Tisch ${esc(String(
+          o.table_number ?? o.table_no ?? '?'
+        ))}</strong></p>
+        <ul>
+          ${job.items.map(i => `
+            <li>${esc(String(i.quantity))} ×
+              ${esc(String(i.name_snapshot || i.name || 'Artikel'))}
+            </li>
+          `).join('')}
+        </ul>
+        <div class="actions">
+          <button type="button"
+            data-runner-start="${esc(String(o.id))}"
+            data-runner-station="${station}"
+            ${inDelivery ? 'disabled' : ''}>
+            ${inDelivery ? 'In Auslieferung' : 'In Auslieferung übernehmen'}
+          </button>
+
+ 
+<button type="button" class="warn"
+  data-runner-deliver="${esc(String(o.id))}"
+  data-runner-station="${station}">
+  Ausgeliefert
+</button>
+
+        </div>
+      </article>
+    `;
+  };
+
+  runnerList.innerHTML = `
+    <div class="runner-stations">
+      <section class="runner-section runner-food">
+        <h2>🍽️ ESSEN (${foodJobs.length})</h2>
+        <div class="runner-orders">
+          ${foodJobs.length
+            ? foodJobs.map(job => renderJob(job, 'food')).join('')
+            : '<p class="muted runner-empty">Kein fertiges Essen zum Ausliefern.</p>'}
+        </div>
+      </section>
+
+      <section class="runner-section runner-drinks">
+        <h2>🥤 GETRÄNKE (${drinkJobs.length})</h2>
+        <div class="runner-orders">
+          ${drinkJobs.length
+            ? drinkJobs.map(job => renderJob(job, 'drinks')).join('')
+            : '<p class="muted runner-empty">Keine fertigen Getränke zum Ausliefern.</p>'}
+        </div>
+      </section>
+    </div>
+  `;
+
+  runnerList.querySelectorAll(
+    '[data-runner-start], [data-runner-deliver]'
+  ).forEach(button => {
+    button.addEventListener('click', async () => {
+      if (button.disabled) return;
+
+      const orderId =
+        button.dataset.runnerStart ||
+        button.dataset.runnerDeliver;
+
+      const station = button.dataset.runnerStation;
+      const nextStatus = button.hasAttribute('data-runner-start')
+        ? 'in_delivery'
+        : 'delivered';
+
+      button.disabled = true;
+
+      try {
+        const { error } = await sb.rpc('set_runner_station_status', {
+          p_order_id: Number(orderId),
+          p_station: station,
+          p_status: nextStatus
+        });
+
+        if (error) {
+          console.error('Läuferstatus konnte nicht geändert werden:', {
+            orderId,
+            station,
+            nextStatus,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
+
+          throw error;
+        }
+
+        await refreshOrders();
+        await loadOpenAmounts();
+
+        say(nextStatus === 'delivered'
+          ? (station === 'food'
+              ? 'Essen wurde als geliefert gespeichert.'
+              : 'Getränke wurden als geliefert gespeichert.')
+          : (station === 'food'
+              ? 'Essen wird ausgeliefert.'
+              : 'Getränke werden ausgeliefert.')
+        );
+      } catch (e) {
+        console.error('Lieferstatus konnte nicht gespeichert werden:', e);
+        button.disabled = false;
+
+        say(
+          'Lieferstatus konnte nicht gespeichert werden: ' +
+          (e?.message || String(e)),
+          true
+        );
+      }
+    });
+  });
+}
+
+
+
+
+
+async function setStationStatus(orderId, station, nextStatus) {
+  if (!sb || !profile) {
+    throw new Error('Bitte zuerst anmelden.');
+  }
+
+  if (!['kitchen', 'bar'].includes(station)) {
+    throw new Error('Ungültige Station.');
+  }
+
+  if (!['in_progress', 'done'].includes(nextStatus)) {
+    throw new Error('Ungültiger Status.');
+  }
+
+  const id = String(orderId);
+
+  const { error } = await sb.rpc('set_station_status', {
+    p_order_id: Number(id),
+    p_station: station,
+    p_status: nextStatus
+  });
+
+  if (error) throw error;
+
+  if (nextStatus === 'done') {
+    const key = station + '-' + id;
+
+    // Bestellung noch kurz grün anzeigen
+    recentlyDone.add(key);
+    renderOrders();
+
+    setTimeout(() => {
+      recentlyDone.delete(key);
+      renderOrders();
+    }, 2000);
+  }
+
+  // Daten nach der Statusänderung erneut vom Server laden
+  await refreshOrders();
+}
+
+
+
+
+
+
+
+  
+async function markOrderDelivered(id) {
+  try {
+    const { error } = await sb.rpc('mark_order_delivered', {
+      p_order_id: Number(id)
+    });
+
+    if (error) throw error;
+
+    await refreshOrders();
+    say('Bestellung wurde als ausgeliefert markiert.');
+  } catch (e) {
+    say('Auslieferung fehlgeschlagen: ' + e.message, true);
+  }
+}
+
+
+  
+
+async function setStatus(id, status) {
+  try {
+    const { error } = await sb.rpc('set_order_status', {
+      p_order_id: Number(id),
+      p_status: status
+    });
+
+    if (error) throw error;
+
+    console.log('Küchenstatus geändert:', {
+      id: id,
+      neuerStatus: status
+    });
+
+    if (status === 'done') {
+      recentlyDone.add(String(id));
+    }
+
+    // Küche und Läufer mit den aktuellen Daten aktualisieren
+    await refreshOrders();
+
+    if (status === 'done') {
+      setTimeout(() => {
+        recentlyDone.delete(String(id));
+        renderOrders();
+      }, 2000);
+    }
+
+  } catch (e) {
+    say('Küchenstatus konnte nicht geändert werden: ' + e.message, true);
+    console.error('Fehler beim Ändern des Küchenstatus:', e);
+  }
+}
+
+
+
+
+
+  
+
+  async function addMenuItem(){const name=$('menuName').value.trim(),category=$('menuCategory').value,price=Number($('menuPrice').value);if(!name||!Number.isFinite(price)||price<0){say('Bitte Name und gültigen Preis erfassen.',true);return;}try{const {error}=await sb.from('menu_items').insert({name,category,price,active:true});if(error)throw error;$('menuName').value='';$('menuPrice').value='';await loadMenu();await loadAdmin();say('Artikel hinzugefügt.');}catch(e){say('Artikel konnte nicht gespeichert werden: '+e.message,true);}}
+
+
+
+async function loadAdmin() {
+  try {
+    const { data, error } = await sb
+      .from('menu_items')
+      .select('id,name,category,price,active')
+      .order('category')
+      .order('name');
+
+    if (error) throw error;
+
+    const adminMenuList = $('adminMenuList');
+    if (!adminMenuList) {
+      console.error('HTML-Element #adminMenuList fehlt.');
+      return;
+    }
+
+    adminMenuList.innerHTML = `
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Artikel</th>
+            <th>Kategorie</th>
+            <th>Preis</th>
+            <th>Aktiv</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${(data || []).map(m => `
+            <tr>
+              <td>${esc(m.name)}</td>
+              <td>${esc(m.category)}</td>
+              <td>${money(m.price)}</td>
+              <td>${m.active ? 'Ja' : 'Nein'}</td>
+              <td>
+                <button
+                  type="button"
+                  class="secondary"
+                  data-edit-menu="${esc(String(m.id))}">
+                  Bearbeiten
+                </button>
+
+                <button
+                  type="button"
+                  class="secondary"
+                  data-toggle-menu="${esc(String(m.id))}"
+                  data-active="${m.active}">
+                  ${m.active ? 'Deaktivieren' : 'Aktivieren'}
+                </button>
+
+                <button
+                  type="button"
+                  class="danger"
+                  data-delete-menu="${esc(String(m.id))}">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+
+    // Menüartikel bearbeiten
+    adminMenuList
+      .querySelectorAll('[data-edit-menu]')
+      .forEach(button => {
+        button.addEventListener('click', async () => {
+          button.disabled = true;
+
+          try {
+            await editMenuItem(button.dataset.editMenu);
+          } finally {
+            button.disabled = false;
+          }
+        });
+      });
+
+    // Aktivieren und Deaktivieren
+    adminMenuList
+      .querySelectorAll('[data-toggle-menu]')
+      .forEach(button => {
+        button.addEventListener('click', async () => {
+          button.disabled = true;
+
+          try {
+            await toggleMenu(
+              button.dataset.toggleMenu,
+              button.dataset.active === 'true'
+            );
+          } finally {
+            button.disabled = false;
+          }
+        });
+      });
+
+    // Menüartikel löschen
+    adminMenuList
+      .querySelectorAll('[data-delete-menu]')
+      .forEach(button => {
+        button.addEventListener('click', async () => {
+          button.disabled = true;
+
+          try {
+            await deleteMenuItem(button.dataset.deleteMenu);
+          } finally {
+            button.disabled = false;
+          }
+        });
+      });
+
+  } catch (e) {
+    console.error('loadAdmin:', e);
+    say(
+      'Administration konnte nicht geladen werden: ' + e.message,
+      true
+    );
+  }
+}
+
+
+
+
+async function deleteMenuItem(id) {
+  // Nur Admins dürfen Menüartikel löschen
+  if (!profile || profile.role !== 'admin') {
+    say('Keine Berechtigung: Nur Admins dürfen Menüartikel löschen.', true);
+    return;
+  }
+
+  if (!confirm('Diesen Menüartikel endgültig löschen?')) return;
+
+  try {
+    const { error } = await sb
+      .from('menu_items')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await loadMenu();
+    await loadAdmin();
+
+    say('Menüartikel wurde gelöscht.');
+  } catch (e) {
+    console.error('deleteMenuItem:', e);
+    say('Menüartikel konnte nicht gelöscht werden: ' + e.message, true);
+  }
+}
+
+
+
+
+
+
+
+
+async function editMenuItem(id) {
+  if (!profile || profile.role !== 'admin') {
+    say('Keine Berechtigung: Nur Admins dürfen Menüartikel bearbeiten.', true);
+    return;
+  }
+
+  try {
+    const { data: item, error } = await sb
+      .from('menu_items')
+      .select('id,name,category,price')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+
+    $('editMenuId').value = item.id;
+    $('editMenuName').value = item.name || '';
+    $('editMenuCategory').value = item.category || 'Essen';
+    $('editMenuPrice').value = item.price ?? 0;
+
+    $('editMenuForm').classList.remove('hidden');
+    $('editMenuName').focus();
+  } catch (e) {
+    console.error('editMenuItem:', e);
+    say('Menüartikel konnte nicht geladen werden: ' + e.message, true);
+  }
+}
+
+async function saveMenuEdit() {
+  if (!profile || profile.role !== 'admin') {
+    say('Keine Berechtigung: Nur Admins dürfen Menüartikel bearbeiten.', true);
+    return;
+  }
+
+  const id = $('editMenuId').value;
+  const name = $('editMenuName').value.trim();
+  const category = $('editMenuCategory').value;
+  const priceText = $('editMenuPrice').value.trim();
+  const price = Number(priceText);
+
+  if (!id || !name || priceText === '' ||
+      !Number.isFinite(price) || price < 0) {
+    say('Bitte Artikelname und einen gültigen Preis eingeben.', true);
+    return;
+  }
+
+  if (!['Essen', 'Getränke', 'Dessert', 'Sonstiges'].includes(category)) {
+    say('Ungültige Kategorie.', true);
+    return;
+  }
+
+  const saveButton = $('saveMenuEdit');
+  saveButton.disabled = true;
+
+  try {
+    const { error } = await sb
+      .from('menu_items')
+      .update({
+        name,
+        category,
+        price
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    $('editMenuForm').classList.add('hidden');
+
+    await loadMenu();
+    await loadAdmin();
+
+    say('Menüartikel wurde aktualisiert.');
+  } catch (e) {
+    console.error('saveMenuEdit:', e);
+    say('Änderungen konnten nicht gespeichert werden: ' + e.message, true);
+  } finally {
+    saveButton.disabled = false;
+  }
+}
+
+function cancelMenuEdit() {
+  $('editMenuForm').classList.add('hidden');
+}
+
+$('saveMenuEdit').addEventListener('click', saveMenuEdit);
+$('cancelMenuEdit').addEventListener('click', cancelMenuEdit);
+
+
+
+
+
+
+
+
+async function toggleMenu(id, active) {
+  try {
+    const { error } = await sb
+      .from('menu_items')
+      .update({ active: !active })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await loadMenu();
+    await loadAdmin();
+  } catch (e) {
+    say('Menüartikel konnte nicht geändert werden: ' + e.message, true);
+  }
+}
+
+
+
+
+
+
+
+
+async function calculateClosing(){const date=$('closingDate').value;if(!date){say('Bitte ein Datum auswählen.',true);return null;}try{const {data,error}=await sb.rpc('get_day_summary',{p_business_date:date});if(error)throw error;const d=Array.isArray(data)?data[0]:data;if(!d)throw new Error('Keine Abrechnung erhalten.');$('closingSummary').innerHTML=`<div class="totals"><div class="totalbox">Umsatz Bestellungen<strong>${money(d.total_sales)}</strong></div><div class="totalbox">Bar bezahlt<strong>${money(d.cash_total)}</strong></div><div class="totalbox">TWINT bezahlt<strong>${money(d.twint_total)}</strong></div><div class="totalbox">Noch offen<strong>${money(d.open_amount)}</strong></div><div class="totalbox">Anzahl Bestellungen<strong>${Number(d.order_count||0)}</strong></div></div>`;return d;}catch(e){say('Abrechnung konnte nicht berechnet werden: '+e.message,true);return null;}}
+
+
+
+async function saveClosing() {
+  const summary = await calculateClosing();
+  if (!summary) return;
+
+  const closingDate = $('closingDate').value;
+
+  if (!closingDate) {
+    say('Bitte ein Abschlussdatum auswählen.', true);
+    return;
+  }
+
+  if (
+    Number(summary.open_amount) > 0 &&
+    !confirm(
+      'Es sind noch offene Zahlungen vorhanden. ' +
+      'Tagesabschluss trotzdem speichern?'
+    )
+  ) {
+    return;
+  }
+
+  if (
+    !confirm(
+      'Tagesabschluss für ' + closingDate +
+      ' endgültig speichern?'
+    )
+  ) {
+    return;
+  }
+
+  try {
+    const { error } = await sb.rpc('close_business_day', {
+      p_business_date: closingDate,
+      p_notes: $('closingNotes').value.trim()
+    });
+
+    if (error) throw error;
+
+    say('Tagesabschluss gespeichert.');
+
+    await loadClosingHistory();
+
+    // Noch KEIN automatisches Löschen:
+    // reset_today_orders() löscht alle heutigen Bestellungen,
+    // unabhängig vom ausgewählten Abschlussdatum.
+  } catch (e) {
+    say(
+      'Tagesabschluss konnte nicht gespeichert werden: ' + e.message,
+      true
+    );
+  }
+}
+
+
+
+
+async function loadClosingHistory(){try{const {data,error}=await sb.from('day_closings').select('business_date,closed_at,closed_by,total_sales,cash_total,twint_total,open_amount,order_count,notes').order('business_date',{ascending:false}).limit(30);if(error)throw error;$('closingHistory').innerHTML='<h3>Letzte Tagesabschlüsse</h3>'+(data?.length?`<table class="table"><thead><tr><th>Datum</th><th>Umsatz</th><th>Bar</th><th>TWINT</th><th>Offen</th><th>Gespeichert</th></tr></thead><tbody>${data.map(d=>`<tr><td>${esc(d.business_date)}</td><td>${money(d.total_sales)}</td><td>${money(d.cash_total)}</td><td>${money(d.twint_total)}</td><td>${money(d.open_amount)}</td><td>${new Date(d.closed_at).toLocaleString('de-CH')}</td></tr>`).join('')}</tbody></table>`:'<p class="muted">Noch keine Tagesabschlüsse.</p>');}catch(e){say('Tagesabschluss-Historie konnte nicht geladen werden: '+e.message,true);}}
+
+
+
+
+async function logout() {
+  if (sb) await sb.auth.signOut();
+
+  currentUser = null;
+  profile = null;
+  orders = [];
+
+  $('appPanel')?.classList.add('hidden');
+  $('logoutBtn')?.classList.add('hidden');
+  if ($('userLabel')) $('userLabel').textContent = '';
+
+  $('loginPanel')?.classList.remove('hidden');
+  $('orgPanel')?.classList.add('hidden');
+  if ($('orgLabel')) $('orgLabel').textContent = '';
+  setAuthMode('login');
+
+  say('Du wurdest abgemeldet.');
+}
+
+
+
+
+function normRolle(r) {
+  const x = String(r || '').trim().toLowerCase();
+  if (['admin', 'administrator', 'administratorin'].includes(x)) return 'admin';
+  if (['service', 'servicemitarbeiter', 'servicemitarbeiterin'].includes(x)) return 'service';
+  if (['kitchen', 'küche', 'kuche', 'kueche', 'koch', 'köche'].includes(x)) return 'kitchen';
+  if (['closing', 'tagesabschluss', 'abrechnung'].includes(x)) return 'closing';
+  return x;
+}
+
+async function loadProfile() {
+  const { data, error } = await sb
+    .from('profiles')
+    .select('id, email, display_name, role, organization_id')
+    .eq('id', currentUser.id)
+    .single();
+
+  if (error) {
+    throw new Error('Benutzerprofil konnte nicht geladen werden: ' + error.message);
+  }
+
+  if (!data) {
+    throw new Error('Kein Benutzerprofil gefunden.');
+  }
+
+  profile = {
+    id: data.id,
+    email: data.email || currentUser.email || '',
+    display_name:
+      data.display_name ||
+      data.email ||
+      currentUser.email ||
+      'Angemeldeter Benutzer',
+    role: normRolle(data.role),
+    organization_id: data.organization_id || null
+  };
+}
+
+
+
+
+
+
+
+// Ereignisse sicher verbinden
+function onClickIfExists(id, handler) {
+  const element = $(id);
+
+  if (element) {
+    element.addEventListener('click', handler);
+  } else {
+    console.warn('HTML-Element fehlt:', id);
+  }
+}
+
+onClickIfExists('saveConfigBtn', async () => {
+  if (await initConnection()) {
+    say('Verbindung gespeichert. Du kannst dich jetzt anmelden.');
+  }
+});
+
+onClickIfExists('testConfigBtn', connectTest);
+
+onClickIfExists('loginBtn', async () => {
+  if (!sb && !(await initConnection())) return;
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({
+      email: $('email').value.trim(),
+      password: $('password').value
+    });
+
+    if (error) throw error;
+
+    await onSignedIn(data.user);
+  } catch (e) {
+    say('Anmeldung fehlgeschlagen: ' + e.message, true);
+  }
+});
+
+onClickIfExists('logoutBtn', logout);
+onClickIfExists('submitOrderBtn', submitOrder);
+onClickIfExists('clearSelectionBtn', clearSelection);
+
+onClickIfExists('refreshRunnerBtn', refreshOrders);
+onClickIfExists('addMenuBtn', addMenuItem);
+onClickIfExists('previewClosingBtn', calculateClosing);
+onClickIfExists('saveClosingBtn', saveClosing);
+
+
+
+
+
+// Reset-Handler: innerhalb der äusseren Hauptfunktion
+document.addEventListener('click', async function (event) {
+  const button = event.target.closest('#resetTodayOrdersBtn');
+  if (!button) return;
+
+  if (!sb || !currentUser) {
+    say('Bitte zuerst anmelden.', true);
+    return;
+  }
+
+  const bestaetigung = prompt(
+    'Alle heutigen Bestellungen und Positionen werden gelöscht.\n\nZum Bestätigen RESET eingeben:'
+  );
+
+  if (bestaetigung !== 'RESET') return;
+
+  const originalText = button.textContent;
+
+  try {
+    button.disabled = true;
+    button.textContent = 'Wird zurückgesetzt ...';
+
+    const { data, error } = await sb.rpc('reset_today_orders');
+    if (error) throw error;
+
+    await refreshOrders();
+    await loadAdmin();
+    await loadClosingHistory();
+
+    say(`${data} heutige Bestellungen wurden gelöscht.`, false);
+  } catch (e) {
+    console.error('Reset-Fehler:', e);
+    say('Zurücksetzen fehlgeschlagen: ' + e.message, true);
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+});
+
+
+// ---------------------------------------------------------------
+// Registrierung, Passwort vergessen, Veranstalter anlegen
+// ---------------------------------------------------------------
+const IN_RECOVERY = /(^|[#&?])type=recovery/.test(location.hash + location.search);
+let recoveryMode = IN_RECOVERY;
+let authMode = 'login';
+
+function authFehler(e) {
+  const m = String((e && e.message) || e || '');
+  if (/rate limit/i.test(m)) return 'Zu viele E-Mails in kurzer Zeit. Bitte versuche es später nochmals.';
+  if (/signups? not allowed|signup is disabled/i.test(m)) return 'Die Registrierung ist derzeit nicht freigeschaltet.';
+  if (/invalid login credentials/i.test(m)) return 'E-Mail oder Passwort stimmt nicht.';
+  if (/email not confirmed/i.test(m)) return 'Bitte bestätige zuerst deine E-Mail-Adresse (Link in der Mail).';
+  if (/password should be at least|weak password/i.test(m)) return 'Das Passwort ist zu schwach. Bitte mindestens 8 Zeichen verwenden.';
+  return m;
+}
+
+function setAuthMode(mode) {
+  authMode = mode;
+  const show = (id, on) => $(id)?.classList.toggle('hidden', !on);
+  const titel = { login: 'Anmelden', register: 'Konto erstellen', recovery: 'Neues Passwort festlegen' };
+  if ($('loginTitle')) $('loginTitle').textContent = titel[mode] || 'Anmelden';
+  show('emailWrap', mode !== 'recovery');
+  show('password2Wrap', mode !== 'login');
+  show('loginBtn', mode === 'login');
+  show('registerBtn', mode === 'register');
+  show('saveNewPwBtn', mode === 'recovery');
+  show('authSwitch', mode !== 'recovery');
+  show('forgotWrap', mode === 'login');
+  if ($('registerHint')) $('registerHint').style.display = mode === 'register' ? '' : 'none';
+  $('showLoginBtn')?.classList.toggle('active', mode === 'login');
+  $('showRegisterBtn')?.classList.toggle('active', mode === 'register');
+  updateInviteBanner();
+  const pwLabel = document.querySelector('label[for="password"]');
+  if (pwLabel) pwLabel.textContent = mode === 'recovery' ? 'Neues Passwort' : 'Passwort';
+  if ($('password')) $('password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+}
+
+function showRecoveryForm() {
+  $('appPanel')?.classList.add('hidden');
+  $('orgPanel')?.classList.add('hidden');
+  $('loginPanel')?.classList.remove('hidden');
+  setAuthMode('recovery');
+}
+
+function showOrgOnboarding() {
+  $('loginPanel')?.classList.add('hidden');
+  $('appPanel')?.classList.add('hidden');
+  $('orgPanel')?.classList.remove('hidden');
+  $('logoutBtn')?.classList.remove('hidden');
+  if ($('userLabel')) $('userLabel').textContent = profile?.email || currentUser?.email || '';
+}
+
+async function loadOrgName() {
+  try {
+    const { data } = await sb.from('organizations').select('name').eq('id', profile.organization_id).maybeSingle();
+    profile.org_name = data?.name || '';
+  } catch (e) {
+    profile.org_name = '';
+  }
+  if ($('orgLabel')) $('orgLabel').textContent = profile.org_name || '';
+}
+
+async function registerAccount() {
+  if (!sb && !(await initConnection())) return;
+  const email = $('email').value.trim();
+  const pw = $('password').value;
+  const pw2 = $('password2').value;
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { say('Bitte eine gültige E-Mail-Adresse eingeben.', true); return; }
+  if (pw.length < 8) { say('Das Passwort braucht mindestens 8 Zeichen.', true); return; }
+  if (pw !== pw2) { say('Die beiden Passwörter sind nicht gleich.', true); return; }
+  try {
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password: pw,
+      options: { emailRedirectTo: location.origin + location.pathname }
+    });
+    if (error) throw error;
+    if (data.session) {
+      await onSignedIn(data.user);
+    } else {
+      $('password').value = '';
+      $('password2').value = '';
+      setAuthMode('login');
+      say('Fast geschafft: Wir haben dir eine E-Mail geschickt. Bitte bestätige deine Adresse über den Link und melde dich danach an.');
+    }
+  } catch (e) {
+    say('Registrierung fehlgeschlagen: ' + authFehler(e), true);
+  }
+}
+
+async function forgotPassword() {
+  if (!sb && !(await initConnection())) return;
+  const email = $('email').value.trim();
+  if (!email) { say('Bitte zuerst deine E-Mail-Adresse oben eintragen.', true); return; }
+  try {
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    if (error) throw error;
+    say('Falls die Adresse bei uns bekannt ist, haben wir dir eine E-Mail zum Zurücksetzen geschickt.');
+  } catch (e) {
+    say('Das hat nicht geklappt: ' + authFehler(e), true);
+  }
+}
+
+async function saveNewPassword() {
+  const pw = $('password').value;
+  const pw2 = $('password2').value;
+  if (pw.length < 8) { say('Das Passwort braucht mindestens 8 Zeichen.', true); return; }
+  if (pw !== pw2) { say('Die beiden Passwörter sind nicht gleich.', true); return; }
+  try {
+    const { error } = await sb.auth.updateUser({ password: pw });
+    if (error) throw error;
+    recoveryMode = false;
+    $('password').value = '';
+    $('password2').value = '';
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+    setAuthMode('login');
+    say('Passwort gespeichert.');
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) await onSignedIn(session.user);
+  } catch (e) {
+    say('Passwort konnte nicht gespeichert werden: ' + authFehler(e), true);
+  }
+}
+
+async function createOrganization() {
+  const name = $('orgName').value.trim();
+  if (name.length < 2 || name.length > 80) { say('Der Name muss 2 bis 80 Zeichen lang sein.', true); return; }
+  try {
+    const { error } = await sb.rpc('register_organization', { p_name: name });
+    if (error) throw error;
+    $('orgName').value = '';
+    await onSignedIn(currentUser);
+    say('Willkommen! Dein Anlass ist angelegt. Lege jetzt unter Menü verwalten deine Artikel an.');
+  } catch (e) {
+    say('Anlass konnte nicht angelegt werden: ' + authFehler(e), true);
+  }
+}
+
+onClickIfExists('showLoginBtn', () => setAuthMode('login'));
+onClickIfExists('showRegisterBtn', () => setAuthMode('register'));
+onClickIfExists('registerBtn', registerAccount);
+onClickIfExists('saveNewPwBtn', saveNewPassword);
+onClickIfExists('createOrgBtn', createOrganization);
+onClickIfExists('forgotLink', e => { e.preventDefault(); forgotPassword(); });
+
+
+// ---------------------------------------------------------------
+// Einladungen und Team
+// ---------------------------------------------------------------
+const ROLLEN = { admin: 'Admin', service: 'Service', kitchen: 'Küche / Theke', closing: 'Tagesabschluss' };
+let neuerCode = '';
+
+async function loadTeam() {
+  if (!sb || !profile || profile.role !== 'admin') return;
+  const inviteList = $('inviteList');
+  const memberList = $('memberList');
+  if (!inviteList || !memberList) return;
+
+  try {
+    const { data: invites, error: e1 } = await sb.rpc('list_org_invites');
+    if (e1) throw e1;
+
+    inviteList.innerHTML = (invites && invites.length)
+      ? `<table class="table"><thead><tr><th>Code</th><th>Rolle</th><th>Gültig bis</th><th>Genutzt</th><th></th></tr></thead><tbody>${
+          invites.map(i => `
+            <tr${i.code === neuerCode ? ' style="background:#eaf4ed"' : ''}>
+              <td><strong style="font-size:1.1rem;letter-spacing:.05em">${esc(i.code)}</strong></td>
+              <td>${esc(ROLLEN[i.role] || i.role)}</td>
+              <td>${new Date(i.expires_at).toLocaleDateString('de-CH')}</td>
+              <td>${Number(i.used_count)} / ${Number(i.max_uses)}</td>
+              <td>
+                <div class="actions">
+                  <button type="button" data-share="wa" data-code="${esc(i.code)}" data-role="${esc(i.role)}">WhatsApp</button>
+                  <button type="button" data-share="mail" data-code="${esc(i.code)}" data-role="${esc(i.role)}">E-Mail</button>
+                  ${navigator.share ? `<button type="button" data-share="native" data-code="${esc(i.code)}" data-role="${esc(i.role)}">Teilen …</button>` : ''}
+                  <button type="button" class="secondary" data-share="link" data-code="${esc(i.code)}" data-role="${esc(i.role)}">Link kopieren</button>
+                  <button type="button" class="secondary" data-copy-invite="${esc(i.code)}">Code kopieren</button>
+                  <button type="button" class="danger" data-revoke-invite="${esc(i.code)}">Widerrufen</button>
+                </div>
+              </td>
+            </tr>`).join('')
+        }</tbody></table>`
+      : '<p class="muted">Keine aktiven Einladungscodes.</p>';
+
+    const { data: members, error: e2 } = await sb
+      .from('profiles')
+      .select('id,email,display_name,role')
+      .eq('organization_id', profile.organization_id)
+      .order('email');
+    if (e2) throw e2;
+
+    memberList.innerHTML = (members && members.length)
+      ? `<table class="table"><thead><tr><th>Person</th><th>Rolle</th><th></th></tr></thead><tbody>${
+          members.map(m => {
+            const ich = m.id === currentUser.id;
+            const rolle = normRolle(m.role);
+            return `
+            <tr>
+              <td>${esc(m.display_name || m.email || '')}<div class="muted">${esc(m.email || '')}</div></td>
+              <td><select data-member-role="${esc(m.id)}" ${ich ? 'disabled' : ''}>${
+                Object.entries(ROLLEN).map(([k, v]) =>
+                  `<option value="${k}" ${k === rolle ? 'selected' : ''}>${esc(v)}</option>`).join('')
+              }</select></td>
+              <td>${ich ? '<span class="muted">Du</span>'
+                        : `<button type="button" class="secondary" data-member-save="${esc(m.id)}">Speichern</button>
+                           <button type="button" class="danger" data-member-remove="${esc(m.id)}">Entfernen</button>`}</td>
+            </tr>`;
+          }).join('')
+        }</tbody></table>`
+      : '<p class="muted">Noch keine Mitglieder.</p>';
+  } catch (e) {
+    console.error('loadTeam:', e);
+    say('Team konnte nicht geladen werden: ' + (e?.message || e), true);
+  }
+}
+
+function inviteLink(code) {
+  return location.origin + location.pathname + '?code=' + encodeURIComponent(code);
+}
+
+function inviteText(code, role) {
+  const verein = profile?.org_name ? ' zu «' + profile.org_name + '»' : '';
+  return 'Du bist' + verein + ' eingeladen (Rolle: ' + (ROLLEN[role] || role) + '). ' +
+         'Öffne den Link, registriere dich und du bist automatisch dabei: ' + inviteLink(code) +
+         '\n\nFalls der Link nicht funktioniert, gib bei der Anmeldung diesen Code ein: ' + code;
+}
+
+const INVITE_KEY = 'bestelleasy.invite';
+function getPendingInvite() { try { return localStorage.getItem(INVITE_KEY) || ''; } catch (e) { return ''; } }
+function setPendingInvite(c) { try { localStorage.setItem(INVITE_KEY, c); } catch (e) {} }
+function clearPendingInvite() { try { localStorage.removeItem(INVITE_KEY); } catch (e) {} }
+function updateInviteBanner() { $('inviteBanner')?.classList.toggle('hidden', !getPendingInvite()); }
+
+async function autoJoinPending() {
+  const code = getPendingInvite();
+  if (!code) return;
+  if ($('inviteCode')) $('inviteCode').value = code;
+  try {
+    const { error } = await sb.rpc('join_organization', { p_code: code });
+    if (error) throw error;
+    clearPendingInvite();
+    await onSignedIn(currentUser);
+    say('Willkommen im Verein!');
+  } catch (e) {
+    clearPendingInvite();
+    say('Der Einladungslink ist ungültig oder abgelaufen: ' + authFehler(e), true);
+  }
+}
+
+// Einladungscode aus dem Link (?code=...) merken und aus der Adresszeile entfernen
+(function () {
+  try {
+    const c = new URLSearchParams(location.search).get('code');
+    if (c && /^[A-Za-z0-9]{6,20}$/.test(c)) {
+      setPendingInvite(c.toUpperCase());
+      history.replaceState(null, '', location.pathname + location.hash);
+      setAuthMode('register');
+    }
+  } catch (e) {}
+  updateInviteBanner();
+})();
+
+async function createInvite() {
+  const btn = $('createInviteBtn');
+  const role = $('inviteRole').value;
+  const days = Number($('inviteDays').value) || 7;
+  const uses = Number($('inviteUses').value) || 20;
+  btn.disabled = true;
+  try {
+    const { data, error } = await sb.rpc('create_org_invite', {
+      p_role: role, p_days: days, p_max_uses: uses
+    });
+    if (error) throw error;
+    neuerCode = String(data || '');
+    showSuccessToast('✓ Code erzeugt. Jetzt unten per WhatsApp oder E-Mail teilen.');
+    await loadTeam();
+  } catch (e) {
+    say('Code konnte nicht erzeugt werden: ' + (e?.message || e), true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function joinOrganization() {
+  const code = $('inviteCode').value.trim();
+  if (code.length < 6) { say('Bitte den Einladungscode eingeben.', true); return; }
+  try {
+    const { error } = await sb.rpc('join_organization', { p_code: code });
+    if (error) throw error;
+    $('inviteCode').value = '';
+    await onSignedIn(currentUser);
+    say('Willkommen im Verein!');
+  } catch (e) {
+    say('Beitritt nicht möglich: ' + authFehler(e), true);
+  }
+}
+
+document.addEventListener('click', async event => {
+  const kopieren = event.target.closest('[data-copy-invite]');
+  if (kopieren) {
+    const code = kopieren.dataset.copyInvite;
+    try {
+      await navigator.clipboard.writeText(code);
+      showSuccessToast('✓ Code kopiert: ' + code);
+    } catch (e) {
+      say('Code: ' + code);
+    }
+    return;
+  }
+
+  const widerrufen = event.target.closest('[data-revoke-invite]');
+  if (widerrufen) {
+    if (!confirm('Diesen Einladungscode widerrufen?')) return;
+    widerrufen.disabled = true;
+    try {
+      const { error } = await sb.rpc('revoke_org_invite', { p_code: widerrufen.dataset.revokeInvite });
+      if (error) throw error;
+      await loadTeam();
+    } catch (e) {
+      widerrufen.disabled = false;
+      say('Code konnte nicht widerrufen werden: ' + (e?.message || e), true);
+    }
+    return;
+  }
+
+  const teilen = event.target.closest('[data-share]');
+  if (teilen) {
+    const art = teilen.dataset.share;
+    const code = teilen.dataset.code;
+    const text = inviteText(code, teilen.dataset.role);
+    if (art === 'wa') {
+      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+    } else if (art === 'mail') {
+      location.href = 'mailto:?subject=' + encodeURIComponent('Einladung zur BestellEAsy App') +
+                      '&body=' + encodeURIComponent(text);
+    } else if (art === 'native') {
+      try { await navigator.share({ title: 'Einladung zur BestellEAsy App', text }); } catch (e) { /* abgebrochen */ }
+    } else if (art === 'link') {
+      try {
+        await navigator.clipboard.writeText(inviteLink(code));
+        showSuccessToast('✓ Einladungslink kopiert.');
+      } catch (e) {
+        say('Link: ' + inviteLink(code));
+      }
+    }
+    return;
+  }
+
+  const entfernen = event.target.closest('[data-member-remove]');
+  if (entfernen) {
+    if (!confirm('Diese Person aus dem Verein entfernen? Das Konto bleibt bestehen, die Person verliert aber sofort den Zugriff.')) return;
+    entfernen.disabled = true;
+    try {
+      const { error } = await sb.rpc('admin_remove_user', { p_user_id: entfernen.dataset.memberRemove });
+      if (error) throw error;
+      showSuccessToast('✓ Person wurde aus dem Verein entfernt.');
+      await loadTeam();
+    } catch (e) {
+      entfernen.disabled = false;
+      say('Person konnte nicht entfernt werden: ' + (e?.message || e), true);
+    }
+    return;
+  }
+
+  const speichern = event.target.closest('[data-member-save]');
+  if (speichern) {
+    const id = speichern.dataset.memberSave;
+    const auswahl = document.querySelector(`[data-member-role="${CSS.escape(id)}"]`);
+    if (!auswahl) return;
+    speichern.disabled = true;
+    try {
+      const { error } = await sb.rpc('admin_set_user_role', { p_user_id: id, p_role: auswahl.value });
+      if (error) throw error;
+      showSuccessToast('✓ Rolle gespeichert.');
+      await loadTeam();
+    } catch (e) {
+      speichern.disabled = false;
+      say('Rolle konnte nicht gespeichert werden: ' + (e?.message || e), true);
+    }
+  }
+});
+
+onClickIfExists('createInviteBtn', createInvite);
+onClickIfExists('joinOrgBtn', joinOrganization);
+
+// Initialisierung
+(async () => {
+  try {
+    const raw = localStorage.getItem(CONFIG_KEY);
+
+    if (raw) {
+      setConfigUI(JSON.parse(raw));
+    } else {
+      setConfigUI({
+        url: 'https://mkdsxgckckzxqaupilrp.supabase.co',
+        key: 'sb_publishable_dDoTEWtrcI8ulfVD4UiZZg_JsirepVu'
+      });
+    }
+
+    if (await initConnection()) {
+      const { data: { session } } = await sb.auth.getSession();
+
+      if (session && !recoveryMode) {
+        await onSignedIn(session.user);
+      } else {
+        $('loginPanel').classList.remove('hidden');
+        if (recoveryMode) showRecoveryForm();
+      }
+    }
+  } catch (e) {
+    console.warn(e);
+    say('Supabase-Verbindung konnte nicht initialisiert werden. Bitte Verbindung prüfen.', true);
+  }
+})();
+
+// Ende der äusseren Hauptfunktion
+
+// Kachel «Offene Beträge» alle 5 Sekunden automatisch aktualisieren
+let offeneBetraegeLaeuft = false;
+setInterval(async () => {
+  if (offeneBetraegeLaeuft || document.hidden) return;
+  if (!sb || !currentUser) return;
+  offeneBetraegeLaeuft = true;
+  try { await loadOpenAmounts(); } finally { offeneBetraegeLaeuft = false; }
+}, 5000);
+
+// Küche, Theke / Ausschank und Läufer alle 5 Sekunden automatisch aktualisieren
+let stationenLaeuft = false;
+setInterval(async () => {
+  if (stationenLaeuft || document.hidden) return;
+  if (!sb || !currentUser || !profile) return;
+  if (!['orders', 'bar', 'runner'].includes(activeTab)) return;
+  stationenLaeuft = true;
+  try { await refreshOrders(); } finally { stationenLaeuft = false; }
+}, 5000);
+})();
+
+
+// Impressum und Datenschutz anzeigen
+document.addEventListener('click', function (event) {
+  const link = event.target.closest('[data-legal]');
+  if (!link) return;
+  event.preventDefault();
+  const art = link.dataset.legal;
+  const dialog = document.getElementById('legalDialog');
+  document.getElementById('legalTitle').textContent = art === 'impressum' ? 'Impressum' : 'Datenschutzerklärung';
+  document.getElementById('legal-impressum').hidden = art !== 'impressum';
+  document.getElementById('legal-datenschutz').hidden = art !== 'datenschutz';
+  if (!dialog.open) dialog.showModal();
+  dialog.querySelector('.legal-body:not([hidden])').scrollTop = 0;
+});
+document.getElementById('legalClose')?.addEventListener('click', () => document.getElementById('legalDialog').close());
+document.getElementById('legalDialog')?.addEventListener('click', function (e) { if (e.target === this) this.close(); });
+
+// Passwort anzeigen/verbergen: ausserhalb ist hier in Ordnung
+document.getElementById('togglePassword')?.addEventListener('click', function () {
+  const password = document.getElementById('password');
+  const anzeigen = password.type === 'password';
+
+  password.type = anzeigen ? 'text' : 'password';
+  this.textContent = anzeigen ? '🙈' : '👁';
+  this.title = anzeigen ? 'Passwort verbergen' : 'Passwort anzeigen';
+  this.setAttribute(
+    'aria-label',
+    anzeigen ? 'Passwort verbergen' : 'Passwort anzeigen'
+  );
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Feste Total-/Sende-Leiste ausblenden, sobald die Getränkeabrechnung sichtbar wird
+(function () {
+  function updateCartBar() {
+    const bar = document.querySelector('.cart-bar');
+    const ziel = document.getElementById('drinkPaymentHeading');
+    if (!bar || !ziel) return;
+    const sichtbar = ziel.getBoundingClientRect().top < window.innerHeight - 40;
+    bar.classList.toggle('cart-bar-hidden', sichtbar);
+  }
+  window.addEventListener('scroll', updateCartBar, { passive: true });
+  window.addEventListener('resize', updateCartBar);
+  document.addEventListener('click', () => setTimeout(updateCartBar, 50));
+  setInterval(updateCartBar, 500);
+  updateCartBar();
+})();
+
+
+</script>
+
+
+</body></html>
