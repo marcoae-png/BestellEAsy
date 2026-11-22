@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#173d2b">
-<meta name="description" content="BestellEAsy – die digitale Bestelllösung für Vereinsfeste, Festwirtschaften und Veranstaltungen.">
+<meta name="description" content="BestellEAsy – die digitale Bestelllösung für Vereinsfeste, Festwirtschaften und Veranstaltungen. Menükarte in Minuten selbst erstellt, auf Wunsch mit Druckern für Küche und Theke.">
 <title>BestellEAsy – Bestellungen einfach im Griff</title>
 <style>
 :root{--green:#173d2b;--green2:#245c3b;--mint:#e8f1eb;--orange:#f3a22b;--ink:#17211b;--muted:#68766d;--paper:#f7f9f6;--line:#dce5dd}
@@ -28,21 +28,24 @@ h1 span{color:#43815a}.lead{font-size:1.18rem;color:#58675d;max-width:570px;marg
 .mock-tabs{display:flex;gap:7px;padding:14px 17px;border-bottom:1px solid var(--line);flex-wrap:wrap}.mock-tabs b{font-size:.76rem;padding:7px 10px;border-radius:8px;background:#f0f4f0;color:#536258}.mock-tabs b:first-child{background:#e1eee4;color:var(--green)}
 .mock-body{padding:18px}.mock-title{font-weight:850;font-size:1.08rem;margin-bottom:13px}.mock-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mock-card{border:1px solid #e1e8e2;border-radius:12px;padding:13px;background:#fff}.mock-card.food{background:#fff7e8;border-color:#f0dfba}.mock-card.drink{background:#edf6ff;border-color:#d1e3f3}.mock-card strong{display:block;font-size:.9rem}.mock-card small{color:#66756b}.mock-status{display:flex;align-items:center;justify-content:space-between;margin-top:15px;padding:12px;border-radius:11px;background:#edf6ef;color:#285b39;font-size:.83rem;font-weight:750}.floating{position:absolute;right:-12px;bottom:18px;background:white;border:1px solid #e2e9e3;border-radius:14px;padding:13px 16px;box-shadow:0 12px 32px #183d2920;font-size:.83rem;font-weight:800;color:#245c3b}
 section{padding:78px 0}.section-head{text-align:center;max-width:700px;margin:0 auto 42px}.kicker{color:#47815b;font-size:.8rem;font-weight:850;text-transform:uppercase;letter-spacing:.12em}.section-head h2{font-size:clamp(2rem,3.5vw,3rem);line-height:1.1;letter-spacing:-.05em;margin:12px 0;color:#173d2b}.section-head p{color:var(--muted);font-size:1.05rem;margin:0}
-.features{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}.feature{border:1px solid var(--line);border-radius:17px;padding:25px;background:#fff;transition:.2s}.feature:hover{transform:translateY(-4px);box-shadow:0 14px 35px #173d2b10}.ico{width:46px;height:46px;display:grid;place-items:center;background:var(--mint);border-radius:13px;font-size:23px}.feature h3{margin:17px 0 7px;font-size:1.12rem;color:#1c432e}.feature p{margin:0;color:#68766d;font-size:.94rem}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}.feature{border:1px solid var(--line);border-radius:17px;padding:25px;background:#fff;transition:.2s}.feature:hover{transform:translateY(-4px);box-shadow:0 14px 35px #173d2b10}.feature.new{border-color:#f0dfba;background:#fffaf0}.ico{width:46px;height:46px;display:grid;place-items:center;background:var(--mint);border-radius:13px;font-size:23px}.feature.new .ico{background:#fdebc8}.feature h3{margin:17px 0 7px;font-size:1.12rem;color:#1c432e}.feature p{margin:0;color:#68766d;font-size:.94rem}
 .workflow{background:var(--paper)}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;counter-reset:step}.step{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;position:relative}.step:before{counter-increment:step;content:"0" counter(step);font-weight:900;color:#8eb39a;font-size:1.35rem}.step h3{margin:12px 0 5px;color:#1b442e}.step p{margin:0;color:#68766d;font-size:.9rem}
 .split{display:grid;grid-template-columns:1fr 1fr;gap:55px;align-items:center}.split h2{font-size:clamp(2rem,3.5vw,2.8rem);line-height:1.08;letter-spacing:-.05em;color:#173d2b;margin:12px 0}.split p{color:#68766d}.checklist{padding:0;list-style:none;margin:23px 0}.checklist li{margin:12px 0;color:#435249}.checklist li:before{content:"✓";font-weight:900;color:#398353;margin-right:10px}
 .dashboard{background:#173d2b;border-radius:22px;padding:25px;color:#fff;box-shadow:0 20px 45px #173d2b25}.dash-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.dash-top small{color:#bdd0c2}.dash-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{background:#ffffff12;border:1px solid #ffffff1a;border-radius:13px;padding:16px}.metric small{display:block;color:#c2d4c7}.metric strong{font-size:1.6rem}.dash-row{display:flex;justify-content:space-between;background:#ffffff12;padding:12px 14px;border-radius:10px;margin-top:10px;font-size:.9rem}
+.print{background:var(--paper)}.bons{display:flex;gap:18px;justify-content:center;align-items:flex-start;flex-wrap:wrap}.bon{width:210px;background:#fff;border:1px solid #e4e8e4;padding:18px 16px 24px;font-family:"Courier New",monospace;box-shadow:0 14px 34px #173d2b1c;clip-path:polygon(0 0,100% 0,100% calc(100% - 9px),95% 100%,90% calc(100% - 9px),85% 100%,80% calc(100% - 9px),75% 100%,70% calc(100% - 9px),65% 100%,60% calc(100% - 9px),55% 100%,50% calc(100% - 9px),45% 100%,40% calc(100% - 9px),35% 100%,30% calc(100% - 9px),25% 100%,20% calc(100% - 9px),15% 100%,10% calc(100% - 9px),5% 100%,0 calc(100% - 9px))}.bon:nth-child(2){margin-top:26px}.bon h4{margin:0;text-align:center;font-size:1.05rem}.bon .tisch{text-align:center;font-size:1.9rem;font-weight:900;margin:6px 0}.bon small{display:block;text-align:center;color:#78857c;border-bottom:2px dashed #c9d2ca;padding-bottom:9px;margin-bottom:9px}.bon p{margin:5px 0;font-weight:800;font-size:.95rem}
+.menuquick{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:30px}.mq{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;font-size:.92rem;color:#435249}.mq b{display:block;color:#1b442e;margin-bottom:3px}
+.shots{background:#fff}.shot-grid{display:grid;grid-template-columns:1fr;gap:34px;max-width:980px;margin:auto}.shot{margin:0}.frame{border:1px solid #d5e0d7;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 22px 55px #173d2b1f}.frame-bar{display:flex;gap:7px;padding:11px 14px;background:#eef3ee;border-bottom:1px solid #dce5dd}.frame-bar i{width:11px;height:11px;border-radius:50%;background:#c4d1c7}.frame img{display:block;width:100%;height:auto}.shot figcaption{margin-top:14px;text-align:center;color:#435249;font-size:.98rem}.shot figcaption b{display:block;color:#1b442e;font-size:1.1rem}
 .cta{background:linear-gradient(120deg,#173d2b,#245c3b);color:#fff;text-align:center;padding:70px 20px}.cta h2{font-size:clamp(2rem,4vw,3.2rem);letter-spacing:-.05em;line-height:1.1;margin:0 0 14px}.cta p{color:#d3e2d7;max-width:620px;margin:0 auto 25px}.cta .btn{background:var(--orange);border-color:var(--orange);color:#30220c;box-shadow:none}
 footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-inner{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}.footer-inner a{color:#fff;text-decoration:underline;text-underline-offset:3px}
 @media(max-width:850px){.hero-grid,.split{grid-template-columns:1fr;gap:35px}.hero{padding:60px 0}.mock-wrap{max-width:650px;margin:auto;width:100%}.features{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:560px){.container{width:min(100% - 28px,1160px)}.nav{height:66px}.navlinks{display:none}.nav .btn{padding:10px 13px;font-size:.85rem}.hero{padding:48px 0 54px}h1{font-size:2.8rem}.lead{font-size:1.04rem}.hero-actions .btn{width:100%}.trustline{gap:9px;display:grid}.features,.steps{grid-template-columns:1fr}section{padding:58px 0}.mock-tabs b{font-size:.68rem;padding:6px 7px}.mock-body{padding:12px}.mock-card{padding:10px}.floating{right:0;bottom:-14px}}
+@media(max-width:560px){.container{width:min(100% - 28px,1160px)}.nav{height:66px}.navlinks{display:none}.nav .btn{padding:10px 13px;font-size:.85rem}.hero{padding:48px 0 54px}h1{font-size:2.8rem}.lead{font-size:1.04rem}.hero-actions .btn{width:100%}.trustline{gap:9px;display:grid}.features,.steps,.menuquick{grid-template-columns:1fr}section{padding:58px 0}.mock-tabs b{font-size:.68rem;padding:6px 7px}.mock-body{padding:12px}.mock-card{padding:10px}.floating{right:0;bottom:-14px}.bon:nth-child(2){margin-top:0}}
 </style>
 </head>
 <body>
 <header>
  <div class="container nav">
   <a class="brand" href="#start"><span class="logo">✓</span>BestellEAsy</a>
-  <nav class="navlinks"><a href="#funktionen">Funktionen</a><a href="#ablauf">So funktioniert's</a><a href="#vorteile">Vorteile</a></nav>
+  <nav class="navlinks"><a href="#funktionen">Funktionen</a><a href="#ablauf">So funktioniert's</a><a href="#drucker">Mit Drucker</a><a href="#vorteile">Vorteile</a></nav>
   <a class="btn" href="https://marcoae-png.github.io/BestellEAsy/FestBestellung.html" target="_blank" rel="noopener">App öffnen ↗</a>
  </div>
 </header>
@@ -52,12 +55,12 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
    <div>
     <div class="eyebrow"><i></i> Digitale Bestelllösung für Festwirtschaften</div>
     <h1>Das Fest läuft.<br><span>Die Bestellung auch.</span></h1>
-    <p class="lead">Mit BestellEAsy kommen Bestellungen vom Tisch direkt an die richtige Station – übersichtlich für Service, Küche, Theke und Läufer.</p>
+    <p class="lead">Mit BestellEAsy kommen Bestellungen vom Tisch direkt an die richtige Station – übersichtlich für Service, Küche, Theke und Läufer. Menükarte in wenigen Minuten selbst erstellt, auf Wunsch mit Bon-Druck.</p>
     <div class="hero-actions">
      <a class="btn" href="https://marcoae-png.github.io/BestellEAsy/FestBestellung.html" target="_blank" rel="noopener">BestellEAsy starten ↗</a>
-     <a class="btn light" href="#funktionen">Funktionen entdecken</a>
+     <a class="btn light" href="#drucker">Mit Druckerset</a>
     </div>
-    <div class="trustline"><span>Für Handy, Tablet und PC</span><span>Gemeinsame Live-Übersicht</span><span>Einfacher Ablauf am Anlass</span></div>
+    <div class="trustline"><span>Für Handy, Tablet und PC</span><span>Menükarte selbst in Minuten</span><span>Optional mit Druckern</span></div>
    </div>
    <div class="mock-wrap">
     <div class="mock">
@@ -88,7 +91,21 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
     <article class="feature"><div class="ico">🥤</div><h3>Theke & Ausschank</h3><p>Getränkebestellungen werden an der Theke geführt und unabhängig von der Küche bearbeitet.</p></article>
     <article class="feature"><div class="ico">🏃</div><h3>Läufer weiss Bescheid</h3><p>Fertiges Essen und fertige Getränke werden getrennt angezeigt – inklusive Tisch und Auslieferungsstatus.</p></article>
     <article class="feature"><div class="ico">💳</div><h3>Zahlungen im Blick</h3><p>Bezahlte und offene Beträge unterstützen den Überblick. Getränke können separat abgerechnet werden.</p></article>
-    <article class="feature"><div class="ico">⚙️</div><h3>Menü & Team verwalten</h3><p>Artikel und Preise für den Anlass pflegen und Teammitglieder über einen Einladungscode einbinden.</p></article>
+    <article class="feature"><div class="ico">👥</div><h3>Team einladen</h3><p>Teammitglieder werden über einen Einladungscode eingebunden und sehen ihre Station.</p></article>
+    <article class="feature new"><div class="ico">⚙️</div><h3>Menükarte in Minuten</h3><p>Artikel, Kategorien und Preise selbst eingeben – ohne Programmierung und ohne Wartezeit. Die Karte steht sofort bereit.</p></article>
+    <article class="feature new"><div class="ico">🖨️</div><h3>Bons am Drucker</h3><p>Auf Wunsch druckt die Bestellung automatisch einen Bon in der Küche und an der Theke.</p></article>
+    <article class="feature new"><div class="ico">📦</div><h3>Komplettset mieten</h3><p>Drucker und mobiler Router mit SIM-Karte für Anlässe ohne feste Infrastruktur – auf Anfrage.</p></article>
+   </div>
+  </div>
+ </section>
+
+
+ <section class="shots" id="einblick">
+  <div class="container">
+   <div class="section-head"><div class="kicker">Einblick in die App</div><h2>So sieht BestellEAsy im Einsatz aus.</h2><p>Übersichtliche Kacheln zum Bestellen und eine klare Abrechnung pro Person – auf Handy, Tablet und PC.</p></div>
+   <div class="shot-grid">
+    <figure class="shot"><div class="frame"><div class="frame-bar"><i></i><i></i><i></i></div><img src="bestellansicht.png" width="1885" height="850" loading="lazy" alt="Bestellansicht von BestellEAsy mit Tischauswahl, Karte und Getränke-Kacheln"></div><figcaption><b>Bestellen</b>Tisch wählen, Artikel antippen, Summe im Blick.</figcaption></figure>
+    <figure class="shot"><div class="frame"><div class="frame-bar"><i></i><i></i><i></i></div><img src="abrechnung.png" width="1856" height="767" loading="lazy" alt="Abrechnung der Getränke pro Person mit Zahlungsart und offenem Betrag"></div><figcaption><b>Abrechnen</b>Getränke pro Person abrechnen, Zahlungsart wählen, offenen Betrag sehen.</figcaption></figure>
    </div>
   </div>
  </section>
@@ -98,9 +115,24 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
    <div class="section-head"><div class="kicker">Ein klarer Ablauf</div><h2>Vom Tisch bis zur Auslieferung.</h2><p>Keine Zettelwirtschaft zwischen den Stationen – der Bestellstatus wird im Tool weitergeführt.</p></div>
    <div class="steps">
     <article class="step"><h3>Service erfasst</h3><p>Die Bestellung wird dem richtigen Tisch zugeordnet und abgeschickt.</p></article>
-    <article class="step"><h3>Küche & Theke arbeiten</h3><p>Essen und Getränke landen in den jeweils passenden Ansichten.</p></article>
+    <article class="step"><h3>Küche & Theke arbeiten</h3><p>Essen und Getränke landen in den passenden Ansichten – mit Drucker zusätzlich als Bon.</p></article>
     <article class="step"><h3>Läufer übernimmt</h3><p>Sobald die jeweilige Station fertig meldet, erscheint der Auftrag beim Läufer.</p></article>
     <article class="step"><h3>Ausgeliefert</h3><p>Der Läufer markiert Essen und Getränke nach der Lieferung als erledigt.</p></article>
+   </div>
+  </div>
+ </section>
+
+ <section class="print" id="drucker">
+  <div class="container">
+   <div class="section-head"><div class="kicker">Optional mit Drucker</div><h2>Der Bon liegt schon auf dem Tablar.</h2><p>Küche und Theke erhalten ihre Bestellung automatisch ausgedruckt. Der Bon wandert mit dem Tablar zum Läufer.</p></div>
+   <div class="bons">
+    <div class="bon"><h4>KÜCHE #42</h4><div class="tisch">TISCH 12</div><small>22.11.2026 18:05 · TWINT</small><p>2 x Bratwurst</p><p>1 x Rösti</p></div>
+    <div class="bon"><h4>THEKE #42</h4><div class="tisch">TISCH 12</div><small>22.11.2026 18:05 · TWINT</small><p>3 x Bier</p><p>1 x Mineral</p></div>
+   </div>
+   <div class="menuquick">
+    <div class="mq"><b>1 · Artikel eingeben</b>Name, Kategorie und Preis unter «Menü verwalten» erfassen.</div>
+    <div class="mq"><b>2 · Drucker verbinden</b>IP-Adresse von Küche und Theke einmal eintragen und Testdruck auslösen.</div>
+    <div class="mq"><b>3 · Losbestellen</b>Die Karte erscheint sofort in der Bestellansicht, die Bons drucken automatisch.</div>
    </div>
   </div>
  </section>
@@ -115,8 +147,9 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
      <li>Bedienung auf Smartphone, Tablet und Computer</li>
      <li>Separate Ansichten für Service, Küche, Theke und Läufer</li>
      <li>Automatische Aktualisierung der Stationsübersichten</li>
+     <li>Menükarte mit Artikeln und Preisen selbst in wenigen Minuten erstellt</li>
+     <li>Auf Wunsch Bon-Druck für Küche und Theke</li>
      <li>Offene Tischbeträge und Tagesabschluss im Blick</li>
-     <li>Eigene Artikel und Preise für den Anlass verwalten</li>
     </ul>
     <a class="btn" href="https://marcoae-png.github.io/BestellEAsy/FestBestellung.html" target="_blank" rel="noopener">Jetzt App öffnen ↗</a>
    </div>
@@ -128,7 +161,7 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
     </div>
     <div class="dash-row"><span>🍽️ Essen bereit</span><strong>2 Aufträge</strong></div>
     <div class="dash-row"><span>🥤 Getränke bereit</span><strong>1 Auftrag</strong></div>
-    <div class="dash-row"><span>💰 Offene Tischbeträge</span><strong>Übersicht</strong></div>
+    <div class="dash-row"><span>🖨️ Bons gedruckt</span><strong>Küche · Theke</strong></div>
    </div>
   </div>
  </section>
@@ -136,7 +169,7 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
  <section class="cta">
   <div class="container">
    <h2>Bereit für einen einfacheren Festbetrieb?</h2>
-   <p>Öffne BestellEAsy und entdecke, wie Bestellungen, Stationen und Auslieferung zentral zusammenspielen.</p>
+   <p>Öffne BestellEAsy und entdecke, wie Bestellungen, Stationen und Auslieferung zentral zusammenspielen. Auch als Komplettset mit Druckern erhältlich – auf Anfrage.</p>
    <a class="btn" href="https://marcoae-png.github.io/BestellEAsy/FestBestellung.html" target="_blank" rel="noopener">BestellEAsy ausprobieren ↗</a>
   </div>
  </section>
