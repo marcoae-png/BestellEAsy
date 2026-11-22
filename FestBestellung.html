@@ -2126,10 +2126,13 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
   <div>
     <label for="menuCategory">Kategorie</label>
     <select id="menuCategory">
-      <option>Essen</option>
-      <option>Getränke</option>
-      <option>Dessert</option>
-      <option>Sonstiges</option>
+      <option value="Essen">Essen</option>
+      <option value="Snacks">Snacks</option>
+      <option value="Kalte Getränke">Kalte Getränke</option>
+      <option value="Warme Getränke">Warme Getränke</option>
+      <option value="Dessert">Dessert</option>
+      <option value="Sonstiges">Sonstiges</option>
+      <option value="Getränke">Getränke (bisherige Kategorie)</option>
     </select>
   </div>
 
@@ -2161,9 +2164,12 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
       <label for="editMenuCategory">Kategorie</label>
       <select id="editMenuCategory" required="">
         <option value="Essen">Essen</option>
-        <option value="Getränke">Getränke</option>
+        <option value="Snacks">Snacks</option>
+        <option value="Kalte Getränke">Kalte Getränke</option>
+        <option value="Warme Getränke">Warme Getränke</option>
         <option value="Dessert">Dessert</option>
         <option value="Sonstiges">Sonstiges</option>
+        <option value="Getränke">Getränke (bisherige Kategorie)</option>
       </select>
     </div>
 
@@ -2996,9 +3002,20 @@ function renderMenu() {
   const menuGrid = $('menuGrid');
   if (!menuGrid) return;
 
-  const kategorien = ['Essen', 'Getränke', 'Dessert'];
+  const kategorien = [
+    'Essen',
+    'Snacks',
+    'Kalte Getränke',
+    'Warme Getränke',
+    'Getränke',
+    'Dessert',
+    'Sonstiges'
+  ];
   const kategorienIcons = {
     'Essen': '🍽️',
+    'Snacks': '🥨',
+    'Kalte Getränke': '🧊',
+    'Warme Getränke': '☕',
     'Getränke': '🥤',
     'Dessert': '🍰',
     'Sonstiges': '📦'
@@ -3006,95 +3023,78 @@ function renderMenu() {
 
   function artikelHTML(m) {
     const q = cart.get(m.id)?.quantity || 0;
-
     return `
-      <article
-        class="item menu-item-card ${q ? 'selected' : ''}"
-        role="button"
-        tabindex="0"
+      <article class="item menu-item-card ${q ? 'selected' : ''}"
+        role="button" tabindex="0"
         aria-label="${esc(m.name)} hinzufügen, aktueller Warenkorb: ${q} Stück"
-        data-add-item="${esc(String(m.id))}"
-      >
+        data-add-item="${esc(String(m.id))}">
         <div class="menu-item-content">
           <h3>${esc(m.name)}</h3>
           <div class="price">${money(m.price)}</div>
         </div>
-
         <div class="tile-bottom">
-          <span class="tile-hint">
-            <span aria-hidden="true">＋</span> 1 Stück hinzufügen
-          </span>
+          <span class="tile-hint"><span aria-hidden="true">＋</span> 1 Stück hinzufügen</span>
           <span class="tile-count-wrap">
             ${q ? `<button type="button" class="tile-minus" data-remove-item="${esc(String(m.id))}" aria-label="${esc(m.name)} entfernen">−</button>` : ''}
             <span class="cart-count">${q} Stk.</span>
           </span>
         </div>
-      </article>
-    `;
+      </article>`;
   }
 
   function kategorieHTML(kategorie, artikel) {
     if (!artikel.length) return '';
+    const slug = kategorie.toLowerCase()
+      .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-    // Getränke für den Service in kalte und warme Getränke aufteilen.
+    // Bereits vorhandene Artikel der alten Kategorie "Getränke" bleiben sichtbar.
     if (kategorie === 'Getränke') {
       const istWarm = m => /kaffee|kafi|tee|espresso|cappuccino|latte|schoggi|heiss|getränk warm|punsch|zwetschgen luz/i.test(String(m.name || ''));
       const istGratis = m => Number(m.price) === 0 || /gratis/i.test(String(m.name || ''));
-      const gratisGetraenke = artikel.filter(istGratis);
-      const bezahlteGetraenke = artikel.filter(m => !istGratis(m));
-      const warmeGetraenke = bezahlteGetraenke.filter(istWarm);
-      const kalteGetraenke = bezahlteGetraenke.filter(m => !istWarm(m));
-      const untergruppeHTML = (titel, icon, liste, klasse) => !liste.length ? '' : `
+      const gratis = artikel.filter(istGratis);
+      const bezahlt = artikel.filter(m => !istGratis(m));
+      const warm = bezahlt.filter(istWarm);
+      const kalt = bezahlt.filter(m => !istWarm(m));
+      const subgroup = (titel, icon, liste, klasse) => !liste.length ? '' : `
         <div class="drink-subgroup drink-subgroup-${klasse}">
           <h3 class="drink-subgroup-title"><span aria-hidden="true">${icon}</span> ${titel}<span class="drink-subgroup-count">${liste.length}</span></h3>
           <div class="menu-category-grid">${liste.map(artikelHTML).join('')}</div>
         </div>`;
-
       return `
         <section class="menu-category menu-category-getränke">
-          <h2 class="menu-category-title">
-            <span aria-hidden="true">🥤</span>
-            Getränke
-            <span class="menu-category-count">${artikel.length} Artikel</span>
-          </h2>
-          ${untergruppeHTML('Kalte Getränke', '🧊', kalteGetraenke, 'kalt')}
-          ${untergruppeHTML('Warme Getränke', '☕', warmeGetraenke, 'warm')}
-          ${untergruppeHTML('Gratisgetränke', '🎁', gratisGetraenke, 'gratis')}
-        </section>
-      `;
+          <h2 class="menu-category-title"><span aria-hidden="true">🥤</span> Getränke
+            <span class="menu-category-count">${artikel.length} Artikel</span></h2>
+          ${subgroup('Kalte Getränke', '🧊', kalt, 'kalt')}
+          ${subgroup('Warme Getränke', '☕', warm, 'warm')}
+          ${subgroup('Gratisgetränke', '🎁', gratis, 'gratis')}
+        </section>`;
     }
 
     return `
-      <section class="menu-category menu-category-${kategorie.toLowerCase()}">
+      <section class="menu-category menu-category-${slug}">
         <h2 class="menu-category-title">
           <span aria-hidden="true">${kategorienIcons[kategorie] || '📦'}</span>
           ${esc(kategorie)}
           <span class="menu-category-count">${artikel.length} Artikel</span>
         </h2>
-
-        <div class="menu-category-grid">
-          ${artikel.map(artikelHTML).join('')}
-        </div>
-      </section>
-    `;
+        <div class="menu-category-grid">${artikel.map(artikelHTML).join('')}</div>
+      </section>`;
   }
 
-  const kategorienHTML = kategorien.map(kategorie => {
+  const bekannte = kategorien.filter(k => k !== 'Sonstiges');
+  const kategorienHTML = bekannte.map(kategorie => {
     const artikel = menu.filter(m =>
-      String(m.category || '').trim().toLowerCase() ===
-      kategorie.toLowerCase()
+      String(m.category || '').trim().toLowerCase() === kategorie.toLowerCase()
     );
-
     return kategorieHTML(kategorie, artikel);
   }).join('');
 
   const sonstige = menu.filter(m =>
-    !kategorien.some(k =>
-      String(m.category || '').trim().toLowerCase() ===
-      k.toLowerCase()
+    !bekannte.some(k =>
+      String(m.category || '').trim().toLowerCase() === k.toLowerCase()
     )
   );
-
   const sonstigeHTML = kategorieHTML('Sonstiges', sonstige);
 
   menuGrid.innerHTML = menu.length
@@ -3108,21 +3108,6 @@ function renderMenu() {
     });
     btn.addEventListener('keydown', e => e.stopPropagation());
   });
-
-  menuGrid.querySelectorAll('[data-add-item]').forEach(tile => {
-    const hinzufuegen = () => addToCart(tile.dataset.addItem);
-
-    tile.addEventListener('click', hinzufuegen);
-
-    tile.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        hinzufuegen();
-      }
-    });
-  });
-
-  updateCartTotal();
 }
 
 
@@ -3452,6 +3437,8 @@ function orderHTML(o) {
     if (
       kategorie === 'getränke' ||
       kategorie === 'getraenke' ||
+      kategorie === 'kalte getränke' ||
+      kategorie === 'warme getränke' ||
       kategorie.includes('drink')
     ) {
       return 'kitchen-item-getraenke';
@@ -3869,10 +3856,14 @@ function showPaymentToast(message) {
 
 
 
+function isDrinkCategory(item) {
+  const category = String(item.category || item.category_snapshot || '').trim().toLowerCase();
+  return ['getränke', 'getraenke', 'kalte getränke', 'warme getränke'].includes(category) ||
+    category.includes('drink');
+}
+
 function stationOrderHTML(order, station) {
-  const isDrink = item =>
-    String(item.category || '').trim().toLowerCase()
-      === 'getränke';
+  const isDrink = isDrinkCategory;
 
   const items = (order.order_items || []).filter(item =>
     station === 'bar' ? isDrink(item) : !isDrink(item)
@@ -3994,8 +3985,7 @@ function renderOrders() {
       String(status || '').trim().toLowerCase()
     );
 
-  const isDrink = item =>
-    String(item.category || '').trim().toLowerCase() === 'getränke';
+  const isDrink = isDrinkCategory;
 
   // KÜCHE
   const ordersList = $('ordersList');
@@ -4520,7 +4510,7 @@ async function saveMenuEdit() {
     return;
   }
 
-  if (!['Essen', 'Getränke', 'Dessert', 'Sonstiges'].includes(category)) {
+  if (!['Essen', 'Snacks', 'Kalte Getränke', 'Warme Getränke', 'Getränke', 'Dessert', 'Sonstiges'].includes(category)) {
     say('Ungültige Kategorie.', true);
     return;
   }
