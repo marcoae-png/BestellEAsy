@@ -3120,6 +3120,20 @@ function renderMenu() {
     ? kategorienHTML + sonstigeHTML
     : '<p class="muted">Noch keine aktiven Menüartikel vorhanden. Admin muss zuerst Artikel erfassen.</p>';
 
+  // Artikelkacheln: Antippen fügt genau ein Stück zum Warenkorb hinzu.
+  menuGrid.querySelectorAll('[data-add-item]').forEach(card => {
+    card.addEventListener('click', () => {
+      addToCart(card.dataset.addItem);
+    });
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        addToCart(card.dataset.addItem);
+      }
+    });
+  });
+
+  // Minus-Schaltfläche entfernt ein Stück, ohne die Artikelkachel auszulösen.
   menuGrid.querySelectorAll('[data-remove-item]').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
