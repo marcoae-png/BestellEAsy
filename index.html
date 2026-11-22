@@ -39,13 +39,15 @@ section{padding:78px 0}.section-head{text-align:center;max-width:700px;margin:0 
 footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-inner{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}.footer-inner a{color:#fff;text-decoration:underline;text-underline-offset:3px}
 @media(max-width:850px){.hero-grid,.split{grid-template-columns:1fr;gap:35px}.hero{padding:60px 0}.mock-wrap{max-width:650px;margin:auto;width:100%}.features{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.container{width:min(100% - 28px,1160px)}.nav{height:66px}.navlinks{display:none}.nav .btn{padding:10px 13px;font-size:.85rem}.hero{padding:48px 0 54px}h1{font-size:2.8rem}.lead{font-size:1.04rem}.hero-actions .btn{width:100%}.trustline{gap:9px;display:grid}.features,.steps,.menuquick{grid-template-columns:1fr}section{padding:58px 0}.mock-tabs b{font-size:.68rem;padding:6px 7px}.mock-body{padding:12px}.mock-card{padding:10px}.floating{right:0;bottom:-14px}.bon:nth-child(2){margin-top:0}}
+.pricing{background:#fff}.plans{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;max-width:860px;margin:auto}.plan{border:1px solid var(--line);border-radius:20px;padding:30px;background:#fff;display:flex;flex-direction:column}.plan.hl{border:2px solid var(--green2);box-shadow:0 18px 44px #173d2b18}.plan .tag{align-self:flex-start;background:#fdebc8;color:#6b4a10;font-size:.76rem;font-weight:800;padding:4px 10px;border-radius:20px;margin-bottom:10px}.plan h3{margin:0 0 6px;font-size:1.3rem;color:#1b442e}.plan .price{font-size:2.6rem;font-weight:900;letter-spacing:-.05em;color:var(--green)}.plan .price small{font-size:1rem;font-weight:650;color:var(--muted);letter-spacing:0}.plan ul{list-style:none;padding:0;margin:20px 0 26px;color:#435249}.plan li{margin:9px 0}.plan li:before{content:"✓";font-weight:900;color:#398353;margin-right:9px}.plan .btn{margin-top:auto}.pricenote{text-align:center;color:var(--muted);font-size:.9rem;max-width:640px;margin:26px auto 0}
+@media(max-width:850px){.plans{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <header>
  <div class="container nav">
   <a class="brand" href="#start"><span class="logo">✓</span>BestellEAsy</a>
-  <nav class="navlinks"><a href="#funktionen">Funktionen</a><a href="#ablauf">So funktioniert's</a><a href="#drucker">Mit Drucker</a><a href="#vorteile">Vorteile</a></nav>
+  <nav class="navlinks"><a href="#funktionen">Funktionen</a><a href="#ablauf">So funktioniert's</a><a href="#drucker">Mit Drucker</a><a href="#vorteile">Vorteile</a><a href="#preise">Preise</a></nav>
   <a class="btn" href="https://marcoae-png.github.io/BestellEAsy/FestBestellung.html" target="_blank" rel="noopener">App öffnen ↗</a>
  </div>
 </header>
@@ -132,7 +134,7 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
    <div class="menuquick">
     <div class="mq"><b>1 · Artikel eingeben</b>Name, Kategorie und Preis unter «Menü verwalten» erfassen.</div>
     <div class="mq"><b>2 · Drucker verbinden</b>IP-Adresse von Küche und Theke einmal eintragen und Testdruck auslösen.</div>
-    <div class="mq"><b>3 · Losbestellen</b>Die Karte erscheint sofort in der Bestellansicht, die Bons drucken automatisch.</div>
+    <div class="mq"><b>3 · Loslegen</b>Die Karte erscheint sofort in der Bestellansicht, die Bons drucken automatisch.</div>
    </div>
   </div>
  </section>
@@ -166,14 +168,47 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
   </div>
  </section>
 
+ <section class="pricing" id="preise">
+  <div class="container">
+   <div class="section-head"><div class="kicker">Preise</div><h2>Einfach und transparent.</h2><p>Ein Preis pro Monat, alles inklusive. Bezahlt wird bequem per TWINT.</p></div>
+   <div class="plans">
+    <article class="plan">
+     <h3>Standard</h3>
+     <div class="price">CHF 200<small> / Monat</small></div>
+     <ul>
+      <li>Bestellen am Tisch für Service-Team</li>
+      <li>Küche, Theke und Läufer-Ansicht</li>
+      <li>Abrechnung und Tagesabschluss</li>
+      <li>Menükarte selbst erstellen</li>
+      <li>Team per Einladungscode einbinden</li>
+     </ul>
+     <a class="btn light" href="mailto:marco.aebersold@bluewin.ch?subject=BestellEAsy%20Standard%20(CHF%20200%2FMonat)">Standard anfragen</a>
+    </article>
+    <article class="plan hl">
+     <span class="tag">Mit Bon-Druck</span>
+     <h3>Mit Drucker</h3>
+     <div class="price">CHF 300<small> / Monat</small></div>
+     <ul>
+      <li>Alles aus Standard</li>
+      <li>Automatischer Bon für Küche und Theke</li>
+      <li>Anbindung von Epson-Netzwerkdruckern</li>
+      <li>Komplettset mit Druckern und Router auf Anfrage</li>
+     </ul>
+     <a class="btn" href="mailto:marco.aebersold@bluewin.ch?subject=BestellEAsy%20Mit%20Drucker%20(CHF%20300%2FMonat)">Mit Drucker anfragen</a>
+    </article>
+   </div>
+   <p class="pricenote">Bezahlung per TWINT. Nach Zahlungseingang wird dein Zugang freigeschaltet. Preise in CHF.</p>
+  </div>
+ </section>
+
  <section class="cta">
   <div class="container">
    <h2>Bereit für einen einfacheren Festbetrieb?</h2>
-   <p>Öffne BestellEAsy und entdecke, wie Bestellungen, Stationen und Auslieferung zentral zusammenspielen. Auch als Komplettset mit Druckern erhältlich – auf Anfrage.</p>
+   <p>Öffne BestellEAsy und entdecke, wie Bestellungen, Stationen und Auslieferung zentral zusammenspielen. Ab CHF 200 pro Monat. Auch als Komplettset mit Druckern erhältlich – auf Anfrage.</p>
    <a class="btn" href="https://marcoae-png.github.io/BestellEAsy/FestBestellung.html" target="_blank" rel="noopener">BestellEAsy ausprobieren ↗</a>
   </div>
  </section>
 </main>
-<footer><div class="container footer-inner"><span>© 2026 BestellEAsy · Digitale Bestelllösung für Veranstaltungen</span><span>Einfach bestellen. Gemeinsam abarbeiten.</span></div></footer>
+<footer><div class="container footer-inner"><span>© 2026 BestellEAsy · Digitale Bestelllösung für Veranstaltungen</span><span>Kontakt: <a href="mailto:marco.aebersold@bluewin.ch">marco.aebersold@bluewin.ch</a></span></div></footer>
 </body>
 </html>
