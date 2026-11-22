@@ -2691,8 +2691,8 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
 <h3>Drucker (Netzwerkdrucker)</h3>
 <p class="muted">
-  Pro Station kann ein Netzwerkdrucker eingetragen werden. Beim Absenden einer Bestellung
-  wird automatisch ein Bon gedruckt. Die Einstellungen gelten nur für dieses Gerät.
+  Küche und Theke haben je einen Netzwerkdrucker. Beim Absenden einer Bestellung
+  wird automatisch ein Bon gedruckt, der zusammen mit dem Tablar zum Läufer geht. Die Einstellungen gelten nur für dieses Gerät.
 </p>
 
 <div class="panel" style="background:#f3f7f4;box-shadow:none">
@@ -2708,13 +2708,6 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
         <option value="browser">Browser-Druckdialog (jeder Drucker)</option>
       </select>
     </div>
-    <div>
-      <label for="printCopies">Läufer-Bon</label>
-      <select id="printRunnerContent">
-        <option value="all">Komplette Bestellung</option>
-        <option value="none">Kein Läufer-Bon</option>
-      </select>
-    </div>
   </div>
 
   <div class="grid" style="margin-top:12px">
@@ -2726,17 +2719,12 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
       <label for="printBarIp">🍺 Theke – IP-Adresse (Getränke)</label>
       <input id="printBarIp" placeholder="z. B. 192.168.1.51">
     </div>
-    <div>
-      <label for="printRunnerIp">🏃 Läufer – IP-Adresse</label>
-      <input id="printRunnerIp" placeholder="z. B. 192.168.1.52">
-    </div>
   </div>
 
   <div class="actions" style="margin-top:14px">
     <button type="button" id="savePrinterBtn">Druckereinstellungen speichern</button>
     <button type="button" id="testPrintKitchenBtn" class="secondary">Testdruck Küche</button>
     <button type="button" id="testPrintBarBtn" class="secondary">Testdruck Theke</button>
-    <button type="button" id="testPrintRunnerBtn" class="secondary">Testdruck Läufer</button>
   </div>
   <div id="printerMsg" class="foot"></div>
 </div>
@@ -3265,7 +3253,7 @@ function showSuccessToast(message) {
 
 /* ===================== Drucker-Modul ===================== */
 const PRINT_KEY = 'bestelleasy.printer.v1';
-const printDefaults = { enabled:false, mode:'epos', kitchenIp:'', barIp:'', runnerIp:'', runnerContent:'all' };
+const printDefaults = { enabled:false, mode:'epos', kitchenIp:'', barIp:'' };
 
 function loadPrintCfg() {
   try { return { ...printDefaults, ...(JSON.parse(localStorage.getItem(PRINT_KEY) || '{}')) }; }
@@ -3279,8 +3267,6 @@ function fillPrintForm() {
   $('printMode').value = c.mode;
   $('printKitchenIp').value = c.kitchenIp;
   $('printBarIp').value = c.barIp;
-  $('printRunnerIp').value = c.runnerIp;
-  $('printRunnerContent').value = c.runnerContent;
 }
 
 function savePrintForm() {
@@ -3288,15 +3274,13 @@ function savePrintForm() {
     enabled: $('printEnabled').checked,
     mode: $('printMode').value,
     kitchenIp: $('printKitchenIp').value.trim(),
-    barIp: $('printBarIp').value.trim(),
-    runnerIp: $('printRunnerIp').value.trim(),
-    runnerContent: $('printRunnerContent').value
+    barIp: $('printBarIp').value.trim()
   };
   try { localStorage.setItem(PRINT_KEY, JSON.stringify(c)); $('printerMsg').textContent = '✓ Gespeichert.'; }
   catch (e) { $('printerMsg').textContent = 'Speichern nicht möglich: ' + e.message; }
 }
 
-const STATION_TITLE = { kitchen:'KÜCHE', bar:'THEKE', runner:'LÄUFER' };
+const STATION_TITLE = { kitchen:'KÜCHE', bar:'THEKE' };
 
 function ticketLines(job) {
   const d = new Date(job.time || Date.now());
@@ -3351,7 +3335,7 @@ function browserPrint(job) {
 
 async function printJob(job, cfg) {
   if (!job.items.length) return null;
-  const ipKey = { kitchen:'kitchenIp', bar:'barIp', runner:'runnerIp' }[job.station];
+  const ipKey = { kitchen:'kitchenIp', bar:'barIp' }[job.station];
   if (cfg.mode === 'browser') { browserPrint(job); return null; }
   const ip = cfg[ipKey];
   if (!ip) return STATION_TITLE[job.station] + ': keine IP eingetragen';
@@ -3375,7 +3359,6 @@ async function printOrderTickets(orderNo, table, method, cartItems) {
     { ...base, station:'kitchen', items: food },
     { ...base, station:'bar', items: drinks }
   ];
-  if (cfg.runnerContent === 'all') jobs.push({ ...base, station:'runner', items });
 
   const errors = (await Promise.all(jobs.map(j => printJob(j, cfg)))).filter(Boolean);
   if (errors.length) say('Druckproblem: ' + errors.join(' · '), true);
@@ -3393,7 +3376,6 @@ document.addEventListener('click', e => {
   if (id === 'savePrinterBtn') savePrintForm();
   if (id === 'testPrintKitchenBtn') { savePrintForm(); testPrint('kitchen'); }
   if (id === 'testPrintBarBtn') { savePrintForm(); testPrint('bar'); }
-  if (id === 'testPrintRunnerBtn') { savePrintForm(); testPrint('runner'); }
 });
 document.addEventListener('DOMContentLoaded', fillPrintForm);
 fillPrintForm();
