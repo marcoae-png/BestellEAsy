@@ -3057,8 +3057,7 @@ function showTab(tab) {
 
   activeTab = tab;
 
-  // Alle Ansichten ausblenden und nur den aktiven Bereich anzeigen
-  ['service', 'orders', 'bar', 'runner', 'closing', 'admin', 'team']
+  ['service', 'orders', 'bar', 'runner', 'closing', 'admin', 'team', 'operator']
     .forEach(t => {
       const view = $(t + 'View');
       if (view) {
@@ -3066,30 +3065,25 @@ function showTab(tab) {
       }
     });
 
-  // Aktiven Reiter markieren
   $('tabs').querySelectorAll('button').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === tab);
   });
 
+  if (['service', 'orders', 'bar', 'runner'].includes(tab)) {
+    refreshOrders();
+  }
 
-if (['service', 'orders', 'bar', 'runner'].includes(tab)) {
-  refreshOrders();
-}
-
-if (tab === 'service') {
-  loadOpenAmounts();
-}
+  if (tab === 'service') {
+    loadOpenAmounts();
+  }
 
   if (tab === 'admin') { loadAdmin(); fetchPrintCfg(true).then(fillPrintForm); }
   if (tab === 'team') loadTeam();
-  if (tab === 'closing') loadClosingHistory();
   if (tab === 'operator') loadOperator();
+  if (tab === 'closing') loadClosingHistory();
 
   clearSay();
 }
-
-
-
 
 
 
