@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- saved from url=(0076)https://marcoae-png.github.io/bfs-delegiertenversammlung/FestBestellung.html -->
 <html lang="de-CH"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta property="og:type" content="website">
@@ -3275,7 +3274,7 @@ const PLANS = {
   printer:  { name: 'Mit Drucker', price: 300, text: 'Alles aus Standard plus automatischer Bon-Druck für Küche und Theke' }
 };
 // Betreiber: E-Mail für die Zahlungsmeldung, optional TWINT-Nummer und QR-Bild (Datei twint-qr.png neben dieser Seite)
-const BETREIBER = { email: 'marco.aebersold@bluewin.ch', twint: '', qrDatei: 'twint-qr.png' };
+const BETREIBER = { email: 'marco.aebersold@bluewin.ch', twint: '+41 79 718 04 01', qrDatei: 'twint-qr.png' };
 let subscriptionActive = false, subscriptionPlan = '', payTimer = null;
 
 async function checkSubscription() {
@@ -3351,7 +3350,7 @@ function renderPaywall(sub) {
     <div class="pay-box">
       <strong>So bezahlst du per TWINT:</strong><br>
       1. Standard: CHF ${PLANS.standard.price} oder Mit Drucker: CHF ${PLANS.printer.price} pro Monat.<br>
-      2. Sende den Betrag per TWINT an den Betreiber${BETREIBER.twint ? ' (' + esc(BETREIBER.twint) + ')' : ''}.<br>
+          2. Sende den Betrag per TWINT an Marco Aebersold, <strong>${esc(BETREIBER.twint)}</strong>.<br>
       3. Schreibe in die Mitteilung: <strong>${esc(verein)}, ${esc(mail)}</strong>
     </div>
     <div class="pay-qr-row">
