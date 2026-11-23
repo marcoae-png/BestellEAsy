@@ -1559,11 +1559,17 @@ button[data-edit-menu]:disabled {
 #tabs button.active::before { box-shadow: 0 0 0 2px rgba(255, 255, 255, .9); }
 #tabs button.active:focus-visible { outline: 3px solid #8ab99a; outline-offset: 2px; }
 
+  
 /* Kopfbereich: Slogan unter dem Titel, Vereinsname neben dem Benutzer */
 #headerSlogan { display: block; opacity: .9; font-size: .9rem; }
 #orgLabel { font-weight: 700; }
 #orgLabel:not(:empty)::after { content: " ·"; margin: 0 4px 0 2px; font-weight: 400; opacity: .8; }
 
+/* Anzeige der Abo-Dauer in der Kopfzeile */
+#subLabel:not(:empty)::after { content: " ·"; margin: 0 4px 0 2px; font-weight: 400; opacity: .8; }
+#subLabel.sub-warn { background: #ffd84d; color: #493700; border-radius: 6px; padding: 2px 8px; margin-right: 6px; font-weight: 700; }
+#subLabel.sub-warn::after { content: none; }
+  
 /* Impressum und Datenschutz */
 .site-foot { text-align: center; padding: 18px 12px 110px; font-size: .88rem; color: #66716a; }
 .site-foot button, .legal-link {
@@ -1610,6 +1616,13 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 .plan-card{background:#f1f6f2;border-radius:12px;padding:16px}
 .plan-card h3{margin:0 0 4px}.plan-card .plan-price{font-weight:700}
 .plan-card a{display:inline-block;margin-top:10px;color:#245c3b;font-weight:700;text-decoration:underline}
+
+/* Anzeige der Abo-Dauer in der Kopfzeile */
+#subLabel:not(:empty)::after { content: " ·"; margin: 0 4px 0 2px; font-weight: 400; opacity: .8; }
+#subLabel.sub-warn { background: #ffd84d; color: #493700; border-radius: 6px; padding: 2px 8px; margin-right: 6px; font-weight: 700; }
+#subLabel.sub-warn::after { content: none; }
+
+  
 </style>
 </head>
 <body>
