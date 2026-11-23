@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- saved from url=(0076)https://marcoae-png.github.io/bfs-delegiertenversammlung/FestBestellung.html -->
 <html lang="de-CH"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta property="og:type" content="website">
@@ -1560,11 +1559,18 @@ button[data-edit-menu]:disabled {
 #tabs button.active::before { box-shadow: 0 0 0 2px rgba(255, 255, 255, .9); }
 #tabs button.active:focus-visible { outline: 3px solid #8ab99a; outline-offset: 2px; }
 
+  
 /* Kopfbereich: Slogan unter dem Titel, Vereinsname neben dem Benutzer */
 #headerSlogan { display: block; opacity: .9; font-size: .9rem; }
 #orgLabel { font-weight: 700; }
 #orgLabel:not(:empty)::after { content: " ·"; margin: 0 4px 0 2px; font-weight: 400; opacity: .8; }
 
+/* Anzeige der Abo-Dauer in der Kopfzeile */
+#subLabel:not(:empty)::after { content: " ·"; margin: 0 4px 0 2px; font-weight: 400; opacity: .8; }
+#subLabel.sub-warn { background: #ffd84d; color: #493700; border-radius: 6px; padding: 2px 8px; margin-right: 6px; font-weight: 700; }
+#subLabel.sub-warn::after { content: none; }
+  .upgrade-btn { display: inline-block; background: #f3a22b; color: #2a200d; font-weight: 700; border-radius: 9px; padding: 11px 14px; text-decoration: none; } 
+  
 /* Impressum und Datenschutz */
 .site-foot { text-align: center; padding: 18px 12px 110px; font-size: .88rem; color: #66716a; }
 .site-foot button, .legal-link {
@@ -1611,6 +1617,8 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 .plan-card{background:#f1f6f2;border-radius:12px;padding:16px}
 .plan-card h3{margin:0 0 4px}.plan-card .plan-price{font-weight:700}
 .plan-card a{display:inline-block;margin-top:10px;color:#245c3b;font-weight:700;text-decoration:underline}
+
+  
 </style>
 </head>
 <body>
@@ -1641,6 +1649,7 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
   <div class="actions">
     <span id="orgLabel" class="statusline"></span>
+ <span id="subLabel" class="statusline"></span>
     <span id="userLabel" class="statusline"></span>
     <button id="logoutBtn" class="secondary hidden" type="button">
       Abmelden
@@ -2722,6 +2731,9 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
     <input type="checkbox" id="printEnabled" style="width:auto"> Bons automatisch drucken (Küche und Theke)
   </label>
   <p class="muted" id="printPlanHint" style="margin:8px 0 0"></p>
+    <div id="printUpgradeBox" class="hidden" style="margin-top:10px">
+    <a id="printUpgradeBtn" class="upgrade-btn" href="#">Auf «Mit Drucker» upgraden</a>
+  </div>
 
   <div class="actions" style="margin-top:14px">
         <button type="button" id="testPrintKitchenBtn" class="secondary">Testdruck Küche</button>
@@ -2758,6 +2770,13 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 <button type="button" id="resetTodayOrdersBtn" class="danger">
   Heutige Bestellungen zurücksetzen
 </button>
+</section>
+
+  <section id="operatorView" class="panel hidden">
+  <h2 class="section-title">Betreiber: Vereine &amp; Zugänge</h2>
+  <p class="muted">Zahlung eingegangen? Paket wählen und die Laufzeit verlängern. Die Verlängerung rechnet ab dem bisherigen Ablauf, oder ab heute, falls er schon vorbei ist.</p>
+  <div class="actions" style="margin-bottom:12px"><button type="button" id="operatorReloadBtn" class="secondary">Liste aktualisieren</button></div>
+  <div id="operatorList"></div>
 </section>
 
 <section id="teamView" class="panel hidden">
@@ -2885,6 +2904,7 @@ function firstTab(){return ['service','orders','closing','admin'].find(allowed) 
 
 
 function allowed(tab) {
+  if (tab === 'operator') return isOperator;
   const erlaubt = {
     admin:   ['service', 'orders', 'bar', 'runner', 'closing', 'admin', 'team'],
     service: ['service', 'orders', 'bar', 'runner'],
@@ -2934,4 +2954,2996 @@ async function loadOpenAmounts() {
     );
 
     if (!rows.length || total <= 0) {
-      el.style.color = '#16803
+      el.style.color = '#16803c';
+      el.closest('.open-amounts-box')?.classList.add('open-amounts-ok');
+      el.textContent = '✓ Keine offenen Beträge.';
+      return 0;
+    }
+
+    el.style.color = '#b42318';
+    el.closest('.open-amounts-box')?.classList.remove('open-amounts-ok');
+
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;
+                  gap:8px;font-size:0.9rem;margin-bottom:4px">
+        <span>Gesamt offen</span>
+        <strong>CHF ${total.toFixed(2)}</strong>
+      </div>
+      <div style="font-size:0.75rem;color:#666;margin-bottom:4px">
+        ${rows.length} offene ${rows.length === 1 ? 'Tisch' : 'Tische'}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px 12px;font-size:0.8rem">
+        ${rows.map(row => `
+          <span>
+            Tisch ${row.table_number}:
+            <strong>CHF ${Number(row.open_amount).toFixed(2)}</strong>
+          </span>
+        `).join('')}
+      </div>
+    `;
+    return total;
+  } catch (err) {
+    console.error('loadOpenAmounts:', err);
+    el.textContent = 'Fehler beim Laden der offenen Beträge.';
+    return null;
+  }
+}
+
+
+
+
+
+
+
+
+
+function renderTabs() {
+  const all = [
+    ['service', 'Neue Bestellung'],
+    ['orders', 'Küche'],
+    ['bar', 'Theke / Ausschank'],
+    ['runner', 'Läufer'],
+    ['closing', 'Tagesabschluss'],
+    ['admin', 'Menü verwalten'],
+    ['team', 'Team'],
+    ['operator', 'Betreiber']
+  ];
+
+  const tabs = $('tabs');
+  if (!tabs) {
+    console.error('HTML-Element #tabs fehlt.');
+    return;
+  }
+
+  tabs.innerHTML = all
+    .filter(([tab]) => allowed(tab))
+    .map(([tab, name]) =>
+      `<button type="button" data-tab="${tab}" class="${tab === activeTab ? 'active' : ''}">${name}</button>`
+    )
+    .join('');
+
+  tabs.querySelectorAll('button').forEach(button => {
+    button.addEventListener('click', () => showTab(button.dataset.tab));
+  });
+
+  const tableNumber = $('tableNumber');
+  if (tableNumber) {
+    tableNumber.innerHTML = Array.from(
+      { length: 30 },
+      (_, i) => `<option value="${i + 1}">Tisch ${i + 1}</option>`
+    ).join('');
+  }
+
+  const closingDate = $('closingDate');
+  if (closingDate) {
+    closingDate.value = new Date().toLocaleDateString('en-CA');
+  }
+
+  console.log(
+    'Erzeugte Tabs:',
+    [...tabs.querySelectorAll('button')].map(button => button.dataset.tab)
+  );
+}
+
+
+
+
+
+
+
+
+function showTab(tab) {
+  if (!allowed(tab)) return;
+
+  activeTab = tab;
+
+  ['service', 'orders', 'bar', 'runner', 'closing', 'admin', 'team', 'operator']
+    .forEach(t => {
+      const view = $(t + 'View');
+      if (view) {
+        view.classList.toggle('hidden', t !== tab);
+      }
+    });
+
+  $('tabs').querySelectorAll('button').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+
+  if (['service', 'orders', 'bar', 'runner'].includes(tab)) {
+    refreshOrders();
+  }
+
+  if (tab === 'service') {
+    loadOpenAmounts();
+  }
+
+  if (tab === 'admin') { loadAdmin(); fetchPrintCfg(true).then(fillPrintForm); }
+  if (tab === 'team') loadTeam();
+  if (tab === 'operator') loadOperator();
+  if (tab === 'closing') loadClosingHistory();
+
+  clearSay();
+}
+
+
+
+async function loadMenu(){const {data,error}=await sb.from('menu_items').select('id,name,category,price,active').eq('active',true).order('category').order('name');if(error)throw error;menu=data||[];renderMenu();}
+
+
+
+
+function renderMenu() {
+  const menuGrid = $('menuGrid');
+  if (!menuGrid) return;
+
+  const kategorien = [
+    'Essen',
+    'Snacks',
+    'Kalte Getränke',
+    'Warme Getränke',
+    'Getränke',
+    'Dessert',
+    'Sonstiges'
+  ];
+  const kategorienIcons = {
+    'Essen': '🍽️',
+    'Snacks': '🥨',
+    'Kalte Getränke': '🧊',
+    'Warme Getränke': '☕',
+    'Getränke': '🥤',
+    'Dessert': '🍰',
+    'Sonstiges': '📦'
+  };
+
+  function artikelHTML(m) {
+    const q = cart.get(m.id)?.quantity || 0;
+    return `
+      <article class="item menu-item-card ${q ? 'selected' : ''}"
+        role="button" tabindex="0"
+        aria-label="${esc(m.name)} hinzufügen, aktueller Warenkorb: ${q} Stück"
+        data-add-item="${esc(String(m.id))}">
+        <div class="menu-item-content">
+          <h3>${esc(m.name)}</h3>
+          <div class="price">${money(m.price)}</div>
+        </div>
+        <div class="tile-bottom">
+          <span class="tile-hint"><span aria-hidden="true">＋</span> 1 Stück hinzufügen</span>
+          <span class="tile-count-wrap">
+            ${q ? `<button type="button" class="tile-minus" data-remove-item="${esc(String(m.id))}" aria-label="${esc(m.name)} entfernen">−</button>` : ''}
+            <span class="cart-count">${q} Stk.</span>
+          </span>
+        </div>
+      </article>`;
+  }
+
+  function kategorieHTML(kategorie, artikel) {
+    if (!artikel.length) return '';
+    const slug = kategorie.toLowerCase()
+      .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+    // Bereits vorhandene Artikel der alten Kategorie "Getränke" bleiben sichtbar.
+    if (kategorie === 'Getränke') {
+      const istWarm = m => /kaffee|kafi|tee|espresso|cappuccino|latte|schoggi|heiss|getränk warm|punsch|zwetschgen luz/i.test(String(m.name || ''));
+      const istGratis = m => Number(m.price) === 0 || /gratis/i.test(String(m.name || ''));
+      const gratis = artikel.filter(istGratis);
+      const bezahlt = artikel.filter(m => !istGratis(m));
+      const warm = bezahlt.filter(istWarm);
+      const kalt = bezahlt.filter(m => !istWarm(m));
+      const subgroup = (titel, icon, liste, klasse) => !liste.length ? '' : `
+        <div class="drink-subgroup drink-subgroup-${klasse}">
+          <h3 class="drink-subgroup-title"><span aria-hidden="true">${icon}</span> ${titel}<span class="drink-subgroup-count">${liste.length}</span></h3>
+          <div class="menu-category-grid">${liste.map(artikelHTML).join('')}</div>
+        </div>`;
+      return `
+        <section class="menu-category menu-category-getränke">
+          <h2 class="menu-category-title"><span aria-hidden="true">🥤</span> Getränke
+            <span class="menu-category-count">${artikel.length} Artikel</span></h2>
+          ${subgroup('Kalte Getränke', '🧊', kalt, 'kalt')}
+          ${subgroup('Warme Getränke', '☕', warm, 'warm')}
+          ${subgroup('Gratisgetränke', '🎁', gratis, 'gratis')}
+        </section>`;
+    }
+
+    return `
+      <section class="menu-category menu-category-${slug}">
+        <h2 class="menu-category-title">
+          <span aria-hidden="true">${kategorienIcons[kategorie] || '📦'}</span>
+          ${esc(kategorie)}
+          <span class="menu-category-count">${artikel.length} Artikel</span>
+        </h2>
+        <div class="menu-category-grid">${artikel.map(artikelHTML).join('')}</div>
+      </section>`;
+  }
+
+  const bekannte = kategorien.filter(k => k !== 'Sonstiges');
+  const kategorienHTML = bekannte.map(kategorie => {
+    const artikel = menu.filter(m =>
+      String(m.category || '').trim().toLowerCase() === kategorie.toLowerCase()
+    );
+    return kategorieHTML(kategorie, artikel);
+  }).join('');
+
+  const sonstige = menu.filter(m =>
+    !bekannte.some(k =>
+      String(m.category || '').trim().toLowerCase() === k.toLowerCase()
+    )
+  );
+  const sonstigeHTML = kategorieHTML('Sonstiges', sonstige);
+
+  menuGrid.innerHTML = menu.length
+    ? kategorienHTML + sonstigeHTML
+    : '<p class="muted">Noch keine aktiven Menüartikel vorhanden. Admin muss zuerst Artikel erfassen.</p>';
+
+  // Artikelkacheln: Antippen fügt genau ein Stück zum Warenkorb hinzu.
+  menuGrid.querySelectorAll('[data-add-item]').forEach(card => {
+    card.addEventListener('click', () => {
+      addToCart(card.dataset.addItem);
+    });
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        addToCart(card.dataset.addItem);
+      }
+    });
+  });
+
+  // Minus-Schaltfläche entfernt ein Stück, ohne die Artikelkachel auszulösen.
+  menuGrid.querySelectorAll('[data-remove-item]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      removeFromCart(btn.dataset.removeItem);
+    });
+    btn.addEventListener('keydown', e => e.stopPropagation());
+  });
+
+  // Warenkorb-Summe und Senden-Button nach jedem Render aktualisieren.
+  updateCartTotal();
+}
+
+
+
+
+
+
+
+
+function clearSelection() {
+  cart.clear();
+  renderMenu();
+}
+
+function addToCart(id){
+  const item=menu.find(m=>m.id===id);
+  if(!item)return;
+  const current=cart.get(id)?.quantity||0;
+  if(current>=99){say('Maximal 99 Stück pro Produkt möglich.',true);return;}
+  cart.set(id,{menu_item_id:id,quantity:current+1,name:item.name,price:Number(item.price)});
+  renderMenu();
+}
+function removeFromCart(id){
+  const cur=cart.get(id);
+  if(!cur)return;
+  if(cur.quantity<=1)cart.delete(id);
+  else cart.set(id,{...cur,quantity:cur.quantity-1});
+  renderMenu();
+}
+function updateCartTotal(){let total=0;for(const v of cart.values())total+=v.quantity*v.price;$('cartTotal').textContent=money(total);$('submitOrderBtn').disabled=cart.size===0;}
+
+
+
+
+
+function showSuccessToast(message) {
+  let toast = document.getElementById('successToast');
+
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'successToast';
+    toast.className = 'success-toast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = message;
+  toast.classList.remove('show');
+
+  clearTimeout(toast.hideTimer);
+
+  requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+
+  toast.hideTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
+
+
+
+
+
+/* ===================== Zugang / Freischaltung ===================== */
+const PLANS = {
+  standard: { name: 'Standard', price: 200, text: 'Bestellungen, Küche, Theke, Läufer, Abrechnung, Tagesabschluss' },
+  printer:  { name: 'Mit Drucker', price: 300, text: 'Alles aus Standard plus automatischer Bon-Druck für Küche und Theke' }
+};
+// Betreiber: E-Mail für die Zahlungsmeldung, optional TWINT-Nummer und QR-Bild (Datei twint-qr.png neben dieser Seite)
+const BETREIBER = { email: 'marco.aebersold@bluewin.ch', twint: '+41 79 718 04 01', qrDatei: 'twint-qr.png' };
+let subscriptionActive = false, subscriptionPlan = '', subscriptionUntil = '', payTimer = null;
+
+function updateSubLabel() {
+  const el = $('subLabel');
+  if (!el) return;
+  if (!subscriptionActive || !subscriptionUntil) { el.textContent = ''; el.className = 'statusline'; return; }
+  const heute = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
+  const tage = Math.round((Date.parse(subscriptionUntil) - Date.parse(heute)) / 86400000);
+  const datum = subscriptionUntil.split('-').reverse().join('.');
+  const paket = PLANS[subscriptionPlan]?.name || subscriptionPlan;
+  el.textContent = paket + ' bis ' + datum +
+    (tage <= 0 ? ' (letzter Tag)' : tage === 1 ? ' (noch 1 Tag)' : ' (noch ' + tage + ' Tage)');
+  el.className = 'statusline' + (tage <= 7 ? ' sub-warn' : '');
+}
+
+async function checkSubscription() {
+  // Bei jedem Fehler gilt der Zugang als NICHT freigeschaltet (Neuladen darf nichts umgehen)
+  try {
+    const { data, error } = await sb.rpc('my_subscription');
+    if (error) throw error;
+    const r = Array.isArray(data) ? data[0] : data;
+    return { active: !!r?.active, plan: r?.plan || 'standard', until: r?.active_until || null, error: null };
+  } catch (e) {
+    console.error('my_subscription:', e);
+    return { active: false, plan: 'standard', until: null, error: e?.message || String(e) };
+  }
+}
+
+function stopPayPoll() { if (payTimer) { clearInterval(payTimer); payTimer = null; } }
+
+function startPayPoll() {
+  stopPayPoll();
+  payTimer = setInterval(async () => {
+    if (document.hidden || !currentUser) return;
+    const s2 = await checkSubscription();
+    if (s2.active) { stopPayPoll(); await onSignedIn(currentUser); }
+  }, 15000);
+}
+
+function hidePaywall(sub) {
+  subscriptionActive = true;
+  subscriptionPlan = sub?.plan || 'standard';
+  subscriptionUntil = sub?.until || '';
+  updateSubLabel();
+  stopPayPoll();
+  $('payPanel')?.classList.add('hidden');
+}
+
+function mailtoZahlung(planKey) {
+  const pl = PLANS[planKey];
+  const verein = profile?.org_name || '';
+  const mail = profile?.email || currentUser?.email || '';
+  const betreff = 'BestellEAsy: Zahlung ' + pl.name + ' – ' + verein;
+  const text = 'Hallo\n\nIch habe CHF ' + pl.price + ' per TWINT bezahlt.\n\nPaket: ' + pl.name +
+    '\nVerein: ' + verein + '\nE-Mail: ' + mail + '\n\nBitte den Zugang freischalten.';
+  return 'mailto:' + BETREIBER.email + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(text);
+}
+
+function renderPaywall(sub) {
+  const el = $('payContent');
+  if (!el) return;
+  const verein = profile?.org_name || '';
+  const mail = profile?.email || currentUser?.email || '';
+  const istAdmin = profile?.role === 'admin';
+  const abgelaufen = sub?.until ? new Date(sub.until).toLocaleDateString('de-CH') : '';
+
+  let kopf = sub?.error
+    ? '<div class="msg error">Der Zugang konnte nicht geprüft werden: ' + esc(sub.error) + '<br>Bitte Internetverbindung prüfen und «Neu prüfen» drücken.</div>'
+    : abgelaufen
+      ? '<div class="msg">Der Zugang von «' + esc(verein) + '» ist am ' + esc(abgelaufen) + ' abgelaufen.</div>'
+      : '<div class="msg">Dein Anlass «' + esc(verein) + '» ist noch nicht freigeschaltet.</div>';
+
+  if (!istAdmin) {
+    el.innerHTML = kopf + '<p class="muted">Bitte den Admin deines Vereins bitten, den Zugang freizuschalten. Sobald das geschehen ist, geht es hier automatisch weiter.</p>' +
+      '<div class="actions"><button type="button" id="payRecheckBtn">Neu prüfen</button></div>';
+    return;
+  }
+
+  const karten = Object.entries(PLANS).map(([k, pl]) => `
+    <div class="plan-card">
+      <h3>${esc(pl.name)}</h3>
+      <div class="plan-price">CHF ${pl.price} / Monat</div>
+      <div class="muted">${esc(pl.text)}</div>
+      <a href="${esc(mailtoZahlung(k))}">Zahlung per E-Mail melden</a>
+    </div>`).join('');
+
+  el.innerHTML = kopf + `
+    <div class="pay-box">
+      <strong>So bezahlst du per TWINT:</strong><br>
+      1. Standard: CHF ${PLANS.standard.price} oder Mit Drucker: CHF ${PLANS.printer.price} pro Monat.<br>
+          2. Sende den Betrag per TWINT an Marco Aebersold, <strong>${esc(BETREIBER.twint)}</strong>.<br>
+      3. Schreibe in die Mitteilung: <strong>${esc(verein)}, ${esc(mail)}</strong>
+    </div>
+    <div class="pay-qr-row">
+      <img id="twintQr" class="hidden" src="${esc(BETREIBER.qrDatei)}" alt="TWINT QR-Code" onload="this.classList.remove('hidden')" onerror="this.parentNode.remove()">
+    </div>
+    <div class="plan-grid">${karten}</div>
+    <p class="foot">Nach Zahlungseingang wird dein Zugang freigeschaltet (in der Regel am selben Tag). Diese Seite prüft automatisch alle 15 Sekunden – oder hier «Neu prüfen» drücken.</p>
+    <div class="actions"><button type="button" id="payRecheckBtn">Neu prüfen</button></div>`;
+}
+
+function showPaywall(sub) {
+  subscriptionActive = false;
+  subscriptionPlan = '';
+  subscriptionUntil = '';
+  updateSubLabel();
+  $('loginPanel')?.classList.add('hidden');
+  $('orgPanel')?.classList.add('hidden');
+  $('appPanel')?.classList.add('hidden');
+  $('payPanel')?.classList.remove('hidden');
+  $('logoutBtn')?.classList.remove('hidden');
+  if ($('userLabel')) $('userLabel').textContent = profile?.display_name || profile?.email || '';
+  renderPaywall(sub);
+  startPayPoll();
+}
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('#payRecheckBtn');
+  if (!b) return;
+  b.disabled = true;
+  const s2 = await checkSubscription();
+  if (s2.active) { stopPayPoll(); await onSignedIn(currentUser); return; }
+  renderPaywall(s2);
+  say(s2.error ? 'Prüfung fehlgeschlagen: ' + s2.error : 'Noch nicht freigeschaltet. Nach Zahlungseingang geht es hier automatisch weiter.', !!s2.error);
+});
+
+// Läuft der Zugang während des Betriebs ab, kommt die Zahlungsseite wieder
+setInterval(async () => {
+  if (!subscriptionActive || !currentUser || !sb || document.hidden) return;
+  const s2 = await checkSubscription();
+  if (s2.error) return;
+  if (!s2.active) showPaywall(s2);
+  else {
+    subscriptionPlan = s2.plan;
+    subscriptionUntil = s2.until || '';
+    updateSubLabel();
+    fillPrintForm();
+  }
+}, 60000);
+/* =================== Ende Zugang / Freischaltung =================== */
+
+  /* ===================== Betreiber-Bereich ===================== */
+let isOperator = false;
+
+async function checkOperator() {
+  try {
+    const { data, error } = await sb.rpc('is_operator');
+    isOperator = !error && data === true;
+  } catch (e) { isOperator = false; }
+}
+
+async function loadOperator() {
+  const el = $('operatorList');
+  if (!isOperator || !el) return;
+  try {
+    const { data, error } = await sb.rpc('operator_list_orgs');
+    if (error) throw error;
+    const heute = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
+    const fmt = d => d ? d.split('-').reverse().join('.') : '–';
+    el.innerHTML = (data && data.length)
+      ? `<table class="table"><thead><tr><th>Verein</th><th>Paket</th><th>Bis</th><th>Status</th><th>Mitglieder</th><th>Verlängern</th></tr></thead><tbody>${
+        data.map(o => {
+          const aktiv = o.plan !== 'none' && o.paid_until && o.paid_until >= heute;
+          const status = aktiv ? '<span class="pill green">aktiv</span>'
+            : (o.plan !== 'none' && o.paid_until ? '<span class="pill red">abgelaufen</span>' : '<span class="pill">nicht freigeschaltet</span>');
+          const eigener = o.id === profile?.organization_id;
+          return `<tr>
+            <td><strong>${esc(o.name)}</strong></td>
+            <td><select data-op-plan="${esc(o.id)}">${
+              [['none', 'Kein Zugang'], ['standard', 'Standard'], ['printer', 'Mit Drucker']]
+                .map(([k, v]) => `<option value="${k}" ${k === o.plan ? 'selected' : ''}>${v}</option>`).join('')
+            }</select></td>
+            <td>${esc(fmt(o.paid_until))}</td>
+            <td>${status}</td>
+            <td>${Number(o.members)}</td>
+            <td><div class="actions">
+              <button type="button" data-op-org="${esc(o.id)}" data-op-months="1">+1 Monat</button>
+              <button type="button" data-op-org="${esc(o.id)}" data-op-months="3">+3</button>
+              <button type="button" data-op-org="${esc(o.id)}" data-op-months="12">+12</button>
+              <button type="button" class="secondary" data-op-org="${esc(o.id)}" data-op-months="0">Nur Paket speichern</button>
+              <button type="button" class="danger" data-op-delete="${esc(o.id)}" data-op-name="${esc(o.name)}" ${eigener ? 'disabled title="Dein eigener Verein"' : ''}>Löschen</button>
+            </div></td>
+          </tr>`;
+        }).join('')
+      }</tbody></table>`
+      : '<p class="muted">Noch keine Vereine.</p>';
+  } catch (e) {
+    say('Betreiberliste konnte nicht geladen werden: ' + (e?.message || e), true);
+  }
+}
+
+document.addEventListener('click', async e => {
+  if (e.target.closest('#operatorReloadBtn')) { loadOperator(); return; }
+  const b = e.target.closest('[data-op-org]');
+  if (!b || !isOperator) return;
+  const id = b.dataset.opOrg;
+  const months = Number(b.dataset.opMonths || 0);
+  const sel = document.querySelector(`[data-op-plan="${CSS.escape(id)}"]`);
+  if (!sel) return;
+  b.disabled = true;
+  try {
+    const { error } = await sb.rpc('operator_set_subscription', { p_org: id, p_plan: sel.value, p_months: months });
+    if (error) throw error;
+    showSuccessToast('✓ Gespeichert.');
+    await loadOperator();
+  } catch (err) {
+    b.disabled = false;
+    say('Konnte nicht gespeichert werden: ' + (err?.message || err), true);
+  }
+});
+/* =================== Ende Betreiber-Bereich =================== */
+
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-op-delete]');
+  if (!b || !isOperator || b.disabled) return;
+  const name = b.dataset.opName || '';
+  const eingabe = prompt(
+    'Verein «' + name + '» endgültig löschen?\n\n' +
+    'Das entfernt den Verein mit seinen Daten und lässt sich nicht rückgängig machen.\n' +
+    'Zum Bestätigen den Namen des Vereins eintippen:'
+  );
+  if (eingabe === null) return;
+  if (eingabe.trim() !== name) { say('Der Name stimmt nicht überein. Es wurde nichts gelöscht.', true); return; }
+  b.disabled = true;
+  try {
+    const { error } = await sb.rpc('operator_delete_org', { p_org: b.dataset.opDelete });
+    if (error) throw error;
+    showSuccessToast('✓ Verein «' + name + '» wurde gelöscht.');
+    await loadOperator();
+  } catch (err) {
+    b.disabled = false;
+    say('Verein konnte nicht gelöscht werden: ' + (err?.message || err), true);
+  }
+});
+
+  
+
+/* ===================== Drucker-Modul ===================== */
+// Vom Vermieter vorinstalliert (gilt für alle Mietsets, hier einmal anpassen).
+// Mieter können nur «Drucken aktivieren» ein- oder ausschalten.
+const PRINTER_VORGABE = { mode:'epos', proto:'http', ascii:false, kitchenIp:'192.168.10.50', barIp:'192.168.10.51' };
+const printDefaults = { enabled:false, ...PRINTER_VORGABE };
+
+let printCfgCache = null, printCfgFetchedAt = 0;
+
+function loadPrintCfg() { return { ...printDefaults, ...(printCfgCache || {}) }; }
+
+// Pro Verein wird nur gespeichert, ob gedruckt werden soll (und optional abweichende IP-Adressen, vom Vermieter gesetzt)
+async function fetchPrintCfg(force) {
+  if (!sb || !profile?.organization_id) return;
+  if (!force && Date.now() - printCfgFetchedAt < 60000) return;
+  try {
+    const { data, error } = await sb.from('org_printer_settings')
+      .select('enabled, kitchen_ip, bar_ip')
+      .eq('organization_id', profile.organization_id)
+      .maybeSingle();
+    if (error) throw error;
+    printCfgFetchedAt = Date.now();
+    printCfgCache = { enabled: !!data?.enabled };
+    if (data?.kitchen_ip) printCfgCache.kitchenIp = data.kitchen_ip;
+    if (data?.bar_ip) printCfgCache.barIp = data.bar_ip;
+  } catch (e) { console.warn('Druckereinstellungen nicht geladen:', e.message); }
+}
+
+function mailtoUpgrade() {
+  const pl = PLANS.printer;
+  const verein = profile?.org_name || '';
+  const mail = profile?.email || currentUser?.email || '';
+  const betreff = 'BestellEAsy: Upgrade auf ' + pl.name + ' – ' + verein;
+  const text = 'Hallo\n\nIch möchte auf das Paket «' + pl.name + '» (CHF ' + pl.price + ' / Monat) wechseln.\n\n' +
+    'Verein: ' + verein + '\nE-Mail: ' + mail + '\n\nBitte teile mir mit, was ich per TWINT bezahlen muss.';
+  return 'mailto:' + BETREIBER.email + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(text);
+}
+
+function fillPrintForm() {
+  const box = $('printEnabled');
+  if (!box) return;
+  const frei = subscriptionPlan === 'printer';
+  box.checked = frei && !!loadPrintCfg().enabled;
+  box.disabled = !frei;
+  const hint = $('printPlanHint');
+  if (hint) hint.textContent = frei ? '' : 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten.';
+  $('printUpgradeBox')?.classList.toggle('hidden', frei);
+  const a = $('printUpgradeBtn');
+  if (a && !frei) a.href = mailtoUpgrade();
+}
+
+async function setPrintingEnabled(on) {
+  const msg = $('printerMsg');
+  if (subscriptionPlan !== 'printer') { msg.textContent = 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten.'; fillPrintForm(); return; }
+  try {
+    const { error } = await sb.rpc('set_printing_enabled', { p_enabled: on });
+    if (error) throw error;
+    printCfgCache = { ...(printCfgCache || {}), enabled: on };
+    printCfgFetchedAt = Date.now();
+    msg.textContent = on ? '✓ Bon-Druck ist aktiviert.' : 'Bon-Druck ist ausgeschaltet.';
+  } catch (e) {
+    msg.textContent = '⚠ Konnte nicht gespeichert werden: ' + (e?.message || e);
+    fillPrintForm();
+  }
+}
+
+const STATION_TITLE = { kitchen:'KÜCHE', bar:'THEKE' };
+
+function ticketLines(job) {
+  const d = new Date(job.time || Date.now());
+  const zeit = d.toLocaleString('de-CH', { dateStyle:'short', timeStyle:'short' });
+  return {
+    head: STATION_TITLE[job.station] + (job.orderNo ? '  #' + job.orderNo : ''),
+    table: 'TISCH ' + job.table,
+    sub: zeit + (job.payment ? '  |  ' + job.payment : ''),
+    items: job.items.map(i => i.quantity + ' x ' + i.name)
+  };
+}
+
+function eposXml(job) {
+  const t = ticketLines(job);
+  const ascii = !!loadPrintCfg().ascii;
+  const tr = v => ascii ? String(v).replace(/[äöüÄÖÜßéèà]/g, c => ({'ä':'ae','ö':'oe','ü':'ue','Ä':'Ae','Ö':'Oe','Ü':'Ue','ß':'ss','é':'e','è':'e','à':'a'}[c])) : String(v);
+  const x = v => tr(v).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]));
+  let body = '<text align="center" width="2" height="2" em="true"/>' +
+    '<text>' + x(t.head) + '&#10;</text>' +
+    '<text width="3" height="3"/><text>' + x(t.table) + '&#10;</text>' +
+    '<text width="1" height="1" em="false"/><text>' + x(t.sub) + '&#10;</text>' +
+    '<text>------------------------------&#10;</text><text align="left" width="2" height="2"/>';
+  t.items.forEach(l => { body += '<text>' + x(l) + '&#10;</text>'; });
+  body += '<text width="1" height="1"/><text>&#10;&#10;</text><feed line="3"/><cut type="feed"/>';
+  return '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body>' +
+    '<epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print">' + body + '</epos-print></s:Body></s:Envelope>';
+}
+
+async function sendEpos(ip, job, proto) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const url = (proto === 'https' ? 'https://' : 'http://') + ip +
+      '/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000';
+    const res = await fetch(url, {
+      method: 'POST', signal: ctrl.signal,
+      headers: {
+        'Content-Type': 'text/xml; charset=utf-8',
+        'If-Modified-Since': 'Thu, 01 Jan 1970 00:00:00 GMT',
+        'SOAPAction': '""'
+      },
+      body: job.rawXml || eposXml(job)
+    });
+    const txt = await res.text();
+    if (!/success="true"/.test(txt)) {
+      const m = txt.match(/code="([^"]*)"/);
+      throw new Error('Drucker meldet Fehler' + (m && m[1] ? ' (' + m[1] + ')' : ''));
+    }
+  } finally { clearTimeout(timer); }
+}
+
+function browserPrint(job) {
+  const t = ticketLines(job);
+  const w = window.open('', '_blank', 'width=360,height=600');
+  if (!w) throw new Error('Pop-up wurde blockiert.');
+  w.document.write('<html><head><title>' + esc(t.head) + '</title><style>' +
+    'body{font-family:monospace;width:72mm;margin:4mm}h1{font-size:26px;margin:0;text-align:center}' +
+    'h2{font-size:38px;margin:6px 0;text-align:center}p{margin:0;text-align:center;font-size:13px}' +
+    'hr{border:0;border-top:2px dashed #000}li{list-style:none;font-size:22px;font-weight:bold;margin:4px 0}ul{padding:0}' +
+    '</style></head><body><h1>' + esc(t.head) + '</h1><h2>' + esc(t.table) + '</h2><p>' + esc(t.sub) + '</p><hr><ul>' +
+    t.items.map(l => '<li>' + esc(l) + '</li>').join('') + '</ul></body></html>');
+  w.document.close(); w.focus();
+  setTimeout(() => { w.print(); w.close(); }, 300);
+}
+
+async function printJob(job, cfg) {
+  if (!job.items.length) return null;
+  const ipKey = { kitchen:'kitchenIp', bar:'barIp' }[job.station];
+  if (cfg.mode === 'browser') { browserPrint(job); return null; }
+  const ip = cfg[ipKey];
+  if (!ip) return STATION_TITLE[job.station] + ': keine IP eingetragen';
+  try { await sendEpos(ip, job, cfg.proto); return null; }
+  catch (e) {
+    const grund = e.name === 'AbortError' ? 'keine Antwort (IP, Netzwerk oder Drucker aus?)'
+      : (e instanceof TypeError ? 'keine Verbindung (IP prüfen; bei https-Seite: Browser-Freigabe «Lokales Netzwerk» erlauben oder Verbindung auf https stellen)' : e.message);
+    return STATION_TITLE[job.station] + ' (' + ip + '): ' + grund;
+  }
+}
+
+async function printOrderTickets(orderNo, table, method, cartItems) {
+  if (subscriptionPlan !== 'printer') return;
+  await fetchPrintCfg();
+  const cfg = loadPrintCfg();
+  if (!cfg.enabled) return;
+
+  const items = cartItems.map(i => {
+    const m = menu.find(x => x.id === i.menu_item_id) || {};
+    return { name: i.name || m.name || '?', quantity: i.quantity, category: m.category || '' };
+  });
+  const food = items.filter(i => !isDrinkCategory(i));
+  const drinks = items.filter(i => isDrinkCategory(i));
+  const base = { orderNo, table, time: Date.now(), payment: method === 'twint' ? 'TWINT' : 'Bar' };
+
+  const jobs = [
+    { ...base, station:'kitchen', items: food },
+    { ...base, station:'bar', items: drinks }
+  ];
+
+  const errors = (await Promise.all(jobs.map(j => printJob(j, cfg)))).filter(Boolean);
+  if (errors.length) say('Druckproblem: ' + errors.join(' · '), true);
+}
+
+async function testPrint(station) {
+  if (subscriptionPlan !== 'printer') { $('printerMsg').textContent = 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten.'; return; }
+  const cfg = { ...loadPrintCfg(), enabled:true };
+  const err = await printJob({ station, orderNo:'TEST', table:'0', time:Date.now(), payment:'Test',
+    items:[{ name:'Testdruck äöü ÄÖÜ ß', quantity:1 }, { name:'Bratwurst, Getränk', quantity:2 }] }, cfg);
+  $('printerMsg').textContent = err ? '⚠ ' + err : '✓ Testdruck gesendet.';
+}
+
+document.addEventListener('click', e => {
+  const id = e.target.closest('button')?.id;
+  if (id === 'testPrintKitchenBtn') testPrint('kitchen');
+  if (id === 'testPrintBarBtn') testPrint('bar');
+});
+document.addEventListener('change', e => {
+  if (e.target && e.target.id === 'printEnabled') setPrintingEnabled(e.target.checked);
+});
+
+/* ---------- Tischnummern drucken ---------- */
+function tableNumbers() {
+  const von = parseInt($('printTblFrom').value, 10), bis = parseInt($('printTblTo').value, 10);
+  if (!(von >= 1 && bis <= 30 && von <= bis)) return null;
+  return Array.from({ length: bis - von + 1 }, (_, i) => von + i);
+}
+
+function eposTablesXml(nums) {
+  let body = '';
+  nums.forEach(n => {
+    body += '<text align="center" width="3" height="3" em="true"/><text>TISCH&#10;</text>' +
+      '<text width="8" height="8"/><text>' + n + '&#10;</text>' +
+      '<text width="1" height="1" em="false"/><text>&#10;</text><feed line="3"/><cut type="feed"/>';
+  });
+  return '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body>' +
+    '<epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print">' + body + '</epos-print></s:Body></s:Envelope>';
+}
+
+function tableCardsHtml(nums) {
+  let pages = '';
+  for (let i = 0; i < nums.length; i += 4) {
+    pages += '<div class="page">' + nums.slice(i, i + 4).map(n =>
+      '<div class="c"><small>TISCH</small><b>' + n + '</b><i>BestellEAsy</i></div>').join('') + '</div>';
+  }
+  return '<html><head><meta charset="utf-8"><title>Tischnummern</title><style>' +
+    '@page{size:A4;margin:10mm}body{margin:0;font-family:Arial,sans-serif}' +
+    '.page{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:6mm;height:277mm;page-break-after:always}' +
+    '.page:last-child{page-break-after:auto}' +
+    '.c{border:2px dashed #999;display:flex;flex-direction:column;align-items:center;justify-content:center}' +
+    '.c small{font-size:30pt;letter-spacing:8px;color:#444}.c b{font-size:180pt;line-height:1.05}' +
+    '.c i{font-size:12pt;color:#999;margin-top:8px}' +
+    '</style></head><body>' + pages + '</body></html>';
+}
+
+function tableCardsA4(nums) {
+  const w = window.open('', '_blank');
+  if (!w) throw new Error('Pop-up wurde blockiert.');
+  w.document.write(tableCardsHtml(nums));
+  w.document.close(); w.focus();
+  setTimeout(() => w.print(), 300);
+}
+
+async function printTables() {
+  const msg = $('printerMsg');
+  const nums = tableNumbers();
+  if (!nums) { msg.textContent = 'Bitte «Von» und «Bis» zwischen 1 und 30 eingeben (Von ≤ Bis).'; return; }
+  const target = $('printTblTarget').value;
+  try {
+    if (target === 'a4') { tableCardsA4(nums); msg.textContent = '✓ Druckdialog geöffnet (' + nums.length + ' Tische).'; return; }
+    if (subscriptionPlan !== 'printer') { msg.textContent = 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten. A4-Tischkarten gehen in jedem Paket.'; return; }
+    await fetchPrintCfg();
+    const cfg = loadPrintCfg();
+    const ip = target === 'kitchen' ? cfg.kitchenIp : cfg.barIp;
+    if (!ip) { msg.textContent = '⚠ Für diese Station ist keine IP-Adresse eingetragen.'; return; }
+    msg.textContent = 'Sende an Drucker …';
+    await sendEpos(ip, { rawXml: eposTablesXml(nums) }, cfg.proto);
+    msg.textContent = '✓ ' + nums.length + ' Tischnummern an den Drucker gesendet.';
+  } catch (e) {
+    msg.textContent = '⚠ ' + (e.name === 'AbortError' ? 'Keine Antwort vom Drucker (IP, Netzwerk, Drucker aus?)'
+      : (e instanceof TypeError ? 'Keine Verbindung zum Drucker (IP prüfen, Browser-Freigabe «Lokales Netzwerk» erlauben oder Verbindung auf https stellen)' : e.message));
+  }
+}
+
+document.addEventListener('click', e => {
+  if (e.target.closest('button')?.id === 'printTablesBtn') printTables();
+});
+document.addEventListener('DOMContentLoaded', fillPrintForm);
+fillPrintForm();
+/* =================== Ende Drucker-Modul =================== */
+
+async function submitOrder() {
+  if (!cart.size) {
+    say('Bitte zuerst Artikel auswählen.', true);
+    return;
+  }
+
+
+
+
+
+const tableEl = $('tableNumber');
+const methodEl = $('paymentMethod');
+const button = $('submitOrderBtn');
+
+if (!tableEl || !button) {
+  console.error('Fehlendes Element:', {
+    tableNumber: !!tableEl,
+    paymentMethod: !!methodEl,
+    submitOrderBtn: !!button
+  });
+
+  say('Bestellung nicht möglich: Tischwahl oder Bestellbutton fehlt.', true);
+  return;
+}
+
+
+
+console.log('Feldprüfung:', {
+  tableNumber: !!tableEl,
+  paymentMethod: !!methodEl,
+  submitOrderBtn: !!button
+});
+
+
+ if (!tableEl || !button) {
+  console.error('Fehlendes Element:', {
+    tableNumber: !!tableEl,
+    submitOrderBtn: !!button
+  });
+
+  say('Bestellung nicht möglich: Tischwahl oder Bestellbutton fehlt.', true);
+  return;
+}
+
+ const table = Number(tableEl.value);
+const method = methodEl ? methodEl.value : 'cash';
+
+  const items = Array.from(cart.values()).map(i => ({
+    menu_item_id: i.menu_item_id,
+    quantity: i.quantity
+  }));
+
+  button.disabled = true;
+
+  try {
+    const { data, error } = await sb.rpc('create_order', {
+      p_table_number: table,
+      p_payment_method: method,
+      p_items: items
+    });
+
+    if (error) throw error;
+
+    const gedruckteArtikel = Array.from(cart.values());
+    printOrderTickets(data, table, method, gedruckteArtikel).catch(e => console.error('Druck:', e));
+
+    cart.clear();
+    renderMenu();
+
+    showSuccessToast(
+      '✓ Bestellung #' + data + ' wurde an die Küche gesendet.'
+    );
+
+    await refreshOrders();
+await loadOpenAmounts();
+
+    // Nach dem Senden direkt zur Getränkeabrechnung scrollen
+    requestAnimationFrame(() => {
+      const ziel = $('drinkPaymentHeading');
+      if (ziel) ziel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  } catch (e) {
+    console.error('submitOrder:', e);
+    say('Bestellung konnte nicht gespeichert werden: ' + e.message, true);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+
+
+ 
+
+async function refreshOrders() {
+  if (!sb || !profile) return;
+
+  try {
+    const { data, error } = await sb
+      .from('orders')
+  
+.select(`
+  id,
+  table_no,
+  table_number,
+  status,
+  kitchen_status,
+  bar_status,
+  runner_status,
+  runner_food_status,
+  runner_drink_status,
+  food_delivered_at,
+  drinks_delivered_at,
+  payment_method,
+  payment_status,
+  total,
+  created_at,
+  delivered_at,
+  order_items(
+    id,
+    name_snapshot,
+    name,
+    category,
+    quantity,
+    unit_price,
+    line_total
+  )
+`)
+
+      .order('created_at', { ascending: false })
+      .limit(150);
+
+    if (error) throw error;
+
+    const geladeneBestellungen = data || [];
+    const orderIds = geladeneBestellungen.map(o => o.id);
+
+    // Bereits verbuchte Teilzahlungen aus Supabase laden
+    let zahlungen = [];
+
+    if (orderIds.length && ['admin', 'service'].includes(profile.role)) {
+      const { data: paymentData, error: paymentError } =
+        await sb.rpc('get_drink_payment_status', {
+          p_order_ids: orderIds
+        });
+
+      if (paymentError) throw paymentError;
+      zahlungen = paymentData || [];
+    }
+
+    const zahlungenNachPosition = new Map(
+      zahlungen.map(p => [
+        String(p.order_item_id),
+        {
+          paid_quantity: Number(p.paid_quantity || 0),
+          paid_amount: Number(p.paid_amount || 0)
+        }
+      ])
+    );
+
+    const normalisiereStatus = status => ({
+      'Neu': 'new',
+      'In Arbeit': 'in_progress',
+      'Erledigt': 'done',
+      'new': 'new',
+      'in_progress': 'in_progress',
+      'done': 'done'
+    })[status] || 'new';
+
+    orders = geladeneBestellungen.map(o => ({
+      ...o,
+
+      order_no: o.order_no ?? o.id,
+      table_number: o.table_number ?? o.table_no,
+
+      status: normalisiereStatus(o.status),
+      kitchen_status: normalisiereStatus(o.kitchen_status),
+      bar_status: normalisiereStatus(o.bar_status),
+
+      runner_status: o.runner_status || 'ready',
+      runner_food_status: o.runner_food_status || 'pending',
+      runner_drink_status: o.runner_drink_status || 'pending',
+
+      payment_method:
+        String(o.payment_method || '').toLowerCase() === 'twint'
+          ? 'twint'
+          : 'cash',
+
+      order_items: (o.order_items || []).map(i => {
+        const bezahlt =
+          zahlungenNachPosition.get(String(i.id)) || {
+            paid_quantity: 0,
+            paid_amount: 0
+          };
+
+        const menge = Number(i.quantity || 0);
+        const einzelpreis = Number(i.unit_price || 0);
+        const bezahlteMenge = Number(bezahlt.paid_quantity || 0);
+        const bezahlterBetrag = Number(bezahlt.paid_amount || 0);
+
+        const offeneMenge = Math.max(
+          0,
+          menge - bezahlteMenge
+        );
+
+        const offenerBetrag = Math.max(
+          0,
+          Math.round(offeneMenge * einzelpreis * 100) / 100
+        );
+
+        return {
+          ...i,
+
+          name_snapshot: i.name_snapshot || i.name || 'Artikel',
+
+          line_total: i.line_total == null
+            ? menge * einzelpreis
+            : Number(i.line_total),
+
+          paid_quantity: bezahlteMenge,
+          paid_amount: bezahlterBetrag,
+
+          // Nur Artikel mit positivem Preis sind verrechenbar
+          open_quantity: einzelpreis > 0 ? offeneMenge : 0,
+          open_amount: einzelpreis > 0 ? offenerBetrag : 0
+        };
+      })
+    }));
+
+    renderOrders();
+    renderDrinkPayments();
+
+  } catch (e) {
+    console.error('refreshOrders:', e);
+
+    say(
+      'Bestellungen konnten nicht geladen werden: ' + e.message,
+      true
+    );
+  }
+}
+
+
+
+
+
+
+function orderHTML(o) {
+  const status =
+    o.status === 'new' ? 'Neu' :
+    o.status === 'in_progress' ? 'In Arbeit' :
+    'Erledigt';
+
+  const next = o.status === 'new' ? 'in_progress' : 'done';
+  const paymentLabel = o.payment_method === 'twint' ? 'TWINT' : 'Bar';
+
+  // Artikel anhand ihrer Kategorie einfärben
+  function artikelKlasse(i) {
+    const kategorie = String(i.category || i.category_snapshot || '')
+      .trim()
+      .toLowerCase();
+
+    if (kategorie === 'essen' || kategorie.includes('food')) {
+      return 'kitchen-item-essen';
+    }
+
+    if (
+      kategorie === 'getränke' ||
+      kategorie === 'getraenke' ||
+      kategorie === 'kalte getränke' ||
+      kategorie === 'warme getränke' ||
+      kategorie.includes('drink')
+    ) {
+      return 'kitchen-item-getraenke';
+    }
+
+    if (kategorie === 'dessert') {
+      return 'kitchen-item-dessert';
+    }
+
+    return 'kitchen-item-sonstiges';
+  }
+
+  return `
+    <article
+      class="order ${o.status === 'in_progress' ? 'progress' : ''} ${o.status === 'done' ? 'done' : ''}"
+      data-order="${esc(String(o.id))}"
+    >
+      <div class="order-top">
+        <div>
+          <strong>Bestellung #${esc(String(o.order_no ?? o.id))}</strong>
+          · Tisch ${esc(String(o.table_number ?? '?'))}
+          <div class="muted">
+            ${new Date(o.created_at).toLocaleString('de-CH', {
+              dateStyle: 'short',
+              timeStyle: 'short'
+            })}
+          </div>
+        </div>
+
+        <div class="actions">
+          <span class="pill ${o.status === 'in_progress' ? 'orange' : o.status === 'done' ? 'green' : ''}">
+            ${status}
+          </span>
+          <span class="pill">Zahlungsart: ${paymentLabel}</span>
+          <strong>${money(o.total)}</strong>
+        </div>
+      </div>
+
+      <ul>
+        ${(o.order_items || []).map(i => `
+          <li class="${artikelKlasse(i)}">
+            <strong>${esc(String(i.quantity))} × ${esc(String(i.name_snapshot || i.name || 'Artikel'))}</strong>
+            <span class="muted">(${money(i.line_total)})</span>
+          </li>
+        `).join('')}
+      </ul>
+
+      <div class="actions">
+        ${o.status !== 'done'
+          ? `<button
+                type="button"
+                data-status="${esc(String(o.id))}"
+                data-next="${next}"
+                class="${next === 'done' ? 'warn' : ''}"
+              >${o.status === 'new' ? '1. Klick – In Arbeit' : '2. Klick – Erledigt'}</button>`
+          : '<span class="muted">Abgeschlossen</span>'
+        }
+      </div>
+    </article>
+  `;
+}
+
+
+
+
+
+
+
+let drinkPaymentSelection = new Map();
+
+
+function renderDrinkPayments() {
+  const container = $('drinkPaymentList');
+  const tableSelect = $('tableNumber');
+
+  if (!container || !tableSelect) return;
+
+  const table = String(tableSelect.value || '');
+
+  if (!table) {
+    container.innerHTML =
+      '<p class="muted">Bitte zuerst einen Tisch auswählen.</p>';
+    return;
+  }
+
+
+const tableOrders = orders.filter(o =>
+  String(o.table_number ?? o.table_no ?? '') === table
+);
+
+
+
+  const lines = [];
+
+  tableOrders.forEach(order => {
+    (order.order_items || []).forEach(item => {
+      const unitPrice = Number(item.unit_price || 0);
+
+      // Nur kostenpflichtige Artikel abrechnen
+      if (unitPrice <= 0) return;
+
+      const quantity = Number(item.quantity || 0);
+      const paidQuantity = Number(item.paid_quantity || 0);
+
+      const openQuantity = Math.max(
+        0,
+        Number(
+          item.open_quantity ?? (quantity - paidQuantity)
+        )
+      );
+
+      if (openQuantity <= 0) return;
+
+      const id = String(item.id);
+
+      const selected = Math.min(
+        openQuantity,
+        Number(drinkPaymentSelection.get(id) || 0)
+      );
+
+      lines.push({
+        id,
+        orderId: order.id,
+        orderNo: order.order_no ?? order.id,
+        name: item.name_snapshot || item.name || 'Artikel',
+        quantity: openQuantity,
+        unitPrice,
+        selected
+      });
+    });
+  });
+
+  const money = amount =>
+    new Intl.NumberFormat('de-CH', {
+      style: 'currency',
+      currency: 'CHF'
+    }).format(amount);
+
+  const openTotal = lines.reduce(
+    (sum, item) => sum + item.quantity * item.unitPrice,
+    0
+  );
+
+  const selectedTotal = lines.reduce(
+    (sum, item) => sum + item.selected * item.unitPrice,
+    0
+  );
+
+  if (!lines.length) {
+    container.innerHTML = `
+      <article class="order">
+        <h3>Tisch ${esc(table)}</h3>
+        <p>Offener Betrag:
+          <strong>${money(0)}</strong>
+        </p>
+        <p class="muted">
+          Keine offenen kostenpflichtigen Artikel von heute.
+        </p>
+      </article>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <article class="order">
+      <h3>Tisch ${esc(table)} – Artikel abrechnen</h3>
+
+      <div class="grid">
+        <div>
+          <span class="muted">Noch offen am Tisch</span>
+          <div class="big">${money(openTotal)}</div>
+        </div>
+        <div>
+          <span class="muted">Diese Person bezahlt</span>
+          <div class="big">${money(selectedTotal)}</div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px">
+        ${lines.map(item => `
+          <div class="drink-payment-row"
+               style="display:flex;align-items:center;gap:8px;
+                      justify-content:space-between;padding:10px 0;
+                      border-bottom:1px solid #ddd">
+
+            <div style="flex:1;min-width:0">
+              <strong>${esc(String(item.name))}</strong>
+              <div class="muted">
+                ${money(item.unitPrice)} pro Stück ·
+                ${item.quantity} offen
+              </div>
+              <div>
+                ${money(item.selected * item.unitPrice)}
+              </div>
+            </div>
+
+            <button type="button"
+              data-drink-step="-1"
+              data-drink-item="${esc(item.id)}"
+              ${item.selected <= 0 ? 'disabled' : ''}>−</button>
+
+            <strong style="min-width:24px;text-align:center">
+              ${item.selected}
+            </strong>
+
+            <button type="button"
+              data-drink-step="1"
+              data-drink-item="${esc(item.id)}"
+              ${item.selected >= item.quantity ? 'disabled' : ''}>+</button>
+          </div>
+        `).join('')}
+      </div>
+
+      <div style="margin-top:16px">
+        <label for="drinkPaymentMethod">
+          Zahlungsart dieser Person
+        </label>
+        <select id="drinkPaymentMethod">
+          <option value="Bar">Bar</option>
+          <option value="TWINT">TWINT</option>
+        </select>
+      </div>
+
+      <div class="actions" style="margin-top:14px">
+        <button type="button"
+          data-drink-pay="true"
+          ${selectedTotal <= 0 ? 'disabled' : ''}>
+          Zahlung bestätigen · ${money(selectedTotal)}
+        </button>
+      </div>
+
+      <p class="foot">
+        Erst nach tatsächlichem Zahlungseingang bestätigen.
+        Der offene Betrag wird danach neu geladen.
+      </p>
+    </article>
+  `;
+
+  container.onclick = async event => {
+    const stepButton = event.target.closest('[data-drink-step]');
+
+    if (stepButton) {
+      const id = String(stepButton.dataset.drinkItem);
+      const line = lines.find(item => item.id === id);
+
+      if (!line) return;
+
+      const step = Number(stepButton.dataset.drinkStep);
+
+      const next = Math.max(
+        0,
+        Math.min(line.quantity, line.selected + step)
+      );
+
+      if (next === 0) {
+        drinkPaymentSelection.delete(id);
+      } else {
+        drinkPaymentSelection.set(id, next);
+      }
+
+      renderDrinkPayments();
+      return;
+    }
+
+    const payButton = event.target.closest('[data-drink-pay]');
+
+    if (!payButton || payButton.disabled) return;
+
+    const selectedItems = lines
+      .filter(item => item.selected > 0)
+      .map(item => ({
+        order_item_id: Number(item.id),
+        quantity: item.selected
+      }));
+
+    if (!selectedItems.length) {
+      say('Bitte zuerst Artikel auswählen.', true);
+      return;
+    }
+
+    const paymentMethod = $('drinkPaymentMethod')?.value;
+
+    const amount = selectedItems.reduce((sum, item) => {
+      const line = lines.find(
+        x => x.id === String(item.order_item_id)
+      );
+
+      return sum + item.quantity * (line?.unitPrice || 0);
+    }, 0);
+
+
+    const originalText = payButton.textContent;
+    payButton.disabled = true;
+    payButton.textContent = 'Zahlung wird gespeichert …';
+
+    try {
+      const { data, error } = await sb.rpc(
+        'register_drink_payment_batch',
+        {
+          p_items: selectedItems,
+          p_payment_method: paymentMethod
+        }
+      );
+
+
+      if (error) throw error;
+
+      const result = Array.isArray(data) ? data[0] : data;
+
+      drinkPaymentSelection.clear();
+
+      await refreshOrders();
+
+
+      // Erfolgsmeldung anzeigen
+      showPaymentToast(
+        `✓ ${paymentMethod}-Zahlung von ${money(
+          Number(result?.paid_amount ?? amount)
+        )} erfolgreich gespeichert`
+      );
+
+      // Auswahl zurücksetzen
+      drinkPaymentSelection.clear();
+
+      // Daten aktualisieren
+      await refreshOrders();
+      await loadOpenAmounts();
+      renderDrinkPayments();
+
+      // Nur nach oben scrollen, wenn an DIESEM Tisch nichts mehr offen ist
+      // (andere Tische / andere Nutzer spielen dafür keine Rolle)
+      if (!container.querySelector('[data-drink-pay]')) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+    } catch (e) {
+      console.error('Artikelzahlung fehlgeschlagen:', {
+        message: e?.message,
+        details: e?.details,
+        hint: e?.hint,
+        code: e?.code,
+        error: e
+      });
+
+      say(
+        'Zahlung konnte nicht gespeichert werden: ' +
+        (e?.message || 'Unbekannter Fehler'),
+        true
+      );
+
+      payButton.disabled = false;
+      payButton.textContent = originalText;
+    }
+  };
+}
+
+// Beim Tischwechsel Auswahl der vorherigen Person zurücksetzen
+$('tableNumber')?.addEventListener('change', () => {
+  drinkPaymentSelection.clear();
+  renderDrinkPayments();
+  loadOpenAmounts();
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function showPaymentToast(message) {
+  let toast = document.getElementById('paymentToast');
+
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'paymentToast';
+    toast.className = 'payment-toast';
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = message;
+  toast.classList.add('show');
+
+  clearTimeout(toast.hideTimer);
+
+  toast.hideTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2000);
+}
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function isDrinkCategory(item) {
+  const category = String(item.category || item.category_snapshot || '').trim().toLowerCase();
+  return ['getränke', 'getraenke', 'kalte getränke', 'warme getränke'].includes(category) ||
+    category.includes('drink');
+}
+
+function stationOrderHTML(order, station) {
+  const isDrink = isDrinkCategory;
+
+  const items = (order.order_items || []).filter(item =>
+    station === 'bar' ? isDrink(item) : !isDrink(item)
+  );
+
+  if (!items.length) return '';
+
+  const status = station === 'bar'
+    ? order.bar_status
+    : order.kitchen_status;
+
+  const normalizedStatus = String(status || '')
+    .trim()
+    .toLowerCase();
+
+  const done = [
+    'done', 'erledigt', 'fertig', 'abgeschlossen'
+  ].includes(normalizedStatus);
+
+  const inProgress = [
+    'in_progress', 'in arbeit'
+  ].includes(normalizedStatus);
+
+  const next = inProgress ? 'done' : 'in_progress';
+
+  const stationName = station === 'bar'
+    ? 'Theke / Getränke'
+    : 'Küche / Essen';
+
+  return `
+    <article class="order ${
+      done ? 'done' : inProgress ? 'in-progress' : ''
+    }">
+      <h3>Bestellung #${esc(String(
+        order.order_no ?? order.id
+      ))}</h3>
+
+      <p><strong>Tisch ${esc(String(
+        order.table_number ?? order.table_no ?? '?'
+      ))}</strong></p>
+
+      <p class="muted">${stationName}</p>
+
+      <ul>
+        ${items.map(item => `
+          <li>
+            ${esc(String(item.quantity))} ×
+            ${esc(String(
+              item.name_snapshot || item.name || 'Artikel'
+            ))}
+          </li>
+        `).join('')}
+      </ul>
+
+      <button type="button"
+        data-station="${station}"
+        data-station-order="${esc(String(order.id))}"
+        data-next="${next}"
+        ${done ? 'disabled' : ''}>
+        ${done ? 'Erledigt'
+          : inProgress ? 'Fertig melden' : 'In Arbeit'}
+      </button>
+    </article>
+  `;
+}
+
+
+
+
+
+
+
+
+
+
+
+function bindStationButtons(container) {
+  container.querySelectorAll('[data-station-order]').forEach(button => {
+    button.addEventListener('click', async () => {
+      if (button.disabled) return;
+
+      const orderId = button.dataset.stationOrder;
+      const station = button.dataset.station;
+      const nextStatus = button.dataset.next;
+
+      button.disabled = true;
+
+      try {
+        await setStationStatus(
+          orderId,
+          station,
+          nextStatus
+        );
+
+        // Status und Stationslisten nach dem Speichern aktualisieren
+        await refreshOrders();
+await loadOpenAmounts();
+
+      } catch (e) {
+        button.disabled = false;
+
+        say(
+          'Status konnte nicht geändert werden: ' +
+          (e?.message || String(e)),
+          true
+        );
+      }
+    });
+  });
+}
+
+
+
+
+
+function renderOrders() {
+  const isDone = status =>
+    ['done', 'erledigt', 'fertig', 'abgeschlossen'].includes(
+      String(status || '').trim().toLowerCase()
+    );
+
+  const isDrink = isDrinkCategory;
+
+  // Älteste Bestellung oben, neue Bestellungen erscheinen unten
+  const sortedOrders = [...orders].sort(
+    (x, y) => new Date(x.created_at) - new Date(y.created_at)
+  );
+
+  // KÜCHE
+  const ordersList = $('ordersList');
+
+  if (ordersList) {
+    const kitchenOrders = sortedOrders.filter(o => {
+      const items = (o.order_items || []).filter(i => !isDrink(i));
+
+      return items.length > 0 &&
+        (!isDone(o.kitchen_status) ||
+          recentlyDone.has('kitchen-' + String(o.id)));
+    });
+
+    updatePendingCounter('kitchenPendingCount', kitchenOrders.length);
+
+    ordersList.innerHTML = kitchenOrders.length
+      ? kitchenOrders.map(o => stationOrderHTML(o, 'kitchen')).join('')
+      : '<p class="muted">Keine offenen Küchenbestellungen.</p>';
+
+    bindStationButtons(ordersList);
+  }
+
+  // THEKE
+  const barList = $('barList');
+
+  if (barList) {
+    const barOrders = sortedOrders.filter(o => {
+      const items = (o.order_items || []).filter(isDrink);
+
+      return items.length > 0 &&
+        (!isDone(o.bar_status) ||
+          recentlyDone.has('bar-' + String(o.id)));
+    });
+
+    updatePendingCounter('barPendingCount', barOrders.length);
+
+    barList.innerHTML = barOrders.length
+      ? barOrders.map(o => stationOrderHTML(o, 'bar')).join('')
+      : '<p class="muted">Keine offenen Getränkebestellungen.</p>';
+
+    bindStationButtons(barList);
+  }
+
+  // LÄUFER
+  const runnerList = $('runnerList');
+
+  if (!runnerList) {
+    console.error('HTML-Element runnerList wurde nicht gefunden.');
+    return;
+  }
+
+  const foodJobs = [];
+  const drinkJobs = [];
+
+  sortedOrders.forEach(o => {
+    const items = o.order_items || [];
+    const foodItems = items.filter(i => !isDrink(i));
+    const drinkItems = items.filter(isDrink);
+
+    if (
+      foodItems.length &&
+      isDone(o.kitchen_status) &&
+      o.runner_food_status !== 'delivered'
+    ) {
+      foodJobs.push({ order: o, items: foodItems });
+    }
+
+    if (
+      drinkItems.length &&
+      isDone(o.bar_status) &&
+      o.runner_drink_status !== 'delivered'
+    ) {
+      drinkJobs.push({ order: o, items: drinkItems });
+    }
+  });
+
+  updatePendingCounter(
+    'runnerPendingCount',
+    foodJobs.length + drinkJobs.length
+  );
+
+  const renderJob = (job, station) => {
+    const o = job.order;
+    const status = station === 'food'
+      ? o.runner_food_status
+      : o.runner_drink_status;
+
+    const inDelivery = status === 'in_delivery';
+    const title = station === 'food' ? 'ESSEN' : 'GETRÄNKE';
+
+    return `
+      <article class="order ${inDelivery ? 'in-delivery' : ''}">
+        <h3>${title} – Bestellung #${esc(String(o.order_no ?? o.id))}</h3>
+        <p><strong>Tisch ${esc(String(
+          o.table_number ?? o.table_no ?? '?'
+        ))}</strong></p>
+        <ul>
+          ${job.items.map(i => `
+            <li>${esc(String(i.quantity))} ×
+              ${esc(String(i.name_snapshot || i.name || 'Artikel'))}
+            </li>
+          `).join('')}
+        </ul>
+        <div class="actions">
+          <button type="button"
+            data-runner-start="${esc(String(o.id))}"
+            data-runner-station="${station}"
+            ${inDelivery ? 'disabled' : ''}>
+            ${inDelivery ? 'In Auslieferung' : 'In Auslieferung übernehmen'}
+          </button>
+
+ 
+<button type="button" class="warn"
+  data-runner-deliver="${esc(String(o.id))}"
+  data-runner-station="${station}">
+  Ausgeliefert
+</button>
+
+        </div>
+      </article>
+    `;
+  };
+
+  runnerList.innerHTML = `
+    <div class="runner-stations">
+      <section class="runner-section runner-food">
+        <h2>🍽️ ESSEN (${foodJobs.length})</h2>
+        <div class="runner-orders">
+          ${foodJobs.length
+            ? foodJobs.map(job => renderJob(job, 'food')).join('')
+            : '<p class="muted runner-empty">Kein fertiges Essen zum Ausliefern.</p>'}
+        </div>
+      </section>
+
+      <section class="runner-section runner-drinks">
+        <h2>🥤 GETRÄNKE (${drinkJobs.length})</h2>
+        <div class="runner-orders">
+          ${drinkJobs.length
+            ? drinkJobs.map(job => renderJob(job, 'drinks')).join('')
+            : '<p class="muted runner-empty">Keine fertigen Getränke zum Ausliefern.</p>'}
+        </div>
+      </section>
+    </div>
+  `;
+
+  runnerList.querySelectorAll(
+    '[data-runner-start], [data-runner-deliver]'
+  ).forEach(button => {
+    button.addEventListener('click', async () => {
+      if (button.disabled) return;
+
+      const orderId =
+        button.dataset.runnerStart ||
+        button.dataset.runnerDeliver;
+
+      const station = button.dataset.runnerStation;
+      const nextStatus = button.hasAttribute('data-runner-start')
+        ? 'in_delivery'
+        : 'delivered';
+
+      button.disabled = true;
+
+      try {
+        const { error } = await sb.rpc('set_runner_station_status', {
+          p_order_id: Number(orderId),
+          p_station: station,
+          p_status: nextStatus
+        });
+
+        if (error) {
+          console.error('Läuferstatus konnte nicht geändert werden:', {
+            orderId,
+            station,
+            nextStatus,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
+
+          throw error;
+        }
+
+        await refreshOrders();
+        await loadOpenAmounts();
+
+        say(nextStatus === 'delivered'
+          ? (station === 'food'
+              ? 'Essen wurde als geliefert gespeichert.'
+              : 'Getränke wurden als geliefert gespeichert.')
+          : (station === 'food'
+              ? 'Essen wird ausgeliefert.'
+              : 'Getränke werden ausgeliefert.')
+        );
+      } catch (e) {
+        console.error('Lieferstatus konnte nicht gespeichert werden:', e);
+        button.disabled = false;
+
+        say(
+          'Lieferstatus konnte nicht gespeichert werden: ' +
+          (e?.message || String(e)),
+          true
+        );
+      }
+    });
+  });
+}
+
+
+
+
+
+async function setStationStatus(orderId, station, nextStatus) {
+  if (!sb || !profile) {
+    throw new Error('Bitte zuerst anmelden.');
+  }
+
+  if (!['kitchen', 'bar'].includes(station)) {
+    throw new Error('Ungültige Station.');
+  }
+
+  if (!['in_progress', 'done'].includes(nextStatus)) {
+    throw new Error('Ungültiger Status.');
+  }
+
+  const id = String(orderId);
+
+  const { error } = await sb.rpc('set_station_status', {
+    p_order_id: Number(id),
+    p_station: station,
+    p_status: nextStatus
+  });
+
+  if (error) throw error;
+
+  if (nextStatus === 'done') {
+    const key = station + '-' + id;
+
+    // Bestellung noch kurz grün anzeigen
+    recentlyDone.add(key);
+    renderOrders();
+
+    setTimeout(() => {
+      recentlyDone.delete(key);
+      renderOrders();
+    }, 2000);
+  }
+
+  // Daten nach der Statusänderung erneut vom Server laden
+  await refreshOrders();
+}
+
+
+
+
+
+
+
+  
+async function markOrderDelivered(id) {
+  try {
+    const { error } = await sb.rpc('mark_order_delivered', {
+      p_order_id: Number(id)
+    });
+
+    if (error) throw error;
+
+    await refreshOrders();
+    say('Bestellung wurde als ausgeliefert markiert.');
+  } catch (e) {
+    say('Auslieferung fehlgeschlagen: ' + e.message, true);
+  }
+}
+
+
+  
+
+async function setStatus(id, status) {
+  try {
+    const { error } = await sb.rpc('set_order_status', {
+      p_order_id: Number(id),
+      p_status: status
+    });
+
+    if (error) throw error;
+
+    console.log('Küchenstatus geändert:', {
+      id: id,
+      neuerStatus: status
+    });
+
+    if (status === 'done') {
+      recentlyDone.add(String(id));
+    }
+
+    // Küche und Läufer mit den aktuellen Daten aktualisieren
+    await refreshOrders();
+
+    if (status === 'done') {
+      setTimeout(() => {
+        recentlyDone.delete(String(id));
+        renderOrders();
+      }, 2000);
+    }
+
+  } catch (e) {
+    say('Küchenstatus konnte nicht geändert werden: ' + e.message, true);
+    console.error('Fehler beim Ändern des Küchenstatus:', e);
+  }
+}
+
+
+
+
+
+  
+
+  async function addMenuItem(){const name=$('menuName').value.trim(),category=$('menuCategory').value,price=Number($('menuPrice').value);if(!name||!Number.isFinite(price)||price<0){say('Bitte Name und gültigen Preis erfassen.',true);return;}try{const {error}=await sb.from('menu_items').insert({name,category,price,active:true});if(error)throw error;$('menuName').value='';$('menuPrice').value='';await loadMenu();await loadAdmin();say('Artikel hinzugefügt.');}catch(e){say('Artikel konnte nicht gespeichert werden: '+e.message,true);}}
+
+
+
+async function loadAdmin() {
+  try {
+    const { data, error } = await sb
+      .from('menu_items')
+      .select('id,name,category,price,active')
+      .order('category')
+      .order('name');
+
+    if (error) throw error;
+
+    const adminMenuList = $('adminMenuList');
+    if (!adminMenuList) {
+      console.error('HTML-Element #adminMenuList fehlt.');
+      return;
+    }
+
+    adminMenuList.innerHTML = `
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Artikel</th>
+            <th>Kategorie</th>
+            <th>Preis</th>
+            <th>Aktiv</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${(data || []).map(m => `
+            <tr>
+              <td>${esc(m.name)}</td>
+              <td>${esc(m.category)}</td>
+              <td>${money(m.price)}</td>
+              <td>${m.active ? 'Ja' : 'Nein'}</td>
+              <td>
+                <button
+                  type="button"
+                  class="secondary"
+                  data-edit-menu="${esc(String(m.id))}">
+                  Bearbeiten
+                </button>
+
+                <button
+                  type="button"
+                  class="secondary"
+                  data-toggle-menu="${esc(String(m.id))}"
+                  data-active="${m.active}">
+                  ${m.active ? 'Deaktivieren' : 'Aktivieren'}
+                </button>
+
+                <button
+                  type="button"
+                  class="danger"
+                  data-delete-menu="${esc(String(m.id))}">
+                  Löschen
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+
+    // Menüartikel bearbeiten
+    adminMenuList
+      .querySelectorAll('[data-edit-menu]')
+      .forEach(button => {
+        button.addEventListener('click', async () => {
+          button.disabled = true;
+
+          try {
+            await editMenuItem(button.dataset.editMenu);
+          } finally {
+            button.disabled = false;
+          }
+        });
+      });
+
+    // Aktivieren und Deaktivieren
+    adminMenuList
+      .querySelectorAll('[data-toggle-menu]')
+      .forEach(button => {
+        button.addEventListener('click', async () => {
+          button.disabled = true;
+
+          try {
+            await toggleMenu(
+              button.dataset.toggleMenu,
+              button.dataset.active === 'true'
+            );
+          } finally {
+            button.disabled = false;
+          }
+        });
+      });
+
+    // Menüartikel löschen
+    adminMenuList
+      .querySelectorAll('[data-delete-menu]')
+      .forEach(button => {
+        button.addEventListener('click', async () => {
+          button.disabled = true;
+
+          try {
+            await deleteMenuItem(button.dataset.deleteMenu);
+          } finally {
+            button.disabled = false;
+          }
+        });
+      });
+
+  } catch (e) {
+    console.error('loadAdmin:', e);
+    say(
+      'Administration konnte nicht geladen werden: ' + e.message,
+      true
+    );
+  }
+}
+
+
+
+
+async function deleteMenuItem(id) {
+  // Nur Admins dürfen Menüartikel löschen
+  if (!profile || profile.role !== 'admin') {
+    say('Keine Berechtigung: Nur Admins dürfen Menüartikel löschen.', true);
+    return;
+  }
+
+  if (!confirm('Diesen Menüartikel endgültig löschen?')) return;
+
+  try {
+    const { error } = await sb
+      .from('menu_items')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await loadMenu();
+    await loadAdmin();
+
+    say('Menüartikel wurde gelöscht.');
+  } catch (e) {
+    console.error('deleteMenuItem:', e);
+    say('Menüartikel konnte nicht gelöscht werden: ' + e.message, true);
+  }
+}
+
+
+
+
+
+
+
+
+async function editMenuItem(id) {
+  if (!profile || profile.role !== 'admin') {
+    say('Keine Berechtigung: Nur Admins dürfen Menüartikel bearbeiten.', true);
+    return;
+  }
+
+  try {
+    const { data: item, error } = await sb
+      .from('menu_items')
+      .select('id,name,category,price')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+
+    $('editMenuId').value = item.id;
+    $('editMenuName').value = item.name || '';
+    $('editMenuCategory').value = item.category || 'Essen';
+    $('editMenuPrice').value = item.price ?? 0;
+
+    $('editMenuForm').classList.remove('hidden');
+    $('editMenuName').focus();
+  } catch (e) {
+    console.error('editMenuItem:', e);
+    say('Menüartikel konnte nicht geladen werden: ' + e.message, true);
+  }
+}
+
+async function saveMenuEdit() {
+  if (!profile || profile.role !== 'admin') {
+    say('Keine Berechtigung: Nur Admins dürfen Menüartikel bearbeiten.', true);
+    return;
+  }
+
+  const id = $('editMenuId').value;
+  const name = $('editMenuName').value.trim();
+  const category = $('editMenuCategory').value;
+  const priceText = $('editMenuPrice').value.trim();
+  const price = Number(priceText);
+
+  if (!id || !name || priceText === '' ||
+      !Number.isFinite(price) || price < 0) {
+    say('Bitte Artikelname und einen gültigen Preis eingeben.', true);
+    return;
+  }
+
+  if (!['Essen', 'Snacks', 'Kalte Getränke', 'Warme Getränke', 'Getränke', 'Dessert', 'Sonstiges'].includes(category)) {
+    say('Ungültige Kategorie.', true);
+    return;
+  }
+
+  const saveButton = $('saveMenuEdit');
+  saveButton.disabled = true;
+
+  try {
+    const { error } = await sb
+      .from('menu_items')
+      .update({
+        name,
+        category,
+        price
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    $('editMenuForm').classList.add('hidden');
+
+    await loadMenu();
+    await loadAdmin();
+
+    say('Menüartikel wurde aktualisiert.');
+  } catch (e) {
+    console.error('saveMenuEdit:', e);
+    say('Änderungen konnten nicht gespeichert werden: ' + e.message, true);
+  } finally {
+    saveButton.disabled = false;
+  }
+}
+
+function cancelMenuEdit() {
+  $('editMenuForm').classList.add('hidden');
+}
+
+$('saveMenuEdit').addEventListener('click', saveMenuEdit);
+$('cancelMenuEdit').addEventListener('click', cancelMenuEdit);
+
+
+
+
+
+
+
+
+async function toggleMenu(id, active) {
+  try {
+    const { error } = await sb
+      .from('menu_items')
+      .update({ active: !active })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    await loadMenu();
+    await loadAdmin();
+  } catch (e) {
+    say('Menüartikel konnte nicht geändert werden: ' + e.message, true);
+  }
+}
+
+
+
+
+
+
+
+
+async function calculateClosing(){const date=$('closingDate').value;if(!date){say('Bitte ein Datum auswählen.',true);return null;}try{const {data,error}=await sb.rpc('get_day_summary',{p_business_date:date});if(error)throw error;const d=Array.isArray(data)?data[0]:data;if(!d)throw new Error('Keine Abrechnung erhalten.');$('closingSummary').innerHTML=`<div class="totals"><div class="totalbox">Umsatz Bestellungen<strong>${money(d.total_sales)}</strong></div><div class="totalbox">Bar bezahlt<strong>${money(d.cash_total)}</strong></div><div class="totalbox">TWINT bezahlt<strong>${money(d.twint_total)}</strong></div><div class="totalbox">Noch offen<strong>${money(d.open_amount)}</strong></div><div class="totalbox">Anzahl Bestellungen<strong>${Number(d.order_count||0)}</strong></div></div>`;return d;}catch(e){say('Abrechnung konnte nicht berechnet werden: '+e.message,true);return null;}}
+
+
+
+async function saveClosing() {
+  const summary = await calculateClosing();
+  if (!summary) return;
+
+  const closingDate = $('closingDate').value;
+
+  if (!closingDate) {
+    say('Bitte ein Abschlussdatum auswählen.', true);
+    return;
+  }
+
+  if (
+    Number(summary.open_amount) > 0 &&
+    !confirm(
+      'Es sind noch offene Zahlungen vorhanden. ' +
+      'Tagesabschluss trotzdem speichern?'
+    )
+  ) {
+    return;
+  }
+
+  if (
+    !confirm(
+      'Tagesabschluss für ' + closingDate +
+      ' endgültig speichern?'
+    )
+  ) {
+    return;
+  }
+
+  try {
+    const { error } = await sb.rpc('close_business_day', {
+      p_business_date: closingDate,
+      p_notes: $('closingNotes').value.trim()
+    });
+
+    if (error) throw error;
+
+    say('Tagesabschluss gespeichert.');
+
+    await loadClosingHistory();
+
+    // Noch KEIN automatisches Löschen:
+    // reset_today_orders() löscht alle heutigen Bestellungen,
+    // unabhängig vom ausgewählten Abschlussdatum.
+  } catch (e) {
+    say(
+      'Tagesabschluss konnte nicht gespeichert werden: ' + e.message,
+      true
+    );
+  }
+}
+
+
+
+
+async function loadClosingHistory(){try{const {data,error}=await sb.from('day_closings').select('business_date,closed_at,closed_by,total_sales,cash_total,twint_total,open_amount,order_count,notes').order('business_date',{ascending:false}).limit(30);if(error)throw error;$('closingHistory').innerHTML='<h3>Letzte Tagesabschlüsse</h3>'+(data?.length?`<table class="table"><thead><tr><th>Datum</th><th>Umsatz</th><th>Bar</th><th>TWINT</th><th>Offen</th><th>Gespeichert</th></tr></thead><tbody>${data.map(d=>`<tr><td>${esc(d.business_date)}</td><td>${money(d.total_sales)}</td><td>${money(d.cash_total)}</td><td>${money(d.twint_total)}</td><td>${money(d.open_amount)}</td><td>${new Date(d.closed_at).toLocaleString('de-CH')}</td></tr>`).join('')}</tbody></table>`:'<p class="muted">Noch keine Tagesabschlüsse.</p>');}catch(e){say('Tagesabschluss-Historie konnte nicht geladen werden: '+e.message,true);}}
+
+
+
+
+async function logout() {
+  if (sb) await sb.auth.signOut();
+
+  currentUser = null;
+  profile = null;
+  orders = [];
+
+  stopPayPoll(); subscriptionActive = false; subscriptionPlan = '';
+  $('payPanel')?.classList.add('hidden');
+  $('appPanel')?.classList.add('hidden');
+  $('logoutBtn')?.classList.add('hidden');
+  if ($('userLabel')) $('userLabel').textContent = '';
+
+  $('loginPanel')?.classList.remove('hidden');
+  $('orgPanel')?.classList.add('hidden');
+  if ($('orgLabel')) $('orgLabel').textContent = '';
+  setAuthMode('login');
+
+  say('Du wurdest abgemeldet.');
+}
+
+
+
+
+function normRolle(r) {
+  const x = String(r || '').trim().toLowerCase();
+  if (['admin', 'administrator', 'administratorin'].includes(x)) return 'admin';
+  if (['service', 'servicemitarbeiter', 'servicemitarbeiterin'].includes(x)) return 'service';
+  if (['kitchen', 'küche', 'kuche', 'kueche', 'koch', 'köche'].includes(x)) return 'kitchen';
+  if (['closing', 'tagesabschluss', 'abrechnung'].includes(x)) return 'closing';
+  return x;
+}
+
+async function loadProfile() {
+  const readProfile = () => sb
+    .from('profiles')
+    .select('id, email, display_name, role, organization_id')
+    .eq('id', currentUser.id)
+    .limit(1)
+    .maybeSingle();
+
+  let data = null;
+  let lastError = null;
+
+  // 1) Lesen mit Wiederholungen (Profil wird nach Registrierung evtl. verzögert per Trigger angelegt)
+  for (let versuch = 0; versuch < 4 && !data; versuch++) {
+    if (versuch > 0) await new Promise(r => setTimeout(r, 400 * versuch));
+    const res = await readProfile();
+    if (res.error) { lastError = res.error; continue; }
+    data = res.data;
+  }
+
+  // 2) Fehlt das Profil, selbst anlegen und erneut lesen
+  if (!data) {
+    const ins = await sb
+      .from('profiles')
+      .upsert({ id: currentUser.id, email: currentUser.email || null },
+              { onConflict: 'id', ignoreDuplicates: true });
+    if (ins.error) lastError = ins.error;
+    const res = await readProfile();
+    if (res.error) lastError = res.error;
+    data = res.data;
+  }
+
+  if (!data) {
+    throw new Error(
+      'Für dein Konto existiert kein lesbares Profil' +
+      (lastError ? ' (' + lastError.message + ')' : '') +
+      '. Bitte SQL-Reparatur für die Tabelle "profiles" in Supabase ausführen.'
+    );
+  }
+
+  profile = {
+    id: data.id,
+    email: data.email || currentUser.email || '',
+    display_name: data.display_name || data.email || currentUser.email || 'Angemeldeter Benutzer',
+    role: normRolle(data.role),
+    organization_id: data.organization_id || null
+  };
+  await checkOperator();
+}
+
+
+
+
+
+
+// Ereignisse sicher verbinden
+function onClickIfExists(id, handler) {
+  const element = $(id);
+
+  if (element) {
+    element.addEventListener('click', handler);
+  } else {
+    console.warn('HTML-Element fehlt:', id);
+  }
+}
+
+onClickIfExists('saveConfigBtn', async () => {
+  if (await initConnection()) {
+    say('Verbindung gespeichert. Du kannst dich jetzt anmelden.');
+  }
+});
+
+onClickIfExists('testConfigBtn', connectTest);
+
+onClickIfExists('loginBtn', async () => {
+  if (!sb && !(await initConnection())) return;
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({
+      email: $('email').value.trim(),
+      password: $('password').value
+    });
+
+    if (error) throw error;
+
+    await onSignedIn(data.user);
+  } catch (e) {
+    say('Anmeldung fehlgeschlagen: ' + e.message, true);
+  }
+});
+
+onClickIfExists('logoutBtn', logout);
+onClickIfExists('submitOrderBtn', submitOrder);
+onClickIfExists('clearSelectionBtn', clearSelection);
+
+onClickIfExists('refreshRunnerBtn', refreshOrders);
+onClickIfExists('addMenuBtn', addMenuItem);
+onClickIfExists('previewClosingBtn', calculateClosing);
+onClickIfExists('saveClosingBtn', saveClosing);
+
+
+
+
+
+// Reset-Handler: innerhalb der äusseren Hauptfunktion
+document.addEventListener('click', async function (event) {
+  const button = event.target.closest('#resetTodayOrdersBtn');
+  if (!button) return;
+
+  if (!sb || !currentUser) {
+    say('Bitte zuerst anmelden.', true);
+    return;
+  }
+
+  const bestaetigung = prompt(
+    'Alle heutigen Bestellungen und Positionen werden gelöscht.\n\nZum Bestätigen RESET eingeben:'
+  );
+
+  if (bestaetigung !== 'RESET') return;
+
+  const originalText = button.textContent;
+
+  try {
+    button.disabled = true;
+    button.textContent = 'Wird zurückgesetzt ...';
+
+    const { data, error } = await sb.rpc('reset_today_orders');
+    if (error) throw error;
+
+    await refreshOrders();
+    await loadAdmin();
+    await loadClosingHistory();
+
+    say(`${data} heutige Bestellungen wurden gelöscht.`, false);
+  } catch (e) {
+    console.error('Reset-Fehler:', e);
+    say('Zurücksetzen fehlgeschlagen: ' + e.message, true);
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+});
+
+
+// ---------------------------------------------------------------
+// Registrierung, Passwort vergessen, Veranstalter anlegen
+// ---------------------------------------------------------------
+const IN_RECOVERY = /(^|[#&?])type=recovery/.test(location.hash + location.search);
+let recoveryMode = IN_RECOVERY;
+let authMode = 'login';
+
+function authFehler(e) {
+  const m = String((e && e.message) || e || '');
+  if (/rate limit/i.test(m)) return 'Zu viele E-Mails in kurzer Zeit. Bitte versuche es später nochmals.';
+  if (/signups? not allowed|signup is disabled/i.test(m)) return 'Die Registrierung ist derzeit nicht freigeschaltet.';
+  if (/invalid login credentials/i.test(m)) return 'E-Mail oder Passwort stimmt nicht.';
+  if (/email not confirmed/i.test(m)) return 'Bitte bestätige zuerst deine E-Mail-Adresse (Link in der Mail).';
+  if (/password should be at least|weak password/i.test(m)) return 'Das Passwort ist zu schwach. Bitte mindestens 8 Zeichen verwenden.';
+  return m;
+}
+
+function setAuthMode(mode) {
+  authMode = mode;
+  const show = (id, on) => $(id)?.classList.toggle('hidden', !on);
+  const titel = { login: 'Anmelden', register: 'Konto erstellen', recovery: 'Neues Passwort festlegen' };
+  if ($('loginTitle')) $('loginTitle').textContent = titel[mode] || 'Anmelden';
+  show('emailWrap', mode !== 'recovery');
+  show('password2Wrap', mode !== 'login');
+  show('loginBtn', mode === 'login');
+  show('registerBtn', mode === 'register');
+  show('saveNewPwBtn', mode === 'recovery');
+  show('authSwitch', mode !== 'recovery');
+  show('forgotWrap', mode === 'login');
+  if ($('registerHint')) $('registerHint').style.display = mode === 'register' ? '' : 'none';
+  $('showLoginBtn')?.classList.toggle('active', mode === 'login');
+  $('showRegisterBtn')?.classList.toggle('active', mode === 'register');
+  updateInviteBanner();
+  const pwLabel = document.querySelector('label[for="password"]');
+  if (pwLabel) pwLabel.textContent = mode === 'recovery' ? 'Neues Passwort' : 'Passwort';
+  if ($('password')) $('password').autocomplete = mode === 'login' ? 'current-password' : 'new-password';
+}
+
+function showRecoveryForm() {
+  $('appPanel')?.classList.add('hidden');
+  $('orgPanel')?.classList.add('hidden');
+  $('loginPanel')?.classList.remove('hidden');
+  setAuthMode('recovery');
+}
+
+function showOrgOnboarding() {
+  $('loginPanel')?.classList.add('hidden');
+  $('appPanel')?.classList.add('hidden');
+  $('orgPanel')?.classList.remove('hidden');
+  $('logoutBtn')?.classList.remove('hidden');
+  if ($('userLabel')) $('userLabel').textContent = profile?.email || currentUser?.email || '';
+}
+
+async function loadOrgName() {
+  try {
+    const { data } = await sb.from('organizations').select('name').eq('id', profile.organization_id).maybeSingle();
+    profile.org_name = data?.name || '';
+  } catch (e) {
+    profile.org_name = '';
+  }
+  if ($('orgLabel')) $('orgLabel').textContent = profile.org_name || '';
+}
+
+async function registerAccount() {
+  if (!sb && !(await initConnection())) return;
+  const email = $('email').value.trim();
+  const pw = $('password').value;
+  const pw2 = $('password2').value;
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { say('Bitte eine gültige E-Mail-Adresse eingeben.', true); return; }
+  if (pw.length < 8) { say('Das Passwort braucht mindestens 8 Zeichen.', true); return; }
+  if (pw !== pw2) { say('Die beiden Passwörter sind nicht gleich.', true); return; }
+  try {
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password: pw,
+      options: { emailRedirectTo: location.origin + location.pathname }
+    });
+    if (error) throw error;
+    if (data.session) {
+      await onSignedIn(data.user);
+    } else {
+      $('password').value = '';
+      $('password2').value = '';
+      setAuthMode('login');
+      say('Fast geschafft: Wir haben dir eine E-Mail geschickt. Bitte bestätige deine Adresse über den Link und melde dich danach an.');
+    }
+  } catch (e) {
+    say('Registrierung fehlgeschlagen: ' + authFehler(e), true);
+  }
+}
+
+async function forgotPassword() {
+  if (!sb && !(await initConnection())) return;
+  const email = $('email').value.trim();
+  if (!email) { say('Bitte zuerst deine E-Mail-Adresse oben eintragen.', true); return; }
+  try {
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    if (error) throw error;
+    say('Falls die Adresse bei uns bekannt ist, haben wir dir eine E-Mail zum Zurücksetzen geschickt.');
+  } catch (e) {
+    say('Das hat nicht geklappt: ' + authFehler(e), true);
+  }
+}
+
+async function saveNewPassword() {
+  const pw = $('password').value;
+  const pw2 = $('password2').value;
+  if (pw.length < 8) { say('Das Passwort braucht mindestens 8 Zeichen.', true); return; }
+  if (pw !== pw2) { say('Die beiden Passwörter sind nicht gleich.', true); return; }
+  try {
+    const { error } = await sb.auth.updateUser({ password: pw });
+    if (error) throw error;
+    recoveryMode = false;
+    $('password').value = '';
+    $('password2').value = '';
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+    setAuthMode('login');
+    say('Passwort gespeichert.');
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) await onSignedIn(session.user);
+  } catch (e) {
+    say('Passwort konnte nicht gespeichert werden: ' + authFehler(e), true);
+  }
+}
+
+async function createOrganization() {
+  const name = $('orgName').value.trim();
+  if (name.length < 2 || name.length > 80) { say('Der Name muss 2 bis 80 Zeichen lang sein.', true); return; }
+  try {
+    const { error } = await sb.rpc('register_organization', { p_name: name });
+    if (error) throw error;
+    $('orgName').value = '';
+    await onSignedIn(currentUser);
+    say('Willkommen! Dein Anlass ist angelegt. Lege jetzt unter Menü verwalten deine Artikel an.');
+  } catch (e) {
+    say('Anlass konnte nicht angelegt werden: ' + authFehler(e), true);
+  }
+}
+
+onClickIfExists('showLoginBtn', () => setAuthMode('login'));
+onClickIfExists('showRegisterBtn', () => setAuthMode('register'));
+onClickIfExists('registerBtn', registerAccount);
+onClickIfExists('saveNewPwBtn', saveNewPassword);
+onClickIfExists('createOrgBtn', createOrganization);
+onClickIfExists('forgotLink', e => { e.preventDefault(); forgotPassword(); });
+
+
+// ---------------------------------------------------------------
+// Einladungen und Team
+// ---------------------------------------------------------------
+const ROLLEN = { admin: 'Admin', service: 'Service', kitchen: 'Küche / Theke', closing: 'Tagesabschluss' };
+let neuerCode = '';
+
+async function loadTeam() {
+  if (!sb || !profile || profile.role !== 'admin') return;
+  const inviteList = $('inviteList');
+  const memberList = $('memberList');
+  if (!inviteList || !memberList) return;
+
+  try {
+    const { data: invites, error: e1 } = await sb.rpc('list_org_invites');
+    if (e1) throw e1;
+
+    inviteList.innerHTML = (invites && invites.length)
+      ? `<table class="table"><thead><tr><th>Code</th><th>Rolle</th><th>Gültig bis</th><th>Genutzt</th><th></th></tr></thead><tbody>${
+          invites.map(i => `
+            <tr${i.code === neuerCode ? ' style="background:#eaf4ed"' : ''}>
+              <td><strong style="font-size:1.1rem;letter-spacing:.05em">${esc(i.code)}</strong></td>
+              <td>${esc(ROLLEN[i.role] || i.role)}</td>
+              <td>${new Date(i.expires_at).toLocaleDateString('de-CH')}</td>
+              <td>${Number(i.used_count)} / ${Number(i.max_uses)}</td>
+              <td>
+                <div class="actions">
+                  <button type="button" data-share="wa" data-code="${esc(i.code)}" data-role="${esc(i.role)}">WhatsApp</button>
+                  <button type="button" data-share="mail" data-code="${esc(i.code)}" data-role="${esc(i.role)}">E-Mail</button>
+                  ${navigator.share ? `<button type="button" data-share="native" data-code="${esc(i.code)}" data-role="${esc(i.role)}">Teilen …</button>` : ''}
+                  <button type="button" class="secondary" data-share="link" data-code="${esc(i.code)}" data-role="${esc(i.role)}">Link kopieren</button>
+                  <button type="button" class="secondary" data-copy-invite="${esc(i.code)}">Code kopieren</button>
+                  <button type="button" class="danger" data-revoke-invite="${esc(i.code)}">Widerrufen</button>
+                </div>
+              </td>
+            </tr>`).join('')
+        }</tbody></table>`
+      : '<p class="muted">Keine aktiven Einladungscodes.</p>';
+
+    const { data: members, error: e2 } = await sb
+      .from('profiles')
+      .select('id,email,display_name,role')
+      .eq('organization_id', profile.organization_id)
+      .order('email');
+    if (e2) throw e2;
+
+    memberList.innerHTML = (members && members.length)
+      ? `<table class="table"><thead><tr><th>Person</th><th>Rolle</th><th></th></tr></thead><tbody>${
+          members.map(m => {
+            const ich = m.id === currentUser.id;
+            const rolle = normRolle(m.role);
+            return `
+            <tr>
+              <td>${esc(m.display_name || m.email || '')}<div class="muted">${esc(m.email || '')}</div></td>
+              <td><select data-member-role="${esc(m.id)}" ${ich ? 'disabled' : ''}>${
+                Object.entries(ROLLEN).map(([k, v]) =>
+                  `<option value="${k}" ${k === rolle ? 'selected' : ''}>${esc(v)}</option>`).join('')
+              }</select></td>
+              <td>${ich ? '<span class="muted">Du</span>'
+                        : `<button type="button" class="secondary" data-member-save="${esc(m.id)}">Speichern</button>
+                           <button type="button" class="danger" data-member-remove="${esc(m.id)}">Entfernen</button>`}</td>
+            </tr>`;
+          }).join('')
+        }</tbody></table>`
+      : '<p class="muted">Noch keine Mitglieder.</p>';
+  } catch (e) {
+    console.error('loadTeam:', e);
+    say('Team konnte nicht geladen werden: ' + (e?.message || e), true);
+  }
+}
+
+function inviteLink(code) {
+  return location.origin + location.pathname + '?code=' + encodeURIComponent(code);
+}
+
+function inviteText(code, role) {
+  const verein = profile?.org_name ? ' zu «' + profile.org_name + '»' : '';
+  return 'Du bist' + verein + ' eingeladen (Rolle: ' + (ROLLEN[role] || role) + '). ' +
+         'Öffne den Link, registriere dich und du bist automatisch dabei: ' + inviteLink(code) +
+         '\n\nFalls der Link nicht funktioniert, gib bei der Anmeldung diesen Code ein: ' + code;
+}
+
+const INVITE_KEY = 'bestelleasy.invite';
+function getPendingInvite() { try { return localStorage.getItem(INVITE_KEY) || ''; } catch (e) { return ''; } }
+function setPendingInvite(c) { try { localStorage.setItem(INVITE_KEY, c); } catch (e) {} }
+function clearPendingInvite() { try { localStorage.removeItem(INVITE_KEY); } catch (e) {} }
+function updateInviteBanner() { $('inviteBanner')?.classList.toggle('hidden', !getPendingInvite()); }
+
+async function autoJoinPending() {
+  const code = getPendingInvite();
+  if (!code) return;
+  if ($('inviteCode')) $('inviteCode').value = code;
+  try {
+    const { error } = await sb.rpc('join_organization', { p_code: code });
+    if (error) throw error;
+    clearPendingInvite();
+    await onSignedIn(currentUser);
+    say('Willkommen im Verein!');
+  } catch (e) {
+    clearPendingInvite();
+    say('Der Einladungslink ist ungültig oder abgelaufen: ' + authFehler(e), true);
+  }
+}
+
+// Einladungscode aus dem Link (?code=...) merken und aus der Adresszeile entfernen
+(function () {
+  try {
+    const c = new URLSearchParams(location.search).get('code');
+    if (c && /^[A-Za-z0-9]{6,20}$/.test(c)) {
+      setPendingInvite(c.toUpperCase());
+      history.replaceState(null, '', location.pathname + location.hash);
+      setAuthMode('register');
+    }
+  } catch (e) {}
+  updateInviteBanner();
+})();
+
+async function createInvite() {
+  const btn = $('createInviteBtn');
+  const role = $('inviteRole').value;
+  const days = Number($('inviteDays').value) || 7;
+  const uses = Number($('inviteUses').value) || 20;
+  btn.disabled = true;
+  try {
+    const { data, error } = await sb.rpc('create_org_invite', {
+      p_role: role, p_days: days, p_max_uses: uses
+    });
+    if (error) throw error;
+    neuerCode = String(data || '');
+    showSuccessToast('✓ Code erzeugt. Jetzt unten per WhatsApp oder E-Mail teilen.');
+    await loadTeam();
+  } catch (e) {
+    say('Code konnte nicht erzeugt werden: ' + (e?.message || e), true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function joinOrganization() {
+  const code = $('inviteCode').value.trim();
+  if (code.length < 6) { say('Bitte den Einladungscode eingeben.', true); return; }
+  try {
+    const { error } = await sb.rpc('join_organization', { p_code: code });
+    if (error) throw error;
+    $('inviteCode').value = '';
+    await onSignedIn(currentUser);
+    say('Willkommen im Verein!');
+  } catch (e) {
+    say('Beitritt nicht möglich: ' + authFehler(e), true);
+  }
+}
+
+document.addEventListener('click', async event => {
+  const kopieren = event.target.closest('[data-copy-invite]');
+  if (kopieren) {
+    const code = kopieren.dataset.copyInvite;
+    try {
+      await navigator.clipboard.writeText(code);
+      showSuccessToast('✓ Code kopiert: ' + code);
+    } catch (e) {
+      say('Code: ' + code);
+    }
+    return;
+  }
+
+  const widerrufen = event.target.closest('[data-revoke-invite]');
+  if (widerrufen) {
+    if (!confirm('Diesen Einladungscode widerrufen?')) return;
+    widerrufen.disabled = true;
+    try {
+      const { error } = await sb.rpc('revoke_org_invite', { p_code: widerrufen.dataset.revokeInvite });
+      if (error) throw error;
+      await loadTeam();
+    } catch (e) {
+      widerrufen.disabled = false;
+      say('Code konnte nicht widerrufen werden: ' + (e?.message || e), true);
+    }
+    return;
+  }
+
+  const teilen = event.target.closest('[data-share]');
+  if (teilen) {
+    const art = teilen.dataset.share;
+    const code = teilen.dataset.code;
+    const text = inviteText(code, teilen.dataset.role);
+    if (art === 'wa') {
+      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+    } else if (art === 'mail') {
+      location.href = 'mailto:?subject=' + encodeURIComponent('Einladung zur BestellEAsy App') +
+                      '&body=' + encodeURIComponent(text);
+    } else if (art === 'native') {
+      try { await navigator.share({ title: 'Einladung zur BestellEAsy App', text }); } catch (e) { /* abgebrochen */ }
+    } else if (art === 'link') {
+      try {
+        await navigator.clipboard.writeText(inviteLink(code));
+        showSuccessToast('✓ Einladungslink kopiert.');
+      } catch (e) {
+        say('Link: ' + inviteLink(code));
+      }
+    }
+    return;
+  }
+
+  const entfernen = event.target.closest('[data-member-remove]');
+  if (entfernen) {
+    if (!confirm('Diese Person aus dem Verein entfernen? Das Konto bleibt bestehen, die Person verliert aber sofort den Zugriff.')) return;
+    entfernen.disabled = true;
+    try {
+      const { error } = await sb.rpc('admin_remove_user', { p_user_id: entfernen.dataset.memberRemove });
+      if (error) throw error;
+      showSuccessToast('✓ Person wurde aus dem Verein entfernt.');
+      await loadTeam();
+    } catch (e) {
+      entfernen.disabled = false;
+      say('Person konnte nicht entfernt werden: ' + (e?.message || e), true);
+    }
+    return;
+  }
+
+  const speichern = event.target.closest('[data-member-save]');
+  if (speichern) {
+    const id = speichern.dataset.memberSave;
+    const auswahl = document.querySelector(`[data-member-role="${CSS.escape(id)}"]`);
+    if (!auswahl) return;
+    speichern.disabled = true;
+    try {
+      const { error } = await sb.rpc('admin_set_user_role', { p_user_id: id, p_role: auswahl.value });
+      if (error) throw error;
+      showSuccessToast('✓ Rolle gespeichert.');
+      await loadTeam();
+    } catch (e) {
+      speichern.disabled = false;
+      say('Rolle konnte nicht gespeichert werden: ' + (e?.message || e), true);
+    }
+  }
+});
+
+onClickIfExists('createInviteBtn', createInvite);
+onClickIfExists('joinOrgBtn', joinOrganization);
+
+// Initialisierung
+(async () => {
+  try {
+    const raw = localStorage.getItem(CONFIG_KEY);
+
+    if (raw) {
+      setConfigUI(JSON.parse(raw));
+    } else {
+      setConfigUI({
+        url: 'https://mkdsxgckckzxqaupilrp.supabase.co',
+        key: 'sb_publishable_dDoTEWtrcI8ulfVD4UiZZg_JsirepVu'
+      });
+    }
+
+    if (await initConnection()) {
+      const { data: { session } } = await sb.auth.getSession();
+
+      if (session && !recoveryMode) {
+        await onSignedIn(session.user);
+      } else {
+        $('loginPanel').classList.remove('hidden');
+        if (recoveryMode) showRecoveryForm();
+      }
+    }
+  } catch (e) {
+    console.warn(e);
+    say('Supabase-Verbindung konnte nicht initialisiert werden. Bitte Verbindung prüfen.', true);
+  }
+})();
+
+// Ende der äusseren Hauptfunktion
+
+// Kachel «Offene Beträge» alle 5 Sekunden automatisch aktualisieren
+let offeneBetraegeLaeuft = false;
+setInterval(async () => {
+  if (offeneBetraegeLaeuft || document.hidden) return;
+  if (!sb || !currentUser || !subscriptionActive) return;
+  offeneBetraegeLaeuft = true;
+  try { await loadOpenAmounts(); } finally { offeneBetraegeLaeuft = false; }
+}, 5000);
+
+// Küche, Theke / Ausschank und Läufer alle 5 Sekunden automatisch aktualisieren
+let stationenLaeuft = false;
+setInterval(async () => {
+  if (stationenLaeuft || document.hidden) return;
+  if (!sb || !currentUser || !profile || !subscriptionActive) return;
+  if (!['orders', 'bar', 'runner'].includes(activeTab)) return;
+  stationenLaeuft = true;
+  try { await refreshOrders(); } finally { stationenLaeuft = false; }
+}, 5000);
+})();
+
+
+// Impressum und Datenschutz anzeigen
+document.addEventListener('click', function (event) {
+  const link = event.target.closest('[data-legal]');
+  if (!link) return;
+  event.preventDefault();
+  const art = link.dataset.legal;
+  const dialog = document.getElementById('legalDialog');
+  document.getElementById('legalTitle').textContent = art === 'impressum' ? 'Impressum' : 'Datenschutzerklärung';
+  document.getElementById('legal-impressum').hidden = art !== 'impressum';
+  document.getElementById('legal-datenschutz').hidden = art !== 'datenschutz';
+  if (!dialog.open) dialog.showModal();
+  dialog.querySelector('.legal-body:not([hidden])').scrollTop = 0;
+});
+document.getElementById('legalClose')?.addEventListener('click', () => document.getElementById('legalDialog').close());
+document.getElementById('legalDialog')?.addEventListener('click', function (e) { if (e.target === this) this.close(); });
+
+// Passwort anzeigen/verbergen: ausserhalb ist hier in Ordnung
+document.getElementById('togglePassword')?.addEventListener('click', function () {
+  const password = document.getElementById('password');
+  const anzeigen = password.type === 'password';
+
+  password.type = anzeigen ? 'text' : 'password';
+  this.textContent = anzeigen ? '👁' : '👁';
+  this.title = anzeigen ? 'Passwort verbergen' : 'Passwort anzeigen';
+  this.setAttribute(
+    'aria-label',
+    anzeigen ? 'Passwort verbergen' : 'Passwort anzeigen'
+  );
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Feste Total-/Sende-Leiste ausblenden, sobald die Getränkeabrechnung sichtbar wird
+(function () {
+  function updateCartBar() {
+    const bar = document.querySelector('.cart-bar');
+    const ziel = document.getElementById('drinkPaymentHeading');
+    if (!bar || !ziel) return;
+    const sichtbar = ziel.getBoundingClientRect().top < window.innerHeight - 40;
+    bar.classList.toggle('cart-bar-hidden', sichtbar);
+  }
+  window.addEventListener('scroll', updateCartBar, { passive: true });
+  window.addEventListener('resize', updateCartBar);
+  document.addEventListener('click', () => setTimeout(updateCartBar, 50));
+  setInterval(updateCartBar, 500);
+  updateCartBar();
+})();
+
+
+</script>
+
+
+</body></html>
