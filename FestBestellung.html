@@ -3457,6 +3457,7 @@ async function loadOperator() {
           const aktiv = o.plan !== 'none' && o.paid_until && o.paid_until >= heute;
           const status = aktiv ? '<span class="pill green">aktiv</span>'
             : (o.plan !== 'none' && o.paid_until ? '<span class="pill red">abgelaufen</span>' : '<span class="pill">nicht freigeschaltet</span>');
+          const eigener = o.id === profile?.organization_id;
           return `<tr>
             <td><strong>${esc(o.name)}</strong></td>
             <td><select data-op-plan="${esc(o.id)}">${
@@ -3471,6 +3472,7 @@ async function loadOperator() {
               <button type="button" data-op-org="${esc(o.id)}" data-op-months="3">+3</button>
               <button type="button" data-op-org="${esc(o.id)}" data-op-months="12">+12</button>
               <button type="button" class="secondary" data-op-org="${esc(o.id)}" data-op-months="0">Nur Paket speichern</button>
+              <button type="button" class="danger" data-op-delete="${esc(o.id)}" data-op-name="${esc(o.name)}" ${eigener ? 'disabled title="Dein eigener Verein"' : ''}>Löschen</button>
             </div></td>
           </tr>`;
         }).join('')
@@ -3501,6 +3503,32 @@ document.addEventListener('click', async e => {
   }
 });
 /* =================== Ende Betreiber-Bereich =================== */
+
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-op-delete]');
+  if (!b || !isOperator || b.disabled) return;
+  const name = b.dataset.opName || '';
+  const eingabe = prompt(
+    'Verein «' + name + '» endgültig löschen?\n\n' +
+    'Das entfernt den Verein mit seinen Daten und lässt sich nicht rückgängig machen.\n' +
+    'Zum Bestätigen den Namen des Vereins eintippen:'
+  );
+  if (eingabe === null) return;
+  if (eingabe.trim() !== name) { say('Der Name stimmt nicht überein. Es wurde nichts gelöscht.', true); return; }
+  b.disabled = true;
+  try {
+    const { error } = await sb.rpc('operator_delete_org', { p_org: b.dataset.opDelete });
+    if (error) throw error;
+    showSuccessToast('✓ Verein «' + name + '» wurde gelöscht.');
+    await loadOperator();
+  } catch (err) {
+    b.disabled = false;
+    say('Verein konnte nicht gelöscht werden: ' + (err?.message || err), true);
+  }
+});
+
+  
 
 /* ===================== Drucker-Modul ===================== */
 // Vom Vermieter vorinstalliert (gilt für alle Mietsets, hier einmal anpassen).
