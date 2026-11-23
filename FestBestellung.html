@@ -2713,51 +2713,18 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
 <h3>Drucker (Netzwerkdrucker)</h3>
 <p class="muted">
-  Küche und Theke haben je einen Netzwerkdrucker. Beim Absenden einer Bestellung
-  wird automatisch ein Bon gedruckt, der zusammen mit dem Tablar zum Läufer geht. Die Einstellungen gelten für alle Geräte dieser Organisation.
+  Die Drucker für Küche und Theke sind vorinstalliert und eingestellt. Du musst nur den Haken setzen:
+  Dann wird beim Absenden einer Bestellung automatisch ein Bon gedruckt, der zusammen mit dem Tablar zum Läufer geht.
 </p>
 
 <div class="panel" style="background:#f3f7f4;box-shadow:none">
   <label style="display:flex;gap:10px;align-items:center;font-weight:700">
-    <input type="checkbox" id="printEnabled" style="width:auto"> Drucken aktivieren
+    <input type="checkbox" id="printEnabled" style="width:auto"> Bons automatisch drucken (Küche und Theke)
   </label>
-
-  <div class="grid" style="margin-top:12px">
-    <div>
-      <label for="printMode">Druckart</label>
-      <select id="printMode">
-        <option value="epos">Epson-Netzwerkdrucker (ePOS, direkt)</option>
-        <option value="browser">Browser-Druckdialog (jeder Drucker)</option>
-      </select>
-    </div>
-    <div>
-      <label for="printProto">Verbindung zum Drucker</label>
-      <select id="printProto">
-        <option value="http">http (Standard)</option>
-        <option value="https">https (verschlüsselt)</option>
-      </select>
-    </div>
-    <div>
-      <label style="display:flex;gap:10px;align-items:center;margin-top:28px">
-        <input type="checkbox" id="printAscii" style="width:auto"> Umlaute ersetzen (ä→ae), falls sie falsch gedruckt werden
-      </label>
-    </div>
-  </div>
-
-  <div class="grid" style="margin-top:12px">
-    <div>
-      <label for="printKitchenIp">🍽️ Küche – IP-Adresse (Essen)</label>
-      <input id="printKitchenIp" placeholder="z. B. 192.168.1.50">
-    </div>
-    <div>
-      <label for="printBarIp">🍺 Theke – IP-Adresse (Getränke)</label>
-      <input id="printBarIp" placeholder="z. B. 192.168.1.51">
-    </div>
-  </div>
+  <p class="muted" id="printPlanHint" style="margin:8px 0 0"></p>
 
   <div class="actions" style="margin-top:14px">
-    <button type="button" id="savePrinterBtn">Druckereinstellungen speichern</button>
-    <button type="button" id="testPrintKitchenBtn" class="secondary">Testdruck Küche</button>
+        <button type="button" id="testPrintKitchenBtn" class="secondary">Testdruck Küche</button>
     <button type="button" id="testPrintBarBtn" class="secondary">Testdruck Theke</button>
   </div>
   <hr style="margin:20px 0;border:0;border-top:1px solid #d8e1da">
@@ -3428,69 +3395,55 @@ setInterval(async () => {
 /* =================== Ende Zugang / Freischaltung =================== */
 
 /* ===================== Drucker-Modul ===================== */
-const PRINT_KEY = 'bestelleasy.printer.v1';
-const printDefaults = { enabled:false, mode:'epos', proto:'http', ascii:false, kitchenIp:'', barIp:'' };
+// Vom Vermieter vorinstalliert (gilt für alle Mietsets, hier einmal anpassen).
+// Mieter können nur «Drucken aktivieren» ein- oder ausschalten.
+const PRINTER_VORGABE = { mode:'epos', proto:'http', ascii:false, kitchenIp:'192.168.10.50', barIp:'192.168.10.51' };
+const printDefaults = { enabled:false, ...PRINTER_VORGABE };
 
 let printCfgCache = null, printCfgFetchedAt = 0;
 
-function loadPrintCfg() {
-  if (printCfgCache) return { ...printDefaults, ...printCfgCache };
-  try { return { ...printDefaults, ...(JSON.parse(localStorage.getItem(PRINT_KEY) || '{}')) }; }
-  catch (e) { return { ...printDefaults }; }
-}
+function loadPrintCfg() { return { ...printDefaults, ...(printCfgCache || {}) }; }
 
-// Druckereinstellungen gelten pro Organisation (Verein / Mieter) und liegen in Supabase
+// Pro Verein wird nur gespeichert, ob gedruckt werden soll (und optional abweichende IP-Adressen, vom Vermieter gesetzt)
 async function fetchPrintCfg(force) {
   if (!sb || !profile?.organization_id) return;
   if (!force && Date.now() - printCfgFetchedAt < 60000) return;
   try {
     const { data, error } = await sb.from('org_printer_settings')
-      .select('enabled, mode, kitchen_ip, bar_ip, proto, ascii')
+      .select('enabled, kitchen_ip, bar_ip')
       .eq('organization_id', profile.organization_id)
       .maybeSingle();
     if (error) throw error;
     printCfgFetchedAt = Date.now();
-    if (data) {
-      printCfgCache = { enabled: !!data.enabled, mode: data.mode || 'epos',
-        proto: data.proto || 'http', ascii: !!data.ascii,
-        kitchenIp: data.kitchen_ip || '', barIp: data.bar_ip || '' };
-      try { localStorage.setItem(PRINT_KEY, JSON.stringify(printCfgCache)); } catch (e) {}
-    }
+    printCfgCache = { enabled: !!data?.enabled };
+    if (data?.kitchen_ip) printCfgCache.kitchenIp = data.kitchen_ip;
+    if (data?.bar_ip) printCfgCache.barIp = data.bar_ip;
   } catch (e) { console.warn('Druckereinstellungen nicht geladen:', e.message); }
 }
 
 function fillPrintForm() {
-  const c = loadPrintCfg();
-  if (!$('printEnabled')) return;
-  $('printEnabled').checked = !!c.enabled;
-  $('printMode').value = c.mode;
-  $('printProto').value = c.proto;
-  $('printAscii').checked = !!c.ascii;
-  $('printKitchenIp').value = c.kitchenIp;
-  $('printBarIp').value = c.barIp;
+  const box = $('printEnabled');
+  if (!box) return;
+  const frei = subscriptionPlan === 'printer';
+  box.checked = frei && !!loadPrintCfg().enabled;
+  box.disabled = !frei;
+  const hint = $('printPlanHint');
+  if (hint) hint.textContent = frei ? '' : 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten.';
 }
 
-async function savePrintForm() {
-  const c = {
-    enabled: $('printEnabled').checked,
-    mode: $('printMode').value,
-    proto: $('printProto').value,
-    ascii: $('printAscii').checked,
-    kitchenIp: $('printKitchenIp').value.trim(),
-    barIp: $('printBarIp').value.trim()
-  };
-  printCfgCache = c;
-  try { localStorage.setItem(PRINT_KEY, JSON.stringify(c)); } catch (e) {}
-  if (!sb || !profile?.organization_id) { $('printerMsg').textContent = 'Nur auf diesem Gerät gespeichert.'; return; }
-  const { error } = await sb.from('org_printer_settings').upsert({
-    organization_id: profile.organization_id,
-    enabled: c.enabled, mode: c.mode, proto: c.proto, ascii: c.ascii, kitchen_ip: c.kitchenIp, bar_ip: c.barIp,
-    updated_at: new Date().toISOString()
-  });
-  printCfgFetchedAt = Date.now();
-  $('printerMsg').textContent = error
-    ? '⚠ Nur auf diesem Gerät gespeichert (Supabase: ' + error.message + ')'
-    : '✓ Gespeichert für alle Geräte dieser Organisation.';
+async function setPrintingEnabled(on) {
+  const msg = $('printerMsg');
+  if (subscriptionPlan !== 'printer') { msg.textContent = 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten.'; fillPrintForm(); return; }
+  try {
+    const { error } = await sb.rpc('set_printing_enabled', { p_enabled: on });
+    if (error) throw error;
+    printCfgCache = { ...(printCfgCache || {}), enabled: on };
+    printCfgFetchedAt = Date.now();
+    msg.textContent = on ? '✓ Bon-Druck ist aktiviert.' : 'Bon-Druck ist ausgeschaltet.';
+  } catch (e) {
+    msg.textContent = '⚠ Konnte nicht gespeichert werden: ' + (e?.message || e);
+    fillPrintForm();
+  }
 }
 
 const STATION_TITLE = { kitchen:'KÜCHE', bar:'THEKE' };
@@ -3606,9 +3559,11 @@ async function testPrint(station) {
 
 document.addEventListener('click', e => {
   const id = e.target.closest('button')?.id;
-  if (id === 'savePrinterBtn') savePrintForm();
-  if (id === 'testPrintKitchenBtn') { savePrintForm().then(() => testPrint('kitchen')); }
-  if (id === 'testPrintBarBtn') { savePrintForm().then(() => testPrint('bar')); }
+  if (id === 'testPrintKitchenBtn') testPrint('kitchen');
+  if (id === 'testPrintBarBtn') testPrint('bar');
+});
+document.addEventListener('change', e => {
+  if (e.target && e.target.id === 'printEnabled') setPrintingEnabled(e.target.checked);
 });
 
 /* ---------- Tischnummern drucken ---------- */
