@@ -2722,8 +2722,9 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
 <h3>Drucker (Netzwerkdrucker)</h3>
 <p class="muted">
-  Die Drucker für Küche und Theke sind vorinstalliert und eingestellt. Du musst nur den Haken setzen:
-  Dann wird beim Absenden einer Bestellung automatisch ein Bon gedruckt, der zusammen mit dem Tablar zum Läufer geht.
+  Die Drucker für Küche und Theke sind vorinstalliert und eingestellt. Wenn du den Haken setzt,
+  werden beim Absenden automatisch Küchen- und Thekenbons gedruckt. Die Bestellung bleibt für
+  Abrechnung und Zahlungen gespeichert, erscheint aber nicht zusätzlich digital bei Küche, Theke oder Läufer.
 </p>
 
 <div class="panel" style="background:#f3f7f4;box-shadow:none">
@@ -3543,7 +3544,7 @@ function loadPrintCfg() { return { ...printDefaults, ...(printCfgCache || {}) };
 // Pro Verein wird nur gespeichert, ob gedruckt werden soll (und optional abweichende IP-Adressen, vom Vermieter gesetzt)
 async function fetchPrintCfg(force) {
   if (!sb || !profile?.organization_id) return;
-  if (!force && Date.now() - printCfgFetchedAt < 60000) return;
+  if (!force && Date.now() - printCfgFetchedAt < 10000) return;
   try {
     const { data, error } = await sb.from('org_printer_settings')
       .select('enabled, kitchen_ip, bar_ip')
@@ -3589,6 +3590,7 @@ async function setPrintingEnabled(on) {
     printCfgCache = { ...(printCfgCache || {}), enabled: on };
     printCfgFetchedAt = Date.now();
     msg.textContent = on ? '✓ Bon-Druck ist aktiviert.' : 'Bon-Druck ist ausgeschaltet.';
+    renderOrders();
   } catch (e) {
     msg.textContent = '⚠ Konnte nicht gespeichert werden: ' + (e?.message || e);
     fillPrintForm();
@@ -3854,8 +3856,11 @@ const method = methodEl ? methodEl.value : 'cash';
     cart.clear();
     renderMenu();
 
+    const druckerAktiv = subscriptionPlan === 'printer' && !!loadPrintCfg().enabled;
     showSuccessToast(
-      '✓ Bestellung #' + data + ' wurde an die Küche gesendet.'
+      druckerAktiv
+        ? '✓ Bestellung #' + data + ' gespeichert – Bons für Küche und Theke werden gedruckt.'
+        : '✓ Bestellung #' + data + ' wurde an die Küche gesendet.'
     );
 
     await refreshOrders();
@@ -3882,6 +3887,10 @@ async function refreshOrders() {
   if (!sb || !profile) return;
 
   try {
+    // Drucker-Einstellung vereinsweit laden, damit alle Geräte dieselbe
+    // Anzeige für Küche, Theke und Läufer verwenden.
+    await fetchPrintCfg();
+
     const { data, error } = await sb
       .from('orders')
   
@@ -4602,6 +4611,10 @@ function renderOrders() {
     );
 
   const isDrink = isDrinkCategory;
+  // Im aktivierten Druckerbetrieb bleiben Bestellungen in Supabase für
+  // Zahlungen und Tagesabschluss gespeichert, erscheinen aber nicht mehr
+  // zusätzlich digital bei Küche, Theke oder Läufer.
+  const druckerBetrieb = subscriptionPlan === 'printer' && !!loadPrintCfg().enabled;
 
   // Älteste Bestellung oben, neue Bestellungen erscheinen unten
   const sortedOrders = [...orders].sort(
@@ -4612,7 +4625,7 @@ function renderOrders() {
   const ordersList = $('ordersList');
 
   if (ordersList) {
-    const kitchenOrders = sortedOrders.filter(o => {
+    const kitchenOrders = druckerBetrieb ? [] : sortedOrders.filter(o => {
       const items = (o.order_items || []).filter(i => !isDrink(i));
 
       return items.length > 0 &&
@@ -4624,7 +4637,9 @@ function renderOrders() {
 
     ordersList.innerHTML = kitchenOrders.length
       ? kitchenOrders.map(o => stationOrderHTML(o, 'kitchen')).join('')
-      : '<p class="muted">Keine offenen Küchenbestellungen.</p>';
+      : (druckerBetrieb
+          ? '<p class="muted">Druckerbetrieb aktiv – Küchenbons werden gedruckt. Keine digitalen Küchenaufträge.</p>'
+          : '<p class="muted">Keine offenen Küchenbestellungen.</p>');
 
     bindStationButtons(ordersList);
   }
@@ -4633,7 +4648,7 @@ function renderOrders() {
   const barList = $('barList');
 
   if (barList) {
-    const barOrders = sortedOrders.filter(o => {
+    const barOrders = druckerBetrieb ? [] : sortedOrders.filter(o => {
       const items = (o.order_items || []).filter(isDrink);
 
       return items.length > 0 &&
@@ -4645,7 +4660,9 @@ function renderOrders() {
 
     barList.innerHTML = barOrders.length
       ? barOrders.map(o => stationOrderHTML(o, 'bar')).join('')
-      : '<p class="muted">Keine offenen Getränkebestellungen.</p>';
+      : (druckerBetrieb
+          ? '<p class="muted">Druckerbetrieb aktiv – Thekenbons werden gedruckt. Keine digitalen Thekenaufträge.</p>'
+          : '<p class="muted">Keine offenen Getränkebestellungen.</p>');
 
     bindStationButtons(barList);
   }
@@ -4661,7 +4678,7 @@ function renderOrders() {
   const foodJobs = [];
   const drinkJobs = [];
 
-  sortedOrders.forEach(o => {
+  if (!druckerBetrieb) sortedOrders.forEach(o => {
     const items = o.order_items || [];
     const foodItems = items.filter(i => !isDrink(i));
     const drinkItems = items.filter(isDrink);
@@ -4737,7 +4754,9 @@ function renderOrders() {
         <div class="runner-orders">
           ${foodJobs.length
             ? foodJobs.map(job => renderJob(job, 'food')).join('')
-            : '<p class="muted runner-empty">Kein fertiges Essen zum Ausliefern.</p>'}
+            : (druckerBetrieb
+                ? '<p class="muted runner-empty">Druckerbetrieb aktiv – keine digitalen Läuferaufträge.</p>'
+                : '<p class="muted runner-empty">Kein fertiges Essen zum Ausliefern.</p>')}
         </div>
       </section>
 
@@ -4746,7 +4765,9 @@ function renderOrders() {
         <div class="runner-orders">
           ${drinkJobs.length
             ? drinkJobs.map(job => renderJob(job, 'drinks')).join('')
-            : '<p class="muted runner-empty">Keine fertigen Getränke zum Ausliefern.</p>'}
+            : (druckerBetrieb
+                ? '<p class="muted runner-empty">Druckerbetrieb aktiv – keine digitalen Läuferaufträge.</p>'
+                : '<p class="muted runner-empty">Keine fertigen Getränke zum Ausliefern.</p>')}
         </div>
       </section>
     </div>
