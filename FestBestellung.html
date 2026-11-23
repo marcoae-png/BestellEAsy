@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- saved from url=(0076)https://marcoae-png.github.io/bfs-delegiertenversammlung/FestBestellung.html -->
 <html lang="de-CH"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta property="og:type" content="website">
@@ -1559,18 +1560,11 @@ button[data-edit-menu]:disabled {
 #tabs button.active::before { box-shadow: 0 0 0 2px rgba(255, 255, 255, .9); }
 #tabs button.active:focus-visible { outline: 3px solid #8ab99a; outline-offset: 2px; }
 
-  
 /* Kopfbereich: Slogan unter dem Titel, Vereinsname neben dem Benutzer */
 #headerSlogan { display: block; opacity: .9; font-size: .9rem; }
 #orgLabel { font-weight: 700; }
 #orgLabel:not(:empty)::after { content: " ·"; margin: 0 4px 0 2px; font-weight: 400; opacity: .8; }
 
-/* Anzeige der Abo-Dauer in der Kopfzeile */
-#subLabel:not(:empty)::after { content: " ·"; margin: 0 4px 0 2px; font-weight: 400; opacity: .8; }
-#subLabel.sub-warn { background: #ffd84d; color: #493700; border-radius: 6px; padding: 2px 8px; margin-right: 6px; font-weight: 700; }
-#subLabel.sub-warn::after { content: none; }
-  .upgrade-btn { display: inline-block; background: #f3a22b; color: #2a200d; font-weight: 700; border-radius: 9px; padding: 11px 14px; text-decoration: none; } 
-  
 /* Impressum und Datenschutz */
 .site-foot { text-align: center; padding: 18px 12px 110px; font-size: .88rem; color: #66716a; }
 .site-foot button, .legal-link {
@@ -1617,8 +1611,6 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 .plan-card{background:#f1f6f2;border-radius:12px;padding:16px}
 .plan-card h3{margin:0 0 4px}.plan-card .plan-price{font-weight:700}
 .plan-card a{display:inline-block;margin-top:10px;color:#245c3b;font-weight:700;text-decoration:underline}
-
-  
 </style>
 </head>
 <body>
@@ -1649,7 +1641,6 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
   <div class="actions">
     <span id="orgLabel" class="statusline"></span>
- <span id="subLabel" class="statusline"></span>
     <span id="userLabel" class="statusline"></span>
     <button id="logoutBtn" class="secondary hidden" type="button">
       Abmelden
@@ -2731,9 +2722,6 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
     <input type="checkbox" id="printEnabled" style="width:auto"> Bons automatisch drucken (Küche und Theke)
   </label>
   <p class="muted" id="printPlanHint" style="margin:8px 0 0"></p>
-    <div id="printUpgradeBox" class="hidden" style="margin-top:10px">
-    <a id="printUpgradeBtn" class="upgrade-btn" href="#">Auf «Mit Drucker» upgraden</a>
-  </div>
 
   <div class="actions" style="margin-top:14px">
         <button type="button" id="testPrintKitchenBtn" class="secondary">Testdruck Küche</button>
@@ -2770,13 +2758,6 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 <button type="button" id="resetTodayOrdersBtn" class="danger">
   Heutige Bestellungen zurücksetzen
 </button>
-</section>
-
-  <section id="operatorView" class="panel hidden">
-  <h2 class="section-title">Betreiber: Vereine &amp; Zugänge</h2>
-  <p class="muted">Zahlung eingegangen? Paket wählen und die Laufzeit verlängern. Die Verlängerung rechnet ab dem bisherigen Ablauf, oder ab heute, falls er schon vorbei ist.</p>
-  <div class="actions" style="margin-bottom:12px"><button type="button" id="operatorReloadBtn" class="secondary">Liste aktualisieren</button></div>
-  <div id="operatorList"></div>
 </section>
 
 <section id="teamView" class="panel hidden">
@@ -2904,7 +2885,6 @@ function firstTab(){return ['service','orders','closing','admin'].find(allowed) 
 
 
 function allowed(tab) {
-  if (tab === 'operator') return isOperator;
   const erlaubt = {
     admin:   ['service', 'orders', 'bar', 'runner', 'closing', 'admin', 'team'],
     service: ['service', 'orders', 'bar', 'runner'],
@@ -3005,8 +2985,7 @@ function renderTabs() {
     ['runner', 'Läufer'],
     ['closing', 'Tagesabschluss'],
     ['admin', 'Menü verwalten'],
-    ['team', 'Team'],
-    ['operator', 'Betreiber']
+    ['team', 'Team']
   ];
 
   const tabs = $('tabs');
@@ -3057,7 +3036,8 @@ function showTab(tab) {
 
   activeTab = tab;
 
-  ['service', 'orders', 'bar', 'runner', 'closing', 'admin', 'team', 'operator']
+  // Alle Ansichten ausblenden und nur den aktiven Bereich anzeigen
+  ['service', 'orders', 'bar', 'runner', 'closing', 'admin', 'team']
     .forEach(t => {
       const view = $(t + 'View');
       if (view) {
@@ -3065,25 +3045,29 @@ function showTab(tab) {
       }
     });
 
+  // Aktiven Reiter markieren
   $('tabs').querySelectorAll('button').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === tab);
   });
 
-  if (['service', 'orders', 'bar', 'runner'].includes(tab)) {
-    refreshOrders();
-  }
 
-  if (tab === 'service') {
-    loadOpenAmounts();
-  }
+if (['service', 'orders', 'bar', 'runner'].includes(tab)) {
+  refreshOrders();
+}
+
+if (tab === 'service') {
+  loadOpenAmounts();
+}
 
   if (tab === 'admin') { loadAdmin(); fetchPrintCfg(true).then(fillPrintForm); }
   if (tab === 'team') loadTeam();
-  if (tab === 'operator') loadOperator();
   if (tab === 'closing') loadClosingHistory();
 
   clearSay();
 }
+
+
+
 
 
 
@@ -3291,21 +3275,8 @@ const PLANS = {
   printer:  { name: 'Mit Drucker', price: 300, text: 'Alles aus Standard plus automatischer Bon-Druck für Küche und Theke' }
 };
 // Betreiber: E-Mail für die Zahlungsmeldung, optional TWINT-Nummer und QR-Bild (Datei twint-qr.png neben dieser Seite)
-const BETREIBER = { email: 'marco.aebersold@bluewin.ch', twint: '+41 79 718 04 01', qrDatei: 'twint-qr.png' };
-let subscriptionActive = false, subscriptionPlan = '', subscriptionUntil = '', payTimer = null;
-
-function updateSubLabel() {
-  const el = $('subLabel');
-  if (!el) return;
-  if (!subscriptionActive || !subscriptionUntil) { el.textContent = ''; el.className = 'statusline'; return; }
-  const heute = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
-  const tage = Math.round((Date.parse(subscriptionUntil) - Date.parse(heute)) / 86400000);
-  const datum = subscriptionUntil.split('-').reverse().join('.');
-  const paket = PLANS[subscriptionPlan]?.name || subscriptionPlan;
-  el.textContent = paket + ' bis ' + datum +
-    (tage <= 0 ? ' (letzter Tag)' : tage === 1 ? ' (noch 1 Tag)' : ' (noch ' + tage + ' Tage)');
-  el.className = 'statusline' + (tage <= 7 ? ' sub-warn' : '');
-}
+const BETREIBER = { email: 'marco.aebersold@bluewin.ch', twint: '', qrDatei: 'twint-qr.png' };
+let subscriptionActive = false, subscriptionPlan = '', payTimer = null;
 
 async function checkSubscription() {
   // Bei jedem Fehler gilt der Zugang als NICHT freigeschaltet (Neuladen darf nichts umgehen)
@@ -3334,8 +3305,6 @@ function startPayPoll() {
 function hidePaywall(sub) {
   subscriptionActive = true;
   subscriptionPlan = sub?.plan || 'standard';
-  subscriptionUntil = sub?.until || '';
-  updateSubLabel();
   stopPayPoll();
   $('payPanel')?.classList.add('hidden');
 }
@@ -3382,7 +3351,7 @@ function renderPaywall(sub) {
     <div class="pay-box">
       <strong>So bezahlst du per TWINT:</strong><br>
       1. Standard: CHF ${PLANS.standard.price} oder Mit Drucker: CHF ${PLANS.printer.price} pro Monat.<br>
-          2. Sende den Betrag per TWINT an Marco Aebersold, <strong>${esc(BETREIBER.twint)}</strong>.<br>
+      2. Sende den Betrag per TWINT an den Betreiber${BETREIBER.twint ? ' (' + esc(BETREIBER.twint) + ')' : ''}.<br>
       3. Schreibe in die Mitteilung: <strong>${esc(verein)}, ${esc(mail)}</strong>
     </div>
     <div class="pay-qr-row">
@@ -3396,8 +3365,6 @@ function renderPaywall(sub) {
 function showPaywall(sub) {
   subscriptionActive = false;
   subscriptionPlan = '';
-  subscriptionUntil = '';
-  updateSubLabel();
   $('loginPanel')?.classList.add('hidden');
   $('orgPanel')?.classList.add('hidden');
   $('appPanel')?.classList.add('hidden');
@@ -3423,112 +3390,9 @@ setInterval(async () => {
   if (!subscriptionActive || !currentUser || !sb || document.hidden) return;
   const s2 = await checkSubscription();
   if (s2.error) return;
-  if (!s2.active) showPaywall(s2);
-  else {
-    subscriptionPlan = s2.plan;
-    subscriptionUntil = s2.until || '';
-    updateSubLabel();
-    fillPrintForm();
-  }
+  if (!s2.active) showPaywall(s2); else subscriptionPlan = s2.plan;
 }, 60000);
 /* =================== Ende Zugang / Freischaltung =================== */
-
-  /* ===================== Betreiber-Bereich ===================== */
-let isOperator = false;
-
-async function checkOperator() {
-  try {
-    const { data, error } = await sb.rpc('is_operator');
-    isOperator = !error && data === true;
-  } catch (e) { isOperator = false; }
-}
-
-async function loadOperator() {
-  const el = $('operatorList');
-  if (!isOperator || !el) return;
-  try {
-    const { data, error } = await sb.rpc('operator_list_orgs');
-    if (error) throw error;
-    const heute = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
-    const fmt = d => d ? d.split('-').reverse().join('.') : '–';
-    el.innerHTML = (data && data.length)
-      ? `<table class="table"><thead><tr><th>Verein</th><th>Paket</th><th>Bis</th><th>Status</th><th>Mitglieder</th><th>Verlängern</th></tr></thead><tbody>${
-        data.map(o => {
-          const aktiv = o.plan !== 'none' && o.paid_until && o.paid_until >= heute;
-          const status = aktiv ? '<span class="pill green">aktiv</span>'
-            : (o.plan !== 'none' && o.paid_until ? '<span class="pill red">abgelaufen</span>' : '<span class="pill">nicht freigeschaltet</span>');
-          const eigener = o.id === profile?.organization_id;
-          return `<tr>
-            <td><strong>${esc(o.name)}</strong></td>
-            <td><select data-op-plan="${esc(o.id)}">${
-              [['none', 'Kein Zugang'], ['standard', 'Standard'], ['printer', 'Mit Drucker']]
-                .map(([k, v]) => `<option value="${k}" ${k === o.plan ? 'selected' : ''}>${v}</option>`).join('')
-            }</select></td>
-            <td>${esc(fmt(o.paid_until))}</td>
-            <td>${status}</td>
-            <td>${Number(o.members)}</td>
-            <td><div class="actions">
-              <button type="button" data-op-org="${esc(o.id)}" data-op-months="1">+1 Monat</button>
-              <button type="button" data-op-org="${esc(o.id)}" data-op-months="3">+3</button>
-              <button type="button" data-op-org="${esc(o.id)}" data-op-months="12">+12</button>
-              <button type="button" class="secondary" data-op-org="${esc(o.id)}" data-op-months="0">Nur Paket speichern</button>
-              <button type="button" class="danger" data-op-delete="${esc(o.id)}" data-op-name="${esc(o.name)}" ${eigener ? 'disabled title="Dein eigener Verein"' : ''}>Löschen</button>
-            </div></td>
-          </tr>`;
-        }).join('')
-      }</tbody></table>`
-      : '<p class="muted">Noch keine Vereine.</p>';
-  } catch (e) {
-    say('Betreiberliste konnte nicht geladen werden: ' + (e?.message || e), true);
-  }
-}
-
-document.addEventListener('click', async e => {
-  if (e.target.closest('#operatorReloadBtn')) { loadOperator(); return; }
-  const b = e.target.closest('[data-op-org]');
-  if (!b || !isOperator) return;
-  const id = b.dataset.opOrg;
-  const months = Number(b.dataset.opMonths || 0);
-  const sel = document.querySelector(`[data-op-plan="${CSS.escape(id)}"]`);
-  if (!sel) return;
-  b.disabled = true;
-  try {
-    const { error } = await sb.rpc('operator_set_subscription', { p_org: id, p_plan: sel.value, p_months: months });
-    if (error) throw error;
-    showSuccessToast('✓ Gespeichert.');
-    await loadOperator();
-  } catch (err) {
-    b.disabled = false;
-    say('Konnte nicht gespeichert werden: ' + (err?.message || err), true);
-  }
-});
-/* =================== Ende Betreiber-Bereich =================== */
-
-
-document.addEventListener('click', async e => {
-  const b = e.target.closest('[data-op-delete]');
-  if (!b || !isOperator || b.disabled) return;
-  const name = b.dataset.opName || '';
-  const eingabe = prompt(
-    'Verein «' + name + '» endgültig löschen?\n\n' +
-    'Das entfernt den Verein mit seinen Daten und lässt sich nicht rückgängig machen.\n' +
-    'Zum Bestätigen den Namen des Vereins eintippen:'
-  );
-  if (eingabe === null) return;
-  if (eingabe.trim() !== name) { say('Der Name stimmt nicht überein. Es wurde nichts gelöscht.', true); return; }
-  b.disabled = true;
-  try {
-    const { error } = await sb.rpc('operator_delete_org', { p_org: b.dataset.opDelete });
-    if (error) throw error;
-    showSuccessToast('✓ Verein «' + name + '» wurde gelöscht.');
-    await loadOperator();
-  } catch (err) {
-    b.disabled = false;
-    say('Verein konnte nicht gelöscht werden: ' + (err?.message || err), true);
-  }
-});
-
-  
 
 /* ===================== Drucker-Modul ===================== */
 // Vom Vermieter vorinstalliert (gilt für alle Mietsets, hier einmal anpassen).
@@ -3557,16 +3421,6 @@ async function fetchPrintCfg(force) {
   } catch (e) { console.warn('Druckereinstellungen nicht geladen:', e.message); }
 }
 
-function mailtoUpgrade() {
-  const pl = PLANS.printer;
-  const verein = profile?.org_name || '';
-  const mail = profile?.email || currentUser?.email || '';
-  const betreff = 'BestellEAsy: Upgrade auf ' + pl.name + ' – ' + verein;
-  const text = 'Hallo\n\nIch möchte auf das Paket «' + pl.name + '» (CHF ' + pl.price + ' / Monat) wechseln.\n\n' +
-    'Verein: ' + verein + '\nE-Mail: ' + mail + '\n\nBitte teile mir mit, was ich per TWINT bezahlen muss.';
-  return 'mailto:' + BETREIBER.email + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(text);
-}
-
 function fillPrintForm() {
   const box = $('printEnabled');
   if (!box) return;
@@ -3575,9 +3429,6 @@ function fillPrintForm() {
   box.disabled = !frei;
   const hint = $('printPlanHint');
   if (hint) hint.textContent = frei ? '' : 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten.';
-  $('printUpgradeBox')?.classList.toggle('hidden', frei);
-  const a = $('printUpgradeBtn');
-  if (a && !frei) a.href = mailtoUpgrade();
 }
 
 async function setPrintingEnabled(on) {
@@ -3588,7 +3439,10 @@ async function setPrintingEnabled(on) {
     if (error) throw error;
     printCfgCache = { ...(printCfgCache || {}), enabled: on };
     printCfgFetchedAt = Date.now();
-    msg.textContent = on ? '✓ Bon-Druck ist aktiviert.' : 'Bon-Druck ist ausgeschaltet.';
+    msg.textContent = on
+      ? '✓ Bon-Druck ist aktiviert. Küche und Theke erscheinen nicht mehr auf dem Bildschirm.'
+      : 'Bon-Druck ist ausgeschaltet. Küche und Theke erscheinen wieder auf dem Bildschirm.';
+    renderOrders();
   } catch (e) {
     msg.textContent = '⚠ Konnte nicht gespeichert werden: ' + (e?.message || e);
     fillPrintForm();
@@ -3855,7 +3709,9 @@ const method = methodEl ? methodEl.value : 'cash';
     renderMenu();
 
     showSuccessToast(
-      '✓ Bestellung #' + data + ' wurde an die Küche gesendet.'
+      printerModeActive()
+        ? '✓ Bestellung #' + data + ' wird gedruckt.'
+        : '✓ Bestellung #' + data + ' wurde an die Küche gesendet.'
     );
 
     await refreshOrders();
@@ -3878,10 +3734,19 @@ await loadOpenAmounts();
 
  
 
+// Bon-Druck aktiv (Paket «Mit Drucker» und Haken gesetzt)?
+// Dann erscheinen Bestellungen nicht auf den Bildschirmen von Küche und Theke,
+// sondern gehen gedruckt zum Läufer.
+function printerModeActive() {
+  return subscriptionPlan === 'printer' && !!loadPrintCfg().enabled;
+}
+
 async function refreshOrders() {
   if (!sb || !profile) return;
 
   try {
+    await fetchPrintCfg();
+
     const { data, error } = await sb
       .from('orders')
   
@@ -4602,6 +4467,18 @@ function renderOrders() {
     );
 
   const isDrink = isDrinkCategory;
+  const printMode = printerModeActive();
+
+  // Mit Bon-Druck: Reiter Küche, Theke und Läufer ausblenden
+  document.querySelectorAll('#tabs [data-tab="orders"], #tabs [data-tab="bar"], #tabs [data-tab="runner"]')
+    .forEach(b => b.classList.toggle('hidden', printMode));
+  if (printMode && ['orders', 'bar', 'runner'].includes(activeTab)) {
+    const ziel = allowed('service') ? 'service' : (allowed('closing') ? 'closing' : null);
+    if (ziel) {
+      showTab(ziel);
+      return;
+    }
+  }
 
   // Älteste Bestellung oben, neue Bestellungen erscheinen unten
   const sortedOrders = [...orders].sort(
@@ -4611,7 +4488,10 @@ function renderOrders() {
   // KÜCHE
   const ordersList = $('ordersList');
 
-  if (ordersList) {
+  if (ordersList && printMode) {
+    updatePendingCounter('kitchenPendingCount', 0);
+    ordersList.innerHTML = '<p class="muted">Bon-Druck ist aktiv: Bestellungen werden gedruckt und erscheinen hier nicht.</p>';
+  } else if (ordersList) {
     const kitchenOrders = sortedOrders.filter(o => {
       const items = (o.order_items || []).filter(i => !isDrink(i));
 
@@ -4632,7 +4512,10 @@ function renderOrders() {
   // THEKE
   const barList = $('barList');
 
-  if (barList) {
+  if (barList && printMode) {
+    updatePendingCounter('barPendingCount', 0);
+    barList.innerHTML = '<p class="muted">Bon-Druck ist aktiv: Bestellungen werden gedruckt und erscheinen hier nicht.</p>';
+  } else if (barList) {
     const barOrders = sortedOrders.filter(o => {
       const items = (o.order_items || []).filter(isDrink);
 
@@ -4667,6 +4550,7 @@ function renderOrders() {
     const drinkItems = items.filter(isDrink);
 
     if (
+      !printMode &&
       foodItems.length &&
       isDone(o.kitchen_status) &&
       o.runner_food_status !== 'delivered'
@@ -4675,6 +4559,7 @@ function renderOrders() {
     }
 
     if (
+      !printMode &&
       drinkItems.length &&
       isDone(o.bar_status) &&
       o.runner_drink_status !== 'delivered'
@@ -5301,53 +5186,33 @@ function normRolle(r) {
 }
 
 async function loadProfile() {
-  const readProfile = () => sb
+  const { data, error } = await sb
     .from('profiles')
     .select('id, email, display_name, role, organization_id')
     .eq('id', currentUser.id)
-    .limit(1)
-    .maybeSingle();
+    .single();
 
-  let data = null;
-  let lastError = null;
-
-  // 1) Lesen mit Wiederholungen (Profil wird nach Registrierung evtl. verzögert per Trigger angelegt)
-  for (let versuch = 0; versuch < 4 && !data; versuch++) {
-    if (versuch > 0) await new Promise(r => setTimeout(r, 400 * versuch));
-    const res = await readProfile();
-    if (res.error) { lastError = res.error; continue; }
-    data = res.data;
-  }
-
-  // 2) Fehlt das Profil, selbst anlegen und erneut lesen
-  if (!data) {
-    const ins = await sb
-      .from('profiles')
-      .upsert({ id: currentUser.id, email: currentUser.email || null },
-              { onConflict: 'id', ignoreDuplicates: true });
-    if (ins.error) lastError = ins.error;
-    const res = await readProfile();
-    if (res.error) lastError = res.error;
-    data = res.data;
+  if (error) {
+    throw new Error('Benutzerprofil konnte nicht geladen werden: ' + error.message);
   }
 
   if (!data) {
-    throw new Error(
-      'Für dein Konto existiert kein lesbares Profil' +
-      (lastError ? ' (' + lastError.message + ')' : '') +
-      '. Bitte SQL-Reparatur für die Tabelle "profiles" in Supabase ausführen.'
-    );
+    throw new Error('Kein Benutzerprofil gefunden.');
   }
 
   profile = {
     id: data.id,
     email: data.email || currentUser.email || '',
-    display_name: data.display_name || data.email || currentUser.email || 'Angemeldeter Benutzer',
+    display_name:
+      data.display_name ||
+      data.email ||
+      currentUser.email ||
+      'Angemeldeter Benutzer',
     role: normRolle(data.role),
     organization_id: data.organization_id || null
   };
-  await checkOperator();
 }
+
 
 
 
@@ -5904,7 +5769,7 @@ document.getElementById('togglePassword')?.addEventListener('click', function ()
   const anzeigen = password.type === 'password';
 
   password.type = anzeigen ? 'text' : 'password';
-  this.textContent = anzeigen ? '👁' : '👁';
+  this.textContent = anzeigen ? '🙈' : '👁';
   this.title = anzeigen ? 'Passwort verbergen' : 'Passwort anzeigen';
   this.setAttribute(
     'aria-label',
