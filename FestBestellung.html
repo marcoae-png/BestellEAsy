@@ -1569,6 +1569,7 @@ button[data-edit-menu]:disabled {
 #subLabel:not(:empty)::after { content: " ·"; margin: 0 4px 0 2px; font-weight: 400; opacity: .8; }
 #subLabel.sub-warn { background: #ffd84d; color: #493700; border-radius: 6px; padding: 2px 8px; margin-right: 6px; font-weight: 700; }
 #subLabel.sub-warn::after { content: none; }
+  .upgrade-btn { display: inline-block; background: #f3a22b; color: #2a200d; font-weight: 700; border-radius: 9px; padding: 11px 14px; text-decoration: none; } 
   
 /* Impressum und Datenschutz */
 .site-foot { text-align: center; padding: 18px 12px 110px; font-size: .88rem; color: #66716a; }
@@ -2730,6 +2731,9 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
     <input type="checkbox" id="printEnabled" style="width:auto"> Bons automatisch drucken (Küche und Theke)
   </label>
   <p class="muted" id="printPlanHint" style="margin:8px 0 0"></p>
+    <div id="printUpgradeBox" class="hidden" style="margin-top:10px">
+    <a id="printUpgradeBtn" class="upgrade-btn" href="#">Auf «Mit Drucker» upgraden</a>
+  </div>
 
   <div class="actions" style="margin-top:14px">
         <button type="button" id="testPrintKitchenBtn" class="secondary">Testdruck Küche</button>
@@ -3415,7 +3419,13 @@ setInterval(async () => {
   if (!subscriptionActive || !currentUser || !sb || document.hidden) return;
   const s2 = await checkSubscription();
   if (s2.error) return;
-  if (!s2.active) showPaywall(s2); else subscriptionPlan = s2.plan;
+  if (!s2.active) showPaywall(s2);
+  else {
+    subscriptionPlan = s2.plan;
+    subscriptionUntil = s2.until || '';
+    updateSubLabel();
+    fillPrintForm();
+  }
 }, 60000);
 /* =================== Ende Zugang / Freischaltung =================== */
 
@@ -3446,6 +3456,16 @@ async function fetchPrintCfg(force) {
   } catch (e) { console.warn('Druckereinstellungen nicht geladen:', e.message); }
 }
 
+function mailtoUpgrade() {
+  const pl = PLANS.printer;
+  const verein = profile?.org_name || '';
+  const mail = profile?.email || currentUser?.email || '';
+  const betreff = 'BestellEAsy: Upgrade auf ' + pl.name + ' – ' + verein;
+  const text = 'Hallo\n\nIch möchte auf das Paket «' + pl.name + '» (CHF ' + pl.price + ' / Monat) wechseln.\n\n' +
+    'Verein: ' + verein + '\nE-Mail: ' + mail + '\n\nBitte teile mir mit, was ich per TWINT bezahlen muss.';
+  return 'mailto:' + BETREIBER.email + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(text);
+}
+
 function fillPrintForm() {
   const box = $('printEnabled');
   if (!box) return;
@@ -3454,6 +3474,9 @@ function fillPrintForm() {
   box.disabled = !frei;
   const hint = $('printPlanHint');
   if (hint) hint.textContent = frei ? '' : 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten.';
+  $('printUpgradeBox')?.classList.toggle('hidden', frei);
+  const a = $('printUpgradeBtn');
+  if (a && !frei) a.href = mailtoUpgrade();
 }
 
 async function setPrintingEnabled(on) {
@@ -5760,7 +5783,7 @@ document.getElementById('togglePassword')?.addEventListener('click', function ()
   const anzeigen = password.type === 'password';
 
   password.type = anzeigen ? 'text' : 'password';
-  this.textContent = anzeigen ? '🙈' : '👁';
+  this.textContent = anzeigen ? '👁' : '👁';
   this.title = anzeigen ? 'Passwort verbergen' : 'Passwort anzeigen';
   this.setAttribute(
     'aria-label',
