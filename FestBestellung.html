@@ -3284,7 +3284,7 @@ const PLANS = {
 };
 // Betreiber: E-Mail für die Zahlungsmeldung, optional TWINT-Nummer und QR-Bild (Datei twint-qr.png neben dieser Seite)
 const BETREIBER = { email: 'marco.aebersold@bluewin.ch', twint: '+41 79 718 04 01', qrDatei: 'twint-qr.png' };
-let subscriptionActive = false, subscriptionPlalet subscriptionActive = false, subscriptionPlan = '', subscriptionUntil = '', payTimer = null;
+let subscriptionActive = false, subscriptionPlan = '', subscriptionUntil = '', payTimer = null;
 
 function updateSubLabel() {
   const el = $('subLabel');
@@ -3297,7 +3297,7 @@ function updateSubLabel() {
   el.textContent = paket + ' bis ' + datum +
     (tage <= 0 ? ' (letzter Tag)' : tage === 1 ? ' (noch 1 Tag)' : ' (noch ' + tage + ' Tage)');
   el.className = 'statusline' + (tage <= 7 ? ' sub-warn' : '');
-}n = '', payTimer = null;
+}
 
 async function checkSubscription() {
   // Bei jedem Fehler gilt der Zugang als NICHT freigeschaltet (Neuladen darf nichts umgehen)
