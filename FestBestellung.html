@@ -1617,11 +1617,6 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 .plan-card h3{margin:0 0 4px}.plan-card .plan-price{font-weight:700}
 .plan-card a{display:inline-block;margin-top:10px;color:#245c3b;font-weight:700;text-decoration:underline}
 
-/* Anzeige der Abo-Dauer in der Kopfzeile */
-#subLabel:not(:empty)::after { content: " ·"; margin: 0 4px 0 2px; font-weight: 400; opacity: .8; }
-#subLabel.sub-warn { background: #ffd84d; color: #493700; border-radius: 6px; padding: 2px 8px; margin-right: 6px; font-weight: 700; }
-#subLabel.sub-warn::after { content: none; }
-
   
 </style>
 </head>
@@ -1653,6 +1648,7 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
   <div class="actions">
     <span id="orgLabel" class="statusline"></span>
+ <span id="subLabel" class="statusline"></span>
     <span id="userLabel" class="statusline"></span>
     <button id="logoutBtn" class="secondary hidden" type="button">
       Abmelden
@@ -3288,7 +3284,20 @@ const PLANS = {
 };
 // Betreiber: E-Mail für die Zahlungsmeldung, optional TWINT-Nummer und QR-Bild (Datei twint-qr.png neben dieser Seite)
 const BETREIBER = { email: 'marco.aebersold@bluewin.ch', twint: '+41 79 718 04 01', qrDatei: 'twint-qr.png' };
-let subscriptionActive = false, subscriptionPlan = '', payTimer = null;
+let subscriptionActive = false, subscriptionPlalet subscriptionActive = false, subscriptionPlan = '', subscriptionUntil = '', payTimer = null;
+
+function updateSubLabel() {
+  const el = $('subLabel');
+  if (!el) return;
+  if (!subscriptionActive || !subscriptionUntil) { el.textContent = ''; el.className = 'statusline'; return; }
+  const heute = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
+  const tage = Math.round((Date.parse(subscriptionUntil) - Date.parse(heute)) / 86400000);
+  const datum = subscriptionUntil.split('-').reverse().join('.');
+  const paket = PLANS[subscriptionPlan]?.name || subscriptionPlan;
+  el.textContent = paket + ' bis ' + datum +
+    (tage <= 0 ? ' (letzter Tag)' : tage === 1 ? ' (noch 1 Tag)' : ' (noch ' + tage + ' Tage)');
+  el.className = 'statusline' + (tage <= 7 ? ' sub-warn' : '');
+}n = '', payTimer = null;
 
 async function checkSubscription() {
   // Bei jedem Fehler gilt der Zugang als NICHT freigeschaltet (Neuladen darf nichts umgehen)
@@ -3317,6 +3326,8 @@ function startPayPoll() {
 function hidePaywall(sub) {
   subscriptionActive = true;
   subscriptionPlan = sub?.plan || 'standard';
+  subscriptionUntil = sub?.until || '';
+  updateSubLabel();
   stopPayPoll();
   $('payPanel')?.classList.add('hidden');
 }
@@ -3377,6 +3388,8 @@ function renderPaywall(sub) {
 function showPaywall(sub) {
   subscriptionActive = false;
   subscriptionPlan = '';
+  subscriptionUntil = '';
+  updateSubLabel();
   $('loginPanel')?.classList.add('hidden');
   $('orgPanel')?.classList.add('hidden');
   $('appPanel')?.classList.add('hidden');
