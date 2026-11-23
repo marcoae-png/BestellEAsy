@@ -5301,34 +5301,53 @@ function normRolle(r) {
 }
 
 async function loadProfile() {
-  const { data, error } = await sb
+  const readProfile = () => sb
     .from('profiles')
     .select('id, email, display_name, role, organization_id')
     .eq('id', currentUser.id)
-    .single();
+    .limit(1)
+    .maybeSingle();
 
-  if (error) {
-    throw new Error('Benutzerprofil konnte nicht geladen werden: ' + error.message);
+  let data = null;
+  let lastError = null;
+
+  // 1) Lesen mit Wiederholungen (Profil wird nach Registrierung evtl. verzögert per Trigger angelegt)
+  for (let versuch = 0; versuch < 4 && !data; versuch++) {
+    if (versuch > 0) await new Promise(r => setTimeout(r, 400 * versuch));
+    const res = await readProfile();
+    if (res.error) { lastError = res.error; continue; }
+    data = res.data;
+  }
+
+  // 2) Fehlt das Profil, selbst anlegen und erneut lesen
+  if (!data) {
+    const ins = await sb
+      .from('profiles')
+      .upsert({ id: currentUser.id, email: currentUser.email || null },
+              { onConflict: 'id', ignoreDuplicates: true });
+    if (ins.error) lastError = ins.error;
+    const res = await readProfile();
+    if (res.error) lastError = res.error;
+    data = res.data;
   }
 
   if (!data) {
-    throw new Error('Kein Benutzerprofil gefunden.');
+    throw new Error(
+      'Für dein Konto existiert kein lesbares Profil' +
+      (lastError ? ' (' + lastError.message + ')' : '') +
+      '. Bitte SQL-Reparatur für die Tabelle "profiles" in Supabase ausführen.'
+    );
   }
 
   profile = {
     id: data.id,
     email: data.email || currentUser.email || '',
-    display_name:
-      data.display_name ||
-      data.email ||
-      currentUser.email ||
-      'Angemeldeter Benutzer',
+    display_name: data.display_name || data.email || currentUser.email || 'Angemeldeter Benutzer',
     role: normRolle(data.role),
     organization_id: data.organization_id || null
   };
-  await checkOperator(); 
+  await checkOperator();
 }
-
 
 
 
