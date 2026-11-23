@@ -1602,6 +1602,15 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 #menuGrid > .menu-category-sonstiges .menu-item-card { background:#f5f7f8; border-color:#cbd2d8; }
 #menuGrid > .menu-category .menu-category-title { padding:9px 12px; border:1px solid; border-radius:9px; }
 
+
+/* Zahlungsseite / Freischaltung */
+.pay-box{background:#e8f1eb;border-radius:12px;padding:14px 16px;line-height:1.6}
+.pay-qr-row{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:14px 0}
+.pay-qr-row img{width:170px;height:170px;object-fit:contain;border:1px solid #d8e1da;border-radius:12px;background:#fff;padding:6px}
+.plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:14px 0}
+.plan-card{background:#f1f6f2;border-radius:12px;padding:16px}
+.plan-card h3{margin:0 0 4px}.plan-card .plan-price{font-weight:700}
+.plan-card a{display:inline-block;margin-top:10px;color:#245c3b;font-weight:700;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -1669,6 +1678,7 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 <p class="muted">Hast du von deinem Admin einen Einladungscode bekommen? Gib ihn hier ein. Du erhältst automatisch die dafür vorgesehene Rolle.</p>
 <div class="grid"><div><label for="inviteCode">Einladungscode</label><input id="inviteCode" type="text" maxlength="20" autocomplete="off" autocapitalize="characters" placeholder="z. B. 3F9A1C7B2D"></div></div>
 <div class="actions" style="margin-top:12px"><button id="joinOrgBtn" class="secondary" type="button">Mit Code beitreten</button></div></section>
+<section id="payPanel" class="panel hidden"><h2 class="section-title">Zugang freischalten</h2><div id="payContent"></div></section>
 <section id="appPanel" class="hidden">
 <nav class="tabs" id="tabs"><button type="button" data-tab="service" class="active">Neue Bestellung</button><button type="button" data-tab="orders" class="">Küche</button><button type="button" data-tab="bar" class="">Theke / Ausschank</button><button type="button" data-tab="runner" class="">Läufer</button><button type="button" data-tab="closing" class="">Tagesabschluss</button><button type="button" data-tab="admin" class="">Menü verwalten</button></nav>
 
@@ -2899,7 +2909,7 @@ async function connectTest(){const c=getConfig();if(!validConfig(c)){say('Bitte 
 
 
 
-async function onSignedIn(user){currentUser=user;try{await loadProfile();if(!profile.organization_id){showOrgOnboarding();autoJoinPending();return;}clearPendingInvite();await loadOrgName();$('orgPanel')?.classList.add('hidden');$('loginPanel').classList.add('hidden');$('appPanel').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');$('userLabel').textContent=profile.display_name||profile.email||user.email;renderTabs();await loadMenu();await refreshOrders();await loadAdmin();await loadClosingHistory();showTab(firstTab());}catch(e){say('Daten konnten nicht geladen werden: '+e.message+' — bitte Supabase-Berechtigungen prüfen.',true);}}
+async function onSignedIn(user){currentUser=user;try{await loadProfile();if(!profile.organization_id){showOrgOnboarding();autoJoinPending();return;}clearPendingInvite();await loadOrgName();const sub=await checkSubscription();if(!sub.active){showPaywall(sub);return;}hidePaywall(sub);$('orgPanel')?.classList.add('hidden');$('loginPanel').classList.add('hidden');$('appPanel').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');$('userLabel').textContent=profile.display_name||profile.email||user.email;renderTabs();await loadMenu();await refreshOrders();await loadAdmin();await loadClosingHistory();showTab(firstTab());}catch(e){say('Daten konnten nicht geladen werden: '+e.message+' — bitte Supabase-Berechtigungen prüfen.',true);}}
 function firstTab(){return ['service','orders','closing','admin'].find(allowed) || 'orders';}
 
 
@@ -3291,6 +3301,132 @@ function showSuccessToast(message) {
 
 
 
+
+/* ===================== Zugang / Freischaltung ===================== */
+const PLANS = {
+  standard: { name: 'Standard', price: 200, text: 'Bestellungen, Küche, Theke, Läufer, Abrechnung, Tagesabschluss' },
+  printer:  { name: 'Mit Drucker', price: 300, text: 'Alles aus Standard plus automatischer Bon-Druck für Küche und Theke' }
+};
+// Betreiber: E-Mail für die Zahlungsmeldung, optional TWINT-Nummer und QR-Bild (Datei twint-qr.png neben dieser Seite)
+const BETREIBER = { email: 'marco.aebersold@bluewin.ch', twint: '', qrDatei: 'twint-qr.png' };
+let subscriptionActive = false, subscriptionPlan = '', payTimer = null;
+
+async function checkSubscription() {
+  // Bei jedem Fehler gilt der Zugang als NICHT freigeschaltet (Neuladen darf nichts umgehen)
+  try {
+    const { data, error } = await sb.rpc('my_subscription');
+    if (error) throw error;
+    const r = Array.isArray(data) ? data[0] : data;
+    return { active: !!r?.active, plan: r?.plan || 'standard', until: r?.active_until || null, error: null };
+  } catch (e) {
+    console.error('my_subscription:', e);
+    return { active: false, plan: 'standard', until: null, error: e?.message || String(e) };
+  }
+}
+
+function stopPayPoll() { if (payTimer) { clearInterval(payTimer); payTimer = null; } }
+
+function startPayPoll() {
+  stopPayPoll();
+  payTimer = setInterval(async () => {
+    if (document.hidden || !currentUser) return;
+    const s2 = await checkSubscription();
+    if (s2.active) { stopPayPoll(); await onSignedIn(currentUser); }
+  }, 15000);
+}
+
+function hidePaywall(sub) {
+  subscriptionActive = true;
+  subscriptionPlan = sub?.plan || 'standard';
+  stopPayPoll();
+  $('payPanel')?.classList.add('hidden');
+}
+
+function mailtoZahlung(planKey) {
+  const pl = PLANS[planKey];
+  const verein = profile?.org_name || '';
+  const mail = profile?.email || currentUser?.email || '';
+  const betreff = 'BestellEAsy: Zahlung ' + pl.name + ' – ' + verein;
+  const text = 'Hallo\n\nIch habe CHF ' + pl.price + ' per TWINT bezahlt.\n\nPaket: ' + pl.name +
+    '\nVerein: ' + verein + '\nE-Mail: ' + mail + '\n\nBitte den Zugang freischalten.';
+  return 'mailto:' + BETREIBER.email + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(text);
+}
+
+function renderPaywall(sub) {
+  const el = $('payContent');
+  if (!el) return;
+  const verein = profile?.org_name || '';
+  const mail = profile?.email || currentUser?.email || '';
+  const istAdmin = profile?.role === 'admin';
+  const abgelaufen = sub?.until ? new Date(sub.until).toLocaleDateString('de-CH') : '';
+
+  let kopf = sub?.error
+    ? '<div class="msg error">Der Zugang konnte nicht geprüft werden: ' + esc(sub.error) + '<br>Bitte Internetverbindung prüfen und «Neu prüfen» drücken.</div>'
+    : abgelaufen
+      ? '<div class="msg">Der Zugang von «' + esc(verein) + '» ist am ' + esc(abgelaufen) + ' abgelaufen.</div>'
+      : '<div class="msg">Dein Anlass «' + esc(verein) + '» ist noch nicht freigeschaltet.</div>';
+
+  if (!istAdmin) {
+    el.innerHTML = kopf + '<p class="muted">Bitte den Admin deines Vereins bitten, den Zugang freizuschalten. Sobald das geschehen ist, geht es hier automatisch weiter.</p>' +
+      '<div class="actions"><button type="button" id="payRecheckBtn">Neu prüfen</button></div>';
+    return;
+  }
+
+  const karten = Object.entries(PLANS).map(([k, pl]) => `
+    <div class="plan-card">
+      <h3>${esc(pl.name)}</h3>
+      <div class="plan-price">CHF ${pl.price} / Monat</div>
+      <div class="muted">${esc(pl.text)}</div>
+      <a href="${esc(mailtoZahlung(k))}">Zahlung per E-Mail melden</a>
+    </div>`).join('');
+
+  el.innerHTML = kopf + `
+    <div class="pay-box">
+      <strong>So bezahlst du per TWINT:</strong><br>
+      1. Standard: CHF ${PLANS.standard.price} oder Mit Drucker: CHF ${PLANS.printer.price} pro Monat.<br>
+      2. Sende den Betrag per TWINT an den Betreiber${BETREIBER.twint ? ' (' + esc(BETREIBER.twint) + ')' : ''}.<br>
+      3. Schreibe in die Mitteilung: <strong>${esc(verein)}, ${esc(mail)}</strong>
+    </div>
+    <div class="pay-qr-row">
+      <img id="twintQr" class="hidden" src="${esc(BETREIBER.qrDatei)}" alt="TWINT QR-Code" onload="this.classList.remove('hidden')" onerror="this.parentNode.remove()">
+    </div>
+    <div class="plan-grid">${karten}</div>
+    <p class="foot">Nach Zahlungseingang wird dein Zugang freigeschaltet (in der Regel am selben Tag). Diese Seite prüft automatisch alle 15 Sekunden – oder hier «Neu prüfen» drücken.</p>
+    <div class="actions"><button type="button" id="payRecheckBtn">Neu prüfen</button></div>`;
+}
+
+function showPaywall(sub) {
+  subscriptionActive = false;
+  subscriptionPlan = '';
+  $('loginPanel')?.classList.add('hidden');
+  $('orgPanel')?.classList.add('hidden');
+  $('appPanel')?.classList.add('hidden');
+  $('payPanel')?.classList.remove('hidden');
+  $('logoutBtn')?.classList.remove('hidden');
+  if ($('userLabel')) $('userLabel').textContent = profile?.display_name || profile?.email || '';
+  renderPaywall(sub);
+  startPayPoll();
+}
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('#payRecheckBtn');
+  if (!b) return;
+  b.disabled = true;
+  const s2 = await checkSubscription();
+  if (s2.active) { stopPayPoll(); await onSignedIn(currentUser); return; }
+  renderPaywall(s2);
+  say(s2.error ? 'Prüfung fehlgeschlagen: ' + s2.error : 'Noch nicht freigeschaltet. Nach Zahlungseingang geht es hier automatisch weiter.', !!s2.error);
+});
+
+// Läuft der Zugang während des Betriebs ab, kommt die Zahlungsseite wieder
+setInterval(async () => {
+  if (!subscriptionActive || !currentUser || !sb || document.hidden) return;
+  const s2 = await checkSubscription();
+  if (s2.error) return;
+  if (!s2.active) showPaywall(s2); else subscriptionPlan = s2.plan;
+}, 60000);
+/* =================== Ende Zugang / Freischaltung =================== */
+
 /* ===================== Drucker-Modul ===================== */
 const PRINT_KEY = 'bestelleasy.printer.v1';
 const printDefaults = { enabled:false, mode:'epos', proto:'http', ascii:false, kitchenIp:'', barIp:'' };
@@ -3438,6 +3574,7 @@ async function printJob(job, cfg) {
 }
 
 async function printOrderTickets(orderNo, table, method, cartItems) {
+  if (subscriptionPlan !== 'printer') return;
   await fetchPrintCfg();
   const cfg = loadPrintCfg();
   if (!cfg.enabled) return;
@@ -3460,6 +3597,7 @@ async function printOrderTickets(orderNo, table, method, cartItems) {
 }
 
 async function testPrint(station) {
+  if (subscriptionPlan !== 'printer') { $('printerMsg').textContent = 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten.'; return; }
   const cfg = { ...loadPrintCfg(), enabled:true };
   const err = await printJob({ station, orderNo:'TEST', table:'0', time:Date.now(), payment:'Test',
     items:[{ name:'Testdruck äöü ÄÖÜ ß', quantity:1 }, { name:'Bratwurst, Getränk', quantity:2 }] }, cfg);
@@ -3522,6 +3660,7 @@ async function printTables() {
   const target = $('printTblTarget').value;
   try {
     if (target === 'a4') { tableCardsA4(nums); msg.textContent = '✓ Druckdialog geöffnet (' + nums.length + ' Tische).'; return; }
+    if (subscriptionPlan !== 'printer') { msg.textContent = 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten. A4-Tischkarten gehen in jedem Paket.'; return; }
     await fetchPrintCfg();
     const cfg = loadPrintCfg();
     const ip = target === 'kitchen' ? cfg.kitchenIp : cfg.barIp;
@@ -5031,6 +5170,8 @@ async function logout() {
   profile = null;
   orders = [];
 
+  stopPayPoll(); subscriptionActive = false; subscriptionPlan = '';
+  $('payPanel')?.classList.add('hidden');
   $('appPanel')?.classList.add('hidden');
   $('logoutBtn')?.classList.add('hidden');
   if ($('userLabel')) $('userLabel').textContent = '';
@@ -5600,7 +5741,7 @@ onClickIfExists('joinOrgBtn', joinOrganization);
 let offeneBetraegeLaeuft = false;
 setInterval(async () => {
   if (offeneBetraegeLaeuft || document.hidden) return;
-  if (!sb || !currentUser) return;
+  if (!sb || !currentUser || !subscriptionActive) return;
   offeneBetraegeLaeuft = true;
   try { await loadOpenAmounts(); } finally { offeneBetraegeLaeuft = false; }
 }, 5000);
@@ -5609,7 +5750,7 @@ setInterval(async () => {
 let stationenLaeuft = false;
 setInterval(async () => {
   if (stationenLaeuft || document.hidden) return;
-  if (!sb || !currentUser || !profile) return;
+  if (!sb || !currentUser || !profile || !subscriptionActive) return;
   if (!['orders', 'bar', 'runner'].includes(activeTab)) return;
   stationenLaeuft = true;
   try { await refreshOrders(); } finally { stationenLaeuft = false; }
