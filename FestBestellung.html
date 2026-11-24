@@ -6126,7 +6126,7 @@ async function editMenuItem(id) {
     if (['getränke', 'kalte getränke', 'warme getränke'].includes(String(kat).trim().toLowerCase())) {
       const nm = String(item.name || '');
       const warm = String(kat).trim().toLowerCase() === 'warme getränke' ||
-        /kaffee|kafi|tee|espresso|cappuccino|latte|schoggi|heiss|punsch|schäfeler/i.test(nm);
+        /kaffee|kafi|tee|espresso|cappuccino|latte|schoggi|heiss|punsch|schäfeler|luz/i.test(nm);
       const alk = /bier|wein|most|luz|schnaps|kafi.*(luz|schnaps)|schäfeler/i.test(nm) && !/alkoholfrei/i.test(nm);
       kat = (warm ? 'Warme' : 'Kalte') + ' Getränke ' + (alk ? 'mit' : 'ohne') + ' Alkohol';
     }
