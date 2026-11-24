@@ -1976,6 +1976,45 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
   #closingView .totalbox strong { font-size: 1.1rem; overflow-wrap: anywhere; }
   #closingView .table td:first-child { font-size: 1.05rem; }
 }
+
+/* ===== Handy: Betreiber ===== */
+@media (max-width: 700px) {
+  #operatorView { padding: 12px; }
+  #operatorView .section-title { font-size: 1.25rem; }
+  #operatorView button { min-height: 46px; }
+  #operatorView select { font-size: 16px; min-height: 46px; width: 100%; max-width: 60%; }
+  #operatorView > .actions > button { flex: 1 1 100%; width: 100%; }
+
+  #operatorView .table, #operatorView .table tbody, #operatorView .table tr { display: block; width: 100%; }
+  #operatorView .table thead { display: none; }
+  #operatorView .table tr {
+    background: #fff; border: 1px solid #d8e1da; border-radius: 12px;
+    padding: 6px 12px; margin: 0 0 12px; box-shadow: 0 1px 4px #17211b10;
+  }
+  #operatorView .table td {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    width: 100%; border: 0; border-bottom: 1px solid #eef2ef;
+    padding: 8px 0; text-align: right; overflow-wrap: anywhere;
+  }
+  #operatorView .table td::before {
+    content: attr(data-label); flex: 0 0 34%; text-align: left;
+    font-size: .82rem; font-weight: 700; color: #657168;
+  }
+  /* Vereinsname = Titel der Karte */
+  #operatorView .table td:first-child {
+    display: block; text-align: left; font-size: 1.15rem; padding-top: 10px; border-bottom: 2px solid #e3e9e4;
+  }
+  #operatorView .table td:first-child::before { display: none; }
+  /* Verlängern: Knöpfe als Raster, letzte Zeile ohne Linie */
+  #operatorView .table td:last-child { display: block; text-align: left; border-bottom: 0; }
+  #operatorView .table td:last-child::before { display: block; margin-bottom: 6px; }
+  #operatorView .table td:last-child .actions {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  #operatorView .table td:last-child .actions button { width: 100%; padding: 10px 6px; }
+  #operatorView .table td:last-child .actions button[data-op-months="0"],
+  #operatorView .table td:last-child .actions button[data-op-delete] { grid-column: 1 / -1; }
+}
 </style>
 </head>
 <body>
@@ -7405,7 +7444,7 @@ document.getElementById('togglePassword')?.addEventListener('click', function ()
       });
     });
   }
-  ['adminView', 'teamView', 'closingView'].forEach(function (id) {
+  ['adminView', 'teamView', 'closingView', 'operatorView'].forEach(function (id) {
     var el = document.getElementById(id);
     if (!el) return;
     var timer = null;
