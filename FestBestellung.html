@@ -4116,11 +4116,12 @@ const method = methodEl ? methodEl.value : 'cash';
   button.disabled = true;
 
   try {
-    const { data, error } = await sb.rpc('create_order', {
-      p_table_number: table,
-      p_payment_method: method,
-      p_items: items
-    });
+const { data, error } = await sb.rpc('create_order', {
+  p_table_number: table,
+  p_payment_method: method,
+  p_items: items,
+  p_festival_name: FESTNAME
+});
 
     if (error) throw error;
 
@@ -4158,39 +4159,41 @@ async function refreshOrders() {
   if (!sb || !profile) return;
 
   try {
-    const { data, error } = await sb
-      .from('orders')
   
-.select(`
-  id,
-  table_no,
-  table_number,
-  status,
-  kitchen_status,
-  bar_status,
-  runner_status,
-  runner_food_status,
-  runner_drink_status,
-  food_delivered_at,
-  drinks_delivered_at,
-  payment_method,
-  payment_status,
-  total,
-  created_at,
-  delivered_at,
-  order_items(
+const { data, error } = await sb
+  .from('orders')
+  .select(`
     id,
-    name_snapshot,
-    name,
-    category,
-    quantity,
-    unit_price,
-    line_total
-  )
-`)
+    order_no,
+    festival_name,
+    table_no,
+    table_number,
+    status,
+    kitchen_status,
+    bar_status,
+    runner_status,
+    runner_food_status,
+    runner_drink_status,
+    food_delivered_at,
+    drinks_delivered_at,
+    payment_method,
+    payment_status,
+    total,
+    created_at,
+    delivered_at,
+    order_items(
+      id,
+      name_snapshot,
+      name,
+      category,
+      quantity,
+      unit_price,
+      line_total
+    )
+  `)
+  .order('created_at', { ascending: false })
+  .limit(150);
 
-      .order('created_at', { ascending: false })
-      .limit(150);
 
     if (error) throw error;
 
