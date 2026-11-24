@@ -1612,6 +1612,10 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 .plan-card a{display:inline-block;margin-top:10px;color:#245c3b;font-weight:700;text-decoration:underline}
 
 /* ===== Handy: Kategorien als Register – seitlich wischen, jede Kategorie mit eigener Farbe ===== */
+.pgc-kalt-ohne{--pc:#1f7ab8;--pc-bg:#e1f1fb;--pc-bd:#9cc9e6;--pc-dk:#0f4c75;--pc-sel:#bfe0f5}
+.pgc-kalt-mit{--pc:#b7791f;--pc-bg:#fdf3dc;--pc-bd:#ecca85;--pc-dk:#6b4410;--pc-sel:#f8e0a8}
+.pgc-warm-ohne{--pc:#d2562b;--pc-bg:#fde9e0;--pc-bd:#f0b39c;--pc-dk:#8a2f10;--pc-sel:#f9c9b6}
+.pgc-warm-mit{--pc:#9b2c4b;--pc-bg:#f9e4ea;--pc-bd:#e3a3b6;--pc-dk:#5e1228;--pc-sel:#f2c4d1}
 .pgc-kalt{--pc:#1f7ab8;--pc-bg:#e1f1fb;--pc-bd:#9cc9e6;--pc-dk:#0f4c75;--pc-sel:#bfe0f5}
 .pgc-warm{--pc:#d2562b;--pc-bg:#fde9e0;--pc-bd:#f0b39c;--pc-dk:#8a2f10;--pc-sel:#f9c9b6}
 .pgc-gratis{--pc:#7a4fb5;--pc-bg:#f3edfb;--pc-bd:#b9a3dc;--pc-dk:#3f2a63;--pc-sel:#dccbf3}
@@ -3628,6 +3632,10 @@ function artikelIcon(name, kategorie) {
 /* ===== Handy: Kategorien als Register, per Wischen wechseln ===== */
 const MENU_PAGER_MQ = window.matchMedia('(max-width: 700px)');
 const MENU_PAGER_META = {
+  'kalt-ohne': { icon: '🥤', label: 'Kalt ohne Alkohol' },
+  'kalt-mit':  { icon: '🍺', label: 'Kalt mit Alkohol' },
+  'warm-ohne': { icon: '☕', label: 'Warm ohne Alkohol' },
+  'warm-mit':  { icon: '🍷', label: 'Warm mit Alkohol' },
   kalt:       { icon: '🧊', label: 'Kalte Getränke' },
   warm:       { icon: '☕', label: 'Warme Getränke' },
   gratis:     { icon: '🎁', label: 'Gratisgetränke' },
@@ -3673,7 +3681,8 @@ function menuPagerRefresh(menuGrid, animDir) {
     } else {
       const cls = [...sec.classList].find(c => c.startsWith('menu-category-'));
       const slug = cls ? cls.replace('menu-category-', '') : 'sonstiges';
-      pages.push({ el: sec, base: MENU_SLUG_TO_KEY[slug] || 'sonstiges' });
+      const pk = sec.dataset.pager;
+      pages.push({ el: sec, base: (pk && MENU_PAGER_META[pk]) ? pk : (MENU_SLUG_TO_KEY[slug] || 'sonstiges') });
     }
   });
   if (!pages.length) { menuPagerOff(menuGrid); return; }
@@ -3895,6 +3904,9 @@ function renderMenu() {
 
     return kategorieHTML(kategorie, artikel);
   }).join('');
+
+  // Handy: Kategorien als Register, per Wischen wechseln
+  menuPagerRefresh(menuGrid);
 }
 
  
@@ -3905,19 +3917,23 @@ function kategorieHTML(kategorie, artikel) {
   const getraenkeKategorien = {
     'Kalte Getränke ohne Alkohol': {
       icon: '🥤',
-      klasse: 'alkoholfrei'
+      klasse: 'alkoholfrei',
+      pager: 'kalt-ohne'
     },
     'Kalte Getränke mit Alkohol': {
       icon: '🍺',
-      klasse: 'alkohol'
+      klasse: 'alkohol',
+      pager: 'kalt-mit'
     },
     'Warme Getränke ohne Alkohol': {
       icon: '☕',
-      klasse: 'alkoholfrei'
+      klasse: 'alkoholfrei',
+      pager: 'warm-ohne'
     },
     'Warme Getränke mit Alkohol': {
       icon: '🍷',
-      klasse: 'alkohol'
+      klasse: 'alkohol',
+      pager: 'warm-mit'
     }
   };
 
@@ -3925,7 +3941,7 @@ function kategorieHTML(kategorie, artikel) {
     const info = getraenkeKategorien[kategorie];
 
     return `
-      <section class="menu-category menu-category-${info.klasse}">
+      <section class="menu-category menu-category-${info.klasse}" data-pager="${info.pager}">
         <h2 class="menu-category-title">
           <span aria-hidden="true">${info.icon}</span>
           ${esc(kategorie)}
