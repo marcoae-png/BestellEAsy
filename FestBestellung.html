@@ -3857,17 +3857,6 @@ const kategorienIcons = {
       </article>`;
   }
   
-document.addEventListener('click', e => {
-  const artikel = e.target.closest('[data-add-item]');
-
-  if (!artikel) return;
-
-  // Minus-Button nicht als Hinzufügen behandeln
-  if (e.target.closest('[data-remove-item]')) return;
-
-  addToCart(artikel.dataset.addItem);
-});
-
 
 
 
