@@ -1904,6 +1904,78 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
   
   
+
+/* ===== Handy: Team, Menü verwalten, Tagesabschluss ===== */
+@media (max-width: 700px) {
+  #adminView, #teamView, #closingView { padding: 12px; }
+  #adminView .section-title, #teamView .section-title, #closingView .section-title { font-size: 1.25rem; }
+
+  /* 16px verhindert das automatische Hineinzoomen auf dem iPhone; grosse Tippflächen */
+  #adminView input:not([type="checkbox"]), #adminView select,
+  #teamView input, #teamView select,
+  #closingView input, #closingView select {
+    font-size: 16px; min-height: 46px;
+  }
+  #adminView button, #teamView button, #closingView button { min-height: 46px; }
+  #adminView .grid, #teamView .grid, #closingView .grid { grid-template-columns: 1fr; gap: 10px; }
+  #adminView .panel { padding: 12px; }
+  #adminView hr, #teamView hr, #closingView hr { margin-left: 0; margin-right: 0; }
+
+  /* Hauptschaltflächen untereinander, volle Breite */
+  #adminView .grid + .actions > button,
+  #adminView .panel > .actions > button,
+  #adminView #editMenuForm .actions > button,
+  #teamView > .actions > button,
+  #closingView > .actions > button,
+  #adminView > button.danger { flex: 1 1 100%; width: 100%; }
+  #adminView #editMenuForm .actions { display: grid; grid-template-columns: 1fr 1fr; }
+
+  /* Tabellen als Karten */
+  #adminView .table, #teamView .table, #closingView .table,
+  #adminView .table tbody, #teamView .table tbody, #closingView .table tbody,
+  #adminView .table tr, #teamView .table tr, #closingView .table tr { display: block; width: 100%; }
+  #adminView .table thead, #teamView .table thead, #closingView .table thead { display: none; }
+  #adminView .table tr, #teamView .table tr, #closingView .table tr {
+    background: #fff; border: 1px solid #d8e1da; border-radius: 12px;
+    padding: 6px 12px; margin: 0 0 10px; box-shadow: 0 1px 4px #17211b10;
+  }
+  #adminView .table td, #teamView .table td, #closingView .table td {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    width: 100%; border: 0; border-bottom: 1px solid #eef2ef;
+    padding: 8px 0; text-align: right; overflow-wrap: anywhere;
+  }
+  #adminView .table td:last-child, #teamView .table td:last-child, #closingView .table td:last-child { border-bottom: 0; }
+  #adminView .table td::before, #teamView .table td::before, #closingView .table td::before {
+    content: attr(data-label); flex: 0 0 34%; text-align: left;
+    font-size: .82rem; font-weight: 700; color: #657168;
+  }
+  /* Erste Zeile = Titel der Karte (Artikel, Code, Person, Datum) */
+  #adminView .table td:first-child, #teamView .table td:first-child, #closingView .table td:first-child {
+    display: block; text-align: left; font-size: 1.1rem; font-weight: 700;
+    padding-top: 10px; border-bottom: 2px solid #e3e9e4;
+  }
+  #adminView .table td:first-child::before, #teamView .table td:first-child::before,
+  #closingView .table td:first-child::before { display: none; }
+  /* Zellen ohne Überschrift (Aktionen): volle Breite, Knöpfe umbrechen */
+  #adminView .table td[data-label=""], #teamView .table td[data-label=""] {
+    display: block; text-align: left;
+  }
+  #adminView .table td[data-label=""]::before, #teamView .table td[data-label=""]::before { display: none; }
+  #adminView .table td:last-child { display: block; text-align: left; }
+  #adminView .table td:last-child::before { display: block; margin-bottom: 6px; }
+  #adminView .table td:last-child button, #teamView .table td .actions button, #teamView .table td > button {
+    flex: 1 1 calc(50% - 8px); margin: 0 4px 6px 0; min-width: 120px;
+  }
+  #teamView .table td .actions { gap: 6px; }
+  #teamView .table td .actions button { flex: 1 1 calc(50% - 6px); margin: 0; }
+  #teamView .table td select { width: 100%; max-width: 60%; }
+
+  /* Tagesabschluss: Kennzahlen in zwei Spalten */
+  #closingView .totals { grid-template-columns: 1fr 1fr; gap: 8px; }
+  #closingView .totalbox { padding: 10px; font-size: .9rem; }
+  #closingView .totalbox strong { font-size: 1.1rem; overflow-wrap: anywhere; }
+  #closingView .table td:first-child { font-size: 1.05rem; }
+}
 </style>
 </head>
 <body>
@@ -6006,7 +6078,8 @@ async function editMenuItem(id) {
     $('editMenuNoteOptions').value = item.note_options || '';
 
     $('editMenuForm').classList.remove('hidden');
-    $('editMenuName').focus();
+    $('editMenuForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('editMenuName').focus({ preventScroll: true });
   } catch (e) {
     console.error('editMenuItem:', e);
     say('Menüartikel konnte nicht geladen werden: ' + e.message, true);
@@ -7300,4 +7373,30 @@ document.getElementById('togglePassword')?.addEventListener('click', function ()
 </script>
 
 
+
+<script>
+// Handy: Tabellen in Team, Menü verwalten und Tagesabschluss als Karten beschriften
+(function () {
+  function beschriften(root) {
+    root.querySelectorAll('table.table').forEach(function (t) {
+      var koepfe = Array.prototype.map.call(t.querySelectorAll('thead th'), function (th) { return th.textContent.trim(); });
+      t.querySelectorAll('tbody tr').forEach(function (tr) {
+        Array.prototype.forEach.call(tr.children, function (td, i) {
+          if (td.tagName === 'TD' && !td.hasAttribute('colspan')) td.setAttribute('data-label', koepfe[i] || '');
+        });
+      });
+    });
+  }
+  ['adminView', 'teamView', 'closingView'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var timer = null;
+    new MutationObserver(function () {
+      if (timer) return;
+      timer = setTimeout(function () { timer = null; beschriften(el); }, 30);
+    }).observe(el, { childList: true, subtree: true });
+    beschriften(el);
+  });
+})();
+</script>
 </body></html>
