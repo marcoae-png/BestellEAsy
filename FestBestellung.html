@@ -2013,6 +2013,7 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
   }
   #operatorView .table td:last-child .actions button { width: 100%; padding: 10px 6px; }
   #operatorView .table td:last-child .actions button[data-op-months="0"],
+  #operatorView .table td:last-child .actions button[data-op-mail],
   #operatorView .table td:last-child .actions button[data-op-delete] { grid-column: 1 / -1; }
 }
 </style>
@@ -4413,7 +4414,8 @@ function renderPaywall(sub) {
       <h3>${esc(pl.name)}</h3>
       <div class="plan-price">CHF ${pl.price} / Monat</div>
       <div class="muted">${esc(pl.text)}</div>
-      <a href="${esc(mailtoZahlung(k))}">Zahlung per E-Mail melden</a>
+      <button type="button" data-pay-request="${esc(k)}">Dieses Paket wünschen</button>
+      <br><a href="${esc(mailtoZahlung(k))}" data-pay-request-silent="${esc(k)}">Zahlung per E-Mail melden</a>
     </div>`).join('');
 
   el.innerHTML = kopf + `
@@ -4443,6 +4445,25 @@ function showPaywall(sub) {
   renderPaywall(sub);
   startPayPoll();
 }
+
+// Abo-Wunsch an den Betreiber melden (wird in der Betreiber-Ansicht angezeigt)
+async function meldeAboWunsch(plan, laut) {
+  try {
+    const { error } = await sb.rpc('request_subscription', { p_plan: plan });
+    if (error) throw error;
+    if (laut) showSuccessToast('✓ Wunsch «' + (PLANS[plan]?.name || plan) + '» wurde dem Betreiber gemeldet.');
+  } catch (err) {
+    console.error('request_subscription:', err);
+    if (laut) say('Wunsch konnte nicht gemeldet werden: ' + (err?.message || err), true);
+  }
+}
+
+document.addEventListener('click', async e => {
+  const wunsch = e.target.closest('[data-pay-request]');
+  if (wunsch) { meldeAboWunsch(wunsch.dataset.payRequest, true); return; }
+  const mail = e.target.closest('[data-pay-request-silent]');
+  if (mail) { meldeAboWunsch(mail.dataset.payRequestSilent, false); return; }
+});
 
 document.addEventListener('click', async e => {
   const b = e.target.closest('#payRecheckBtn');
@@ -6685,6 +6706,44 @@ async function checkOperator() {
   }
 }
 
+let operatorOrgsCache = new Map();
+
+// Mail «Zugang freigeschaltet» an die Admins eines Vereins vorbereiten (öffnet das Mailprogramm)
+async function operatorMailAdmin(orgId) {
+  const org = operatorOrgsCache.get(String(orgId));
+  if (!org) { say('Verein nicht gefunden. Bitte Liste aktualisieren.', true); return; }
+
+  let emails = [];
+  try {
+    const { data, error } = await sb.rpc('operator_admin_emails', { p_org: orgId });
+    if (error) throw error;
+    emails = (data || []).map(r => (typeof r === 'string' ? r : r.email)).filter(Boolean);
+  } catch (e) {
+    console.warn('operator_admin_emails:', e);
+  }
+
+  const paket = PLANS[org.plan]?.name || org.plan;
+  const bis = org.paid_until ? String(org.paid_until).split('-').reverse().join('.') : '–';
+  const appUrl = location.origin + location.pathname;
+
+  const betreff = 'Dein Zugang für «' + org.name + '» ist freigeschaltet';
+  const text =
+    'Guten Tag\n\n' +
+    'Der Zugang für «' + org.name + '» wurde freigeschaltet.\n\n' +
+    'Paket: ' + paket + '\n' +
+    'Gültig bis: ' + bis + '\n\n' +
+    'Du kannst die App jetzt verwenden:\n' + appUrl + '\n\n' +
+    'Freundliche Grüsse\nBestellEAsy';
+
+  if (!emails.length) {
+    say('Keine Admin-Mailadresse gefunden. Bitte die Adresse im Mailprogramm selbst eintragen.', true);
+  }
+
+  location.href = 'mailto:' + emails.map(encodeURIComponent).join(',') +
+    '?subject=' + encodeURIComponent(betreff) +
+    '&body=' + encodeURIComponent(text.replace(/\n/g, '\r\n'));
+}
+
 async function loadOperator() {
   const el = $('operatorList');
 
@@ -6694,6 +6753,17 @@ async function loadOperator() {
     const { data, error } = await sb.rpc('operator_list_orgs');
 
     if (error) throw error;
+
+    operatorOrgsCache = new Map((data || []).map(o => [String(o.id), o]));
+
+    // Abo-Wünsche der Vereine (optional: fehlt die Funktion, wird einfach nichts angezeigt)
+    const wuensche = new Map();
+    try {
+      const { data: req, error: reqErr } = await sb.rpc('operator_list_requests');
+      if (!reqErr && Array.isArray(req)) {
+        req.forEach(r => wuensche.set(String(r.org_id), r));
+      }
+    } catch (e) { console.warn('operator_list_requests:', e); }
 
     const heute = new Date().toLocaleDateString(
       'en-CA',
@@ -6708,6 +6778,7 @@ async function loadOperator() {
           <thead>
             <tr>
               <th>Verein</th>
+              <th>Wunsch</th>
               <th>Paket</th>
               <th>Bis</th>
               <th>Status</th>
@@ -6734,11 +6805,27 @@ async function loadOperator() {
                 const eigener =
                   o.id === profile?.organization_id;
 
+                const w = wuensche.get(String(o.id));
+                const wunschName = w
+                  ? (PLANS[w.plan]?.name || w.plan)
+                  : '';
+                const wunschDatum = w?.requested_at
+                  ? new Date(w.requested_at).toLocaleDateString('de-CH')
+                  : '';
+                const wunschHtml = w
+                  ? `<span class="pill green">${esc(wunschName)}</span>` +
+                    (wunschDatum
+                      ? `<div class="muted">${esc(wunschDatum)}</div>`
+                      : '')
+                  : '–';
+
                 return `
                   <tr>
                     <td><strong>${esc(o.name)}</strong></td>
 
-                    <td>
+                    <td data-label="Wunsch">${wunschHtml}</td>
+
+                    <td data-label="Paket">
                       <select data-op-plan="${esc(o.id)}">
                         ${
                           [
@@ -6755,11 +6842,11 @@ async function loadOperator() {
                       </select>
                     </td>
 
-                    <td>${esc(fmt(o.paid_until))}</td>
-                    <td>${status}</td>
-                    <td>${Number(o.members)}</td>
+                    <td data-label="Bis">${esc(fmt(o.paid_until))}</td>
+                    <td data-label="Status">${status}</td>
+                    <td data-label="Mitglieder">${Number(o.members)}</td>
 
-                    <td>
+                    <td data-label="Verlängern">
                       <div class="actions">
 
                         <button type="button"
@@ -6785,6 +6872,13 @@ async function loadOperator() {
                           data-op-org="${esc(o.id)}"
                           data-op-months="0">
                           Nur Paket speichern
+                        </button>
+
+                        <button type="button"
+                          class="secondary"
+                          data-op-mail="${esc(o.id)}"
+                          ${aktiv ? '' : 'disabled title="Nur bei aktivem Zugang"'}>
+                          Mail an Admin
                         </button>
 
                         <button type="button"
@@ -6852,9 +6946,20 @@ document.addEventListener('click', async e => {
 
     if (error) throw error;
 
+    // Erfüllten Wunsch entfernen (nur bei Verlängerung; Fehler ignorieren)
+    if (months > 0) {
+      try { await sb.rpc('operator_clear_request', { p_org: id }); }
+      catch (e) { console.warn('operator_clear_request:', e); }
+    }
+
     showSuccessToast('✓ Gespeichert.');
 
     await loadOperator();
+
+    // Bei Verlängerung: Mail an den Admin des Vereins vorbereiten (öffnet das Mailprogramm)
+    if (months > 0 && confirm('Gespeichert.\n\nMail an den Admin des Vereins vorbereiten?')) {
+      await operatorMailAdmin(id);
+    }
 
   } catch (err) {
     b.disabled = false;
@@ -6867,6 +6972,15 @@ document.addEventListener('click', async e => {
   }
 });
 
+
+// Mail an Admin vorbereiten
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-op-mail]');
+  if (!b || !isOperator || b.disabled) return;
+  b.disabled = true;
+  try { await operatorMailAdmin(b.dataset.opMail); }
+  finally { b.disabled = false; }
+});
 
 // Verein löschen
 document.addEventListener('click', async e => {
