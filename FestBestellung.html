@@ -4147,6 +4147,43 @@ function removeFromCart(id) {
 
   renderMenu();
 }
+
+
+
+
+document.addEventListener('click', e => {
+  // Minus-Button
+  const minus = e.target.closest('[data-remove-item]');
+
+  if (minus) {
+    e.preventDefault();
+    e.stopPropagation();
+    removeFromCart(minus.dataset.removeItem);
+    return;
+  }
+
+  // Artikel hinzufügen
+  const artikel = e.target.closest('[data-add-item]');
+
+  if (artikel) {
+    e.preventDefault();
+    addToCart(artikel.dataset.addItem);
+  }
+});
+
+// Artikel auch mit Enter oder Leertaste hinzufügen
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+
+  const artikel = e.target.closest('[data-add-item]');
+  if (!artikel) return;
+
+  e.preventDefault();
+  addToCart(artikel.dataset.addItem);
+});
+
+
+
   
 function updateCartTotal(){let total=0;for(const v of cart.values())total+=v.quantity*v.price;$('cartTotal').textContent=money(total);$('submitOrderBtn').disabled=cart.size===0;}
 
