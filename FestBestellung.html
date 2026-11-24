@@ -1662,6 +1662,16 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 @media (max-width:700px) and (prefers-reduced-motion:reduce){
   #menuGrid.pager-on .pg-in-next,#menuGrid.pager-on .pg-in-prev{animation:none}
 }
+
+/* ===== Bild (Emoji) rechts in jeder Artikelkachel ===== */
+#menuGrid .menu-item-content{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;width:100%}
+#menuGrid .menu-item-text{flex:1 1 auto;min-width:0}
+#menuGrid .item-pic{flex:0 0 auto;display:grid;place-items:center;width:44px;height:44px;border-radius:12px;
+  background:rgba(255,255,255,.8);box-shadow:0 1px 3px rgba(23,33,27,.15);font-size:1.7rem;line-height:1;user-select:none}
+@media (max-width:700px){
+  #menuGrid .item-pic{width:44px;height:44px;font-size:1.75rem}
+  #menuGrid .menu-category .item h3{font-size:1.1rem !important}
+}
 </style>
 </head>
 <body>
@@ -3127,6 +3137,57 @@ async function loadMenu(){const {data,error}=await sb.from('menu_items').select(
 
 
 
+/* ===== Bild (Emoji) je Artikel – wird aus dem Artikelnamen abgeleitet ===== */
+const ARTIKEL_ICONS = [
+  [/gratis/i, '🎁'],
+  [/kafi\s*l[uü]tz|\bluz\b|schnaps|likör|likoer|whisk|gin\b|vodka|rum\b|williams|kirsch|grappa|digestif|obstler/i, '🥃'],
+  [/prosecco|sekt|champagner|crémant|cremant/i, '🥂'],
+  [/glühwein|gluehwein|punsch/i, '🍷'],
+  [/wein|rosé|rose\b|merlot|chasselas|pinot|riesling|spritz|aperol|hugo/i, '🍷'],
+  [/bier|lager|panasch|radler|\bstange\b|hell\b|weizen|ipa\b/i, '🍺'],
+  [/eistee|ice\s*tea/i, '🥤'],
+  [/apfelsaft|orangensaft|traubensaft|süssmost|suessmost|saft|most\b|nektar|multivitamin/i, '🧃'],
+  [/mineral|wasser|aqua|valser|henniez|sprudel|passugger|\bgas\b/i, '💧'],
+  [/cola|coca|pepsi|fanta|sprite|limo|rivella|schorle|orangina|red\s*bull|energy|tonic|sirup|sinalco|ginger/i, '🥤'],
+  [/milch|latte macchiato|milchkaffee/i, '🥛'],
+  [/schoggi|kakao|trinkschokolade/i, '🍫'],
+  [/tee\b|tea\b|kräuter|kraeuter|pfefferminz|verveine/i, '🍵'],
+  [/kaffee|kafi|café|cafe\b|espresso|cappuccino|ristretto|lungo|macchiato/i, '☕'],
+  [/bratwurst|wurst|cervelat|olma|hot\s*dog|würstli|wuerstli|schüblig|schueblig|klöpfer|kloepfer/i, '🌭'],
+  [/burger|hamburger|cheeseburger/i, '🍔'],
+  [/pizza|flammkuchen|tarte flambée/i, '🍕'],
+  [/salat|salad/i, '🥗'],
+  [/suppe|bouillon|eintopf|gulasch|chili/i, '🍲'],
+  [/pasta|spaghetti|penne|nudel|teigware|älpler|aelpler|ravioli|lasagne|risotto/i, '🍝'],
+  [/poulet|huhn|hähnchen|haehnchen|chicken|nuggets|schnitzel|cordon|flügel|fluegel/i, '🍗'],
+  [/steak|fleisch|rind|schwein|kotelett|koteletts|ribs|rippli|spiess|spiess|grill|geschnetzelt|braten|hackbraten|entrecôte|entrecote/i, '🥩'],
+  [/fisch|egli|lachs|forelle|felchen|zander|thon/i, '🐟'],
+  [/pommes|frites|fritten|wedges/i, '🍟'],
+  [/sandwich|toast|panini|bürli|buerli|brötli|broetli|baguette|zopf|brot|schinkengipfel|gipfel/i, '🥪'],
+  [/raclette|fondue|käse|kaese|chäs|chaes|käseschnitte|kaeseschnitte/i, '🧀'],
+  [/rösti|roesti|kartoffel|gratin/i, '🥔'],
+  [/reis\b|curry/i, '🍚'],
+  [/gemüse|gemuese|veggie|vegi|vegetar/i, '🥦'],
+  [/pilz|champignon/i, '🍄'],
+  [/spiegelei|ei\b|eier/i, '🥚'],
+  [/glace|eis\b|eiscreme|sorbet|coupe|dame blanche/i, '🍦'],
+  [/crêpe|crepe|waffel|pfannkuchen|palatschinke|dessert|mousse|crème|creme\b|panna cotta|tiramisu|pudding/i, '🍮'],
+  [/kuchen|torte|cake|tarte|gebäck|gebaeck|muffin|brownie|schnitte|cheesecake|linzer/i, '🍰'],
+  [/apfel|obst|frucht|früchte|fruechte|banane|erdbeer/i, '🍎'],
+  [/popcorn/i, '🍿'],
+  [/chips|nüsse|nuesse|erdnuss|brezel|salzstange|snack|knabber|nacho/i, '🥨'],
+  [/menü|menu\b|teller|plättli|plaettli|zmittag|mittagessen/i, '🍽️']
+];
+const ARTIKEL_ICON_KATEGORIE = {
+  'essen': '🍽️', 'snacks': '🥨', 'kalte getränke': '🥤', 'warme getränke': '☕',
+  'getränke': '🥤', 'dessert': '🍰', 'sonstiges': '📦'
+};
+function artikelIcon(name, kategorie) {
+  const n = String(name || '');
+  for (const [re, icon] of ARTIKEL_ICONS) if (re.test(n)) return icon;
+  return ARTIKEL_ICON_KATEGORIE[String(kategorie || '').trim().toLowerCase()] || '📦';
+}
+
 /* ===== Handy: Kategorien als Register, per Wischen wechseln ===== */
 const MENU_PAGER_MQ = window.matchMedia('(max-width: 700px)');
 const MENU_PAGER_META = {
@@ -3327,8 +3388,11 @@ function renderMenu() {
         aria-label="${esc(m.name)} hinzufügen, aktueller Warenkorb: ${q} Stück"
         data-add-item="${esc(String(m.id))}">
         <div class="menu-item-content">
-          <h3>${esc(m.name)}</h3>
-          <div class="price">${money(m.price)}</div>
+          <div class="menu-item-text">
+            <h3>${esc(m.name)}</h3>
+            <div class="price">${money(m.price)}</div>
+          </div>
+          <span class="item-pic" aria-hidden="true">${artikelIcon(m.name, m.category)}</span>
         </div>
         <div class="tile-bottom">
           <span class="tile-hint"><span aria-hidden="true">＋</span> 1 Stück hinzufügen</span>
