@@ -1687,49 +1687,132 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
   position: fixed;
   inset: 0;
   z-index: 99999;
-  background: rgba(0,0,0,0.65);
+  background: rgba(10, 20, 15, 0.78);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
+  animation: optionFadeIn 0.2s ease;
 }
 
 .option-dialog-content {
-  background: white;
-  color: #222;
+  background: #ffffff;
+  color: #1c2921;
   width: 100%;
-  max-width: 420px;
-  padding: 22px;
-  border-radius: 14px;
+  max-width: 440px;
+  padding: 26px;
+  border-radius: 22px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: optionSlideUp 0.25s ease;
+}
+
+.option-dialog-content h3 {
+  font-size: 23px;
+  font-weight: 800;
+  margin: 0 0 8px;
+  color: #176b3a;
+}
+
+.option-dialog-content p {
+  color: #68756d;
+  font-size: 14px;
+  margin-bottom: 20px;
 }
 
 .option-list {
   display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
-  margin: 20px 0;
+  margin: 20px 0 24px;
 }
 
 .option-choice {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 13px;
-  background: #f2f4f5;
-  border-radius: 8px;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px;
+  background: #f0f2f4;
+  color: #333;
+  border: 2px solid transparent;
+  border-radius: 12px;
   cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.option-choice:has(input:checked) {
+  background: #198754;
+  color: white;
+  border-color: #126b40;
+  box-shadow: 0 3px 10px rgba(25,135,84,0.25);
 }
 
 .option-choice input {
   width: 22px;
   height: 22px;
+  accent-color: white;
+  cursor: pointer;
 }
 
 .option-dialog-actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   justify-content: flex-end;
+  margin-top: 20px;
 }
 
+.option-dialog-actions button {
+  border: none;
+  border-radius: 12px;
+  padding: 13px 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.option-dialog-actions button:first-child {
+  background: #edf0ee;
+  color: #46534a;
+}
+
+.option-dialog-actions button.primary {
+  background: #198754;
+  color: white;
+  box-shadow: 0 4px 12px rgba(25,135,84,0.25);
+}
+
+.option-dialog-actions button.primary:hover {
+  background: #126b40;
+  transform: translateY(-1px);
+}
+
+@keyframes optionFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes optionSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 380px) {
+  .option-dialog-content {
+    padding: 18px;
+  }
+
+  .option-list {
+    grid-template-columns: 1fr;
+  }
+}
 
   
   
