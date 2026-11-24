@@ -2539,18 +2539,28 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
       <input type="text" id="editMenuName" placeholder="Artikelname" required="">
     </div>
 
-    <div>
-      <label for="editMenuCategory">Kategorie</label>
-      <select id="editMenuCategory" required="">
-        <option value="Essen">Essen</option>
-        <option value="Snacks">Snacks</option>
-        <option value="Kalte Getränke">Kalte Getränke</option>
-        <option value="Warme Getränke">Warme Getränke</option>
-        <option value="Dessert">Dessert</option>
-        <option value="Sonstiges">Sonstiges</option>
-        <option value="Getränke">Getränke (bisherige Kategorie)</option>
-      </select>
-    </div>
+  
+<div>
+  <label for="editMenuCategory">Kategorie</label>
+  <select id="editMenuCategory" required>
+    <option value="Essen">Essen</option>
+    <option value="Snacks">Snacks</option>
+
+    <option value="Kalte Getränke ohne Alkohol">Kalte Getränke – ohne Alkohol</option>
+    <option value="Kalte Getränke mit Alkohol">Kalte Getränke – mit Alkohol</option>
+
+    <option value="Warme Getränke ohne Alkohol">Warme Getränke – ohne Alkohol</option>
+    <option value="Warme Getränke mit Alkohol">Warme Getränke – mit Alkohol</option>
+
+    <option value="Kalte Getränke">Kalte Getränke (alt)</option>
+    <option value="Warme Getränke">Warme Getränke (alt)</option>
+    <option value="Getränke">Getränke (alt)</option>
+
+    <option value="Dessert">Dessert</option>
+    <option value="Sonstiges">Sonstiges</option>
+  </select>
+</div>
+
 
     <div>
       <label for="editMenuPrice">Preis in CHF</label>
