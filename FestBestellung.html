@@ -5069,6 +5069,8 @@ function orderHTML(o) {
 
 
 let drinkPaymentSelection = new Map();
+// Bar-Zahlung: gegebener Betrag (für Rückgeld-Anzeige), gewählte Zahlungsart, zugehöriger Tisch
+let drinkGiven = '', drinkMethodChoice = 'Bar', drinkGivenTable = '';
 
 
 function renderDrinkPayments() {
@@ -5083,6 +5085,12 @@ function renderDrinkPayments() {
     container.innerHTML =
       '<p class="muted">Bitte zuerst einen Tisch auswählen.</p>';
     return;
+  }
+
+  // Anderer Tisch → gegebenen Betrag nicht mitnehmen
+  if (drinkGivenTable !== table) {
+    drinkGiven = '';
+    drinkGivenTable = table;
   }
 
 
@@ -5218,9 +5226,27 @@ const tableOrders = orders.filter(o =>
           Zahlungsart dieser Person
         </label>
         <select id="drinkPaymentMethod">
-          <option value="Bar">Bar</option>
-          <option value="TWINT">TWINT</option>
+          <option value="Bar"${drinkMethodChoice === 'Bar' ? ' selected' : ''}>Bar</option>
+          <option value="TWINT"${drinkMethodChoice === 'TWINT' ? ' selected' : ''}>TWINT</option>
         </select>
+      </div>
+
+      <div id="drinkCashBox" style="margin-top:14px;${drinkMethodChoice === 'Bar' ? '' : 'display:none'}">
+        <label for="drinkGiven">Gegeben (CHF)</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px">
+          <input id="drinkGiven" type="text" inputmode="decimal"
+                 autocomplete="off" placeholder="0.00"
+                 value="${esc(drinkGiven)}"
+                 style="width:140px;font-size:20px;font-weight:700;padding:8px 12px;border-radius:12px">
+          <button type="button" data-drink-given="exact">Passend</button>
+          <button type="button" data-drink-given="5">5</button>
+          <button type="button" data-drink-given="10">10</button>
+          <button type="button" data-drink-given="20">20</button>
+          <button type="button" data-drink-given="50">50</button>
+          <button type="button" data-drink-given="100">100</button>
+          <button type="button" data-drink-given="clear">C</button>
+        </div>
+        <div id="drinkChange" class="big" style="margin-top:10px;min-height:1.4em" aria-live="polite"></div>
       </div>
 
       <div class="actions" style="margin-top:14px">
@@ -5238,7 +5264,61 @@ const tableOrders = orders.filter(o =>
     </article>
   `;
 
+  // Rückgeld berechnen und anzeigen (ohne die Ansicht neu aufzubauen)
+  const updateChange = () => {
+    const out = $('drinkChange');
+    if (!out) return;
+
+    const given = parseFloat(String(drinkGiven).replace(',', '.'));
+
+    if (!String(drinkGiven).trim() || isNaN(given) || selectedTotal <= 0) {
+      out.textContent = '';
+      return;
+    }
+
+    const diff = Math.round((given - selectedTotal) * 100) / 100;
+
+    if (diff >= 0) {
+      out.style.color = '#1f6b3a';
+      out.textContent = 'Rückgeld: ' + money(diff);
+    } else {
+      out.style.color = '#b02a37';
+      out.textContent = 'Es fehlen noch ' + money(-diff);
+    }
+  };
+
+  container.oninput = event => {
+    if (event.target.id !== 'drinkGiven') return;
+    drinkGiven = event.target.value;
+    updateChange();
+  };
+
+  container.onchange = event => {
+    if (event.target.id !== 'drinkPaymentMethod') return;
+    drinkMethodChoice = event.target.value;
+    const box = $('drinkCashBox');
+    if (box) box.style.display = drinkMethodChoice === 'Bar' ? '' : 'none';
+    updateChange();
+  };
+
+  updateChange();
+
   container.onclick = async event => {
+    const givenButton = event.target.closest('[data-drink-given]');
+
+    if (givenButton) {
+      const v = givenButton.dataset.drinkGiven;
+      drinkGiven =
+        v === 'clear' ? '' :
+        v === 'exact' ? selectedTotal.toFixed(2) :
+        Number(v).toFixed(2);
+
+      const input = $('drinkGiven');
+      if (input) input.value = drinkGiven;
+      updateChange();
+      return;
+    }
+
     const stepButton = event.target.closest('[data-drink-step]');
 
     if (stepButton) {
@@ -5321,8 +5401,9 @@ const tableOrders = orders.filter(o =>
         )} erfolgreich gespeichert`
       );
 
-      // Auswahl zurücksetzen
+      // Auswahl und gegebenen Betrag zurücksetzen
       drinkPaymentSelection.clear();
+      drinkGiven = '';
 
       // Daten aktualisieren
       await refreshOrders();
