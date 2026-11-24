@@ -5478,7 +5478,212 @@ async function toggleMenu(id, active) {
 
 
 
-async function calculateClosing(){const date=$('closingDate').value;if(!date){say('Bitte ein Datum auswählen.',true);return null;}try{const {data,error}=await sb.rpc('get_day_summary',{p_business_date:date});if(error)throw error;const d=Array.isArray(data)?data[0]:data;if(!d)throw new Error('Keine Abrechnung erhalten.');$('closingSummary').innerHTML=`<div class="totals"><div class="totalbox">Umsatz Bestellungen<strong>${money(d.total_sales)}</strong></div><div class="totalbox">Bar bezahlt<strong>${money(d.cash_total)}</strong></div><div class="totalbox">TWINT bezahlt<strong>${money(d.twint_total)}</strong></div><div class="totalbox">Noch offen<strong>${money(d.open_amount)}</strong></div><div class="totalbox">Anzahl Bestellungen<strong>${Number(d.order_count||0)}</strong></div></div>`;return d;}catch(e){say('Abrechnung konnte nicht berechnet werden: '+e.message,true);return null;}}
+
+async function calculateClosing() {
+  const date = $('closingDate').value;
+
+  if (!date) {
+    say('Bitte ein Datum auswählen.', true);
+    return null;
+  }
+
+  try {
+    // Bisherige Umsatz- und Zahlungsübersicht
+    const { data: summaryData, error: summaryError } =
+      await sb.rpc('get_day_summary', {
+        p_business_date: date
+      });
+
+    if (summaryError) throw summaryError;
+
+    const d = Array.isArray(summaryData)
+      ? summaryData[0]
+      : summaryData;
+
+    if (!d) throw new Error('Keine Abrechnung erhalten.');
+
+    // Mitarbeiterübersicht
+    const { data: employees, error: employeeError } =
+      await sb.rpc('get_daily_employee_summary', {
+        p_date: date
+      });
+
+    if (employeeError) throw employeeError;
+
+    // Artikelübersicht
+    const { data: articles, error: articleError } =
+      await sb.rpc('get_daily_article_summary', {
+        p_date: date
+      });
+
+    if (articleError) throw articleError;
+
+    // Einzelne Bestellungen und Artikel pro Mitarbeiter
+    const { data: details, error: detailError } =
+      await sb.rpc('get_daily_employee_articles', {
+        p_date: date,
+        p_user_id: null
+      });
+
+    if (detailError) throw detailError;
+
+    const fmt = money;
+
+    // Mitarbeiter-Details nach Benutzer gruppieren
+    const employeeDetails = {};
+
+    (details || []).forEach(item => {
+      const id = item.user_id || 'unknown';
+
+      if (!employeeDetails[id]) {
+        employeeDetails[id] = [];
+      }
+
+      employeeDetails[id].push(item);
+    });
+
+    // Mitarbeiter-Tabelle
+    const employeeHtml = (employees || []).map(emp => {
+      const id = emp.user_id || 'unknown';
+      const rows = employeeDetails[id] || [];
+
+      return `
+        <details class="panel" style="margin-top:10px">
+          <summary style="cursor:pointer;font-weight:bold">
+            ${esc(emp.employee_name)}
+            – ${Number(emp.order_count)} Bestellungen
+            – ${Number(emp.article_count)} Artikel
+            – ${fmt(emp.revenue)}
+          </summary>
+
+          <div style="overflow-x:auto;margin-top:12px">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Uhrzeit</th>
+                  <th>Tisch</th>
+                  <th>Bestellung</th>
+                  <th>Artikel</th>
+                  <th>Menge</th>
+                  <th>Preis</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(item => `
+                  <tr>
+                    <td>${item.ordered_at
+                      ? new Date(item.ordered_at).toLocaleTimeString('de-CH')
+                      : '–'}</td>
+                    <td>${item.table_number ?? '–'}</td>
+                    <td>${item.order_id}</td>
+                    <td>${esc(item.article_name)}</td>
+                    <td>${Number(item.quantity)}</td>
+                    <td>${fmt(item.unit_price)}</td>
+                    <td>${fmt(item.line_total)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      `;
+    }).join('');
+
+    // Artikel-Gesamtübersicht
+    const articleHtml = (articles || []).map(item => `
+      <tr>
+        <td>${esc(item.article_name)}</td>
+        <td>${esc(item.category)}</td>
+        <td>${Number(item.sold_quantity)}</td>
+        <td>${fmt(item.revenue)}</td>
+      </tr>
+    `).join('');
+
+    // Gesamter Tagesabschluss
+    $('closingSummary').innerHTML = `
+
+      <h3>Tagesübersicht</h3>
+
+      <div class="totals">
+        <div class="totalbox">
+          Umsatz Bestellungen
+          <strong>${fmt(d.total_sales)}</strong>
+        </div>
+
+        <div class="totalbox">
+          Bar bezahlt
+          <strong>${fmt(d.cash_total)}</strong>
+        </div>
+
+        <div class="totalbox">
+          TWINT bezahlt
+          <strong>${fmt(d.twint_total)}</strong>
+        </div>
+
+        <div class="totalbox">
+          Noch offen
+          <strong>${fmt(d.open_amount)}</strong>
+        </div>
+
+        <div class="totalbox">
+          Anzahl Bestellungen
+          <strong>${Number(d.order_count || 0)}</strong>
+        </div>
+      </div>
+
+      <hr>
+
+      <h3>Umsatz und Verkäufe pro Mitarbeiter</h3>
+
+      ${employeeHtml || '<p class="muted">Keine Mitarbeiterbestellungen vorhanden.</p>'}
+
+      <hr>
+
+      <h3>Alle verkauften Artikel</h3>
+
+      <div style="overflow-x:auto">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Artikel</th>
+              <th>Kategorie</th>
+              <th>Menge</th>
+              <th>Umsatz</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${articleHtml || `
+              <tr><td colspan="4">Keine Artikel verkauft.</td></tr>
+            `}
+          </tbody>
+        </table>
+      </div>
+
+      <hr>
+
+      <div class="actions">
+        <button type="button" class="secondary"
+          onclick="window.print()">
+          Tagesabschluss drucken
+        </button>
+      </div>
+    `;
+
+    return d;
+
+  } catch (e) {
+    console.error('calculateClosing:', e);
+
+    say(
+      'Abrechnung konnte nicht berechnet werden: ' +
+      (e.message || e),
+      true
+    );
+
+    return null;
+  }
+}
 
 
 
