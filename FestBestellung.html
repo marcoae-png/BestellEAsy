@@ -2465,18 +2465,29 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
     <input id="menuName" placeholder="z. B. Bratwurst">
   </div>
 
-  <div>
-    <label for="menuCategory">Kategorie</label>
-    <select id="menuCategory">
-      <option value="Essen">Essen</option>
-      <option value="Snacks">Snacks</option>
-      <option value="Kalte Getränke">Kalte Getränke</option>
-      <option value="Warme Getränke">Warme Getränke</option>
-      <option value="Dessert">Dessert</option>
-      <option value="Sonstiges">Sonstiges</option>
-      <option value="Getränke">Getränke (bisherige Kategorie)</option>
-    </select>
-  </div>
+
+<div>
+  <label for="menuCategory">Kategorie</label>
+  <select id="menuCategory">
+    <option value="Essen">Essen</option>
+    <option value="Snacks">Snacks</option>
+
+    <option value="Kalte Getränke ohne Alkohol">
+      Kalte Getränke – ohne Alkohol
+    </option>
+
+    <option value="Kalte Getränke mit Alkohol">
+      Kalte Getränke – mit Alkohol
+    </option>
+
+    <option value="Kalte Getränke">Kalte Getränke (bisherige Kategorie)</option>
+    <option value="Warme Getränke">Warme Getränke</option>
+    <option value="Dessert">Dessert</option>
+    <option value="Sonstiges">Sonstiges</option>
+    <option value="Getränke">Getränke (bisherige Kategorie)</option>
+  </select>
+</div>
+
 
   <div>
     <label for="menuPrice">Preis in CHF</label>
@@ -3772,24 +3783,31 @@ function renderMenu() {
   const menuGrid = $('menuGrid');
   if (!menuGrid) return;
 
-  const kategorien = [
-    'Essen',
-    'Snacks',
-    'Kalte Getränke',
-    'Warme Getränke',
-    'Getränke',
-    'Dessert',
-    'Sonstiges'
-  ];
-  const kategorienIcons = {
-    'Essen': '🍽️',
-    'Snacks': '🥨',
-    'Kalte Getränke': '🧊',
-    'Warme Getränke': '☕',
-    'Getränke': '🥤',
-    'Dessert': '🍰',
-    'Sonstiges': '📦'
-  };
+ 
+const kategorien = [
+  'Essen',
+  'Snacks',
+  'Kalte Getränke ohne Alkohol',
+  'Kalte Getränke mit Alkohol',
+  'Kalte Getränke',
+  'Warme Getränke',
+  'Getränke',
+  'Dessert',
+  'Sonstiges'
+];
+
+const kategorienIcons = {
+  'Essen': '🍽️',
+  'Snacks': '🥨',
+  'Kalte Getränke ohne Alkohol': '🥤',
+  'Kalte Getränke mit Alkohol': '🍺',
+  'Kalte Getränke': '🧊',
+  'Warme Getränke': '☕',
+  'Getränke': '🥤',
+  'Dessert': '🍰',
+  'Sonstiges': '📦'
+};
+
 
   function artikelHTML(m) {
     const q = Array.from(cart.values())
@@ -3819,6 +3837,27 @@ function renderMenu() {
 
   function kategorieHTML(kategorie, artikel) {
     if (!artikel.length) return '';
+    // Neue Unterkategorien für kalte Getränke
+if (
+  kategorie === 'Kalte Getränke ohne Alkohol' ||
+  kategorie === 'Kalte Getränke mit Alkohol'
+) {
+  const alkohol = kategorie === 'Kalte Getränke mit Alkohol';
+
+  return `
+    <section class="menu-category ${
+      alkohol ? 'menu-category-alkohol' : 'menu-category-alkoholfrei'
+    }">
+      <h2 class="menu-category-title">
+        <span aria-hidden="true">${alkohol ? '🍺' : '🥤'}</span>
+        ${esc(kategorie)}
+        <span class="menu-category-count">${artikel.length} Artikel</span>
+      </h2>
+      <div class="menu-category-grid">
+        ${artikel.map(artikelHTML).join('')}
+      </div>
+    </section>`;
+}
     const slug = kategorie.toLowerCase()
       .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
       .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -5116,11 +5155,19 @@ function showPaymentToast(message) {
 
 
 
-
 function isDrinkCategory(item) {
-  const category = String(item.category || item.category_snapshot || '').trim().toLowerCase();
-  return ['getränke', 'getraenke', 'kalte getränke', 'warme getränke'].includes(category) ||
-    category.includes('drink');
+  const category = String(
+    item.category || item.category_snapshot || ''
+  ).trim().toLowerCase();
+
+  return [
+    'getränke',
+    'getraenke',
+    'kalte getränke',
+    'kalte getränke ohne alkohol',
+    'kalte getränke mit alkohol',
+    'warme getränke'
+  ].includes(category) || category.includes('drink');
 }
 
 
