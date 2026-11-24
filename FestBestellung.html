@@ -1674,143 +1674,177 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
 
 
-  .order-item-note {
-  margin: 5px 0 8px 20px;
-  padding: 5px 8px;
-  background: #fff3cd;
-  border-left: 3px solid #d69e00;
-  border-radius: 4px;
-  color: #664d03;
-  font-size: 0.9em;
-}
+ /* =====================================
+   BESTELLOPTIONEN – FESTBESTELLUNG
+===================================== */
+
+/* Hintergrund */
 .option-dialog {
   position: fixed;
   inset: 0;
   z-index: 99999;
-  background: rgba(10, 20, 15, 0.78);
-  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
-  animation: optionFadeIn 0.2s ease;
+  background: rgba(15, 28, 20, 0.72);
+  backdrop-filter: blur(5px);
 }
 
+/* Auswahlfenster */
 .option-dialog-content {
-  background: #ffffff;
-  color: #1c2921;
   width: 100%;
-  max-width: 440px;
+  max-width: 460px;
+  max-height: 90vh;
+  overflow-y: auto;
   padding: 26px;
-  border-radius: 22px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  animation: optionSlideUp 0.25s ease;
+  background: #fff;
+  color: #17211b;
+  border-radius: 18px;
+  border: 1px solid #e0e8e2;
+  box-shadow: 0 18px 55px rgba(0,0,0,.28);
 }
 
 .option-dialog-content h3 {
-  font-size: 23px;
+  margin: 0 0 7px;
+  color: #245c3b;
+  font-size: 1.4rem;
   font-weight: 800;
-  margin: 0 0 8px;
-  color: #176b3a;
 }
 
 .option-dialog-content p {
-  color: #68756d;
-  font-size: 14px;
-  margin-bottom: 20px;
+  margin: 0 0 20px;
+  color: #657168;
+  font-size: .95rem;
 }
 
+/* Auswahl-Kacheln */
 .option-list {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin: 20px 0 24px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+  margin: 18px 0 24px;
 }
 
 .option-choice {
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 16px;
-  background: #f0f2f4;
-  color: #333;
-  border: 2px solid transparent;
+  min-height: 58px;
+  margin: 0 !important;
+  padding: 13px 14px;
+  background: #f3f6f3;
+  color: #26372c;
+  border: 2px solid #dce5de;
   border-radius: 12px;
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
+  font-size: .95rem;
+  font-weight: 700;
+  transition: background .15s, border-color .15s, color .15s;
 }
 
 .option-choice:has(input:checked) {
-  background: #198754;
-  color: white;
-  border-color: #126b40;
-  box-shadow: 0 3px 10px rgba(25,135,84,0.25);
+  background: #245c3b;
+  color: #fff;
+  border-color: #245c3b;
+  box-shadow: 0 3px 9px rgba(36,92,59,.18);
 }
 
 .option-choice input {
-  width: 22px;
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 0 0 22px;
+  width: 22px !important;
   height: 22px;
-  accent-color: white;
+  margin: 0;
+  padding: 0;
+  border: 2px solid #aab9ad;
+  border-radius: 6px;
+  background: white;
   cursor: pointer;
 }
 
+.option-choice input:checked {
+  border-color: white;
+  background: white;
+}
+
+.option-choice input:checked::after {
+  content: "✓";
+  display: block;
+  color: #245c3b;
+  text-align: center;
+  font-size: 16px;
+  line-height: 18px;
+  font-weight: 900;
+}
+
+/* Dialog-Buttons */
 .option-dialog-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: 22px;
 }
 
 .option-dialog-actions button {
+  min-height: 46px;
+  padding: 12px 20px;
   border: none;
-  border-radius: 12px;
-  padding: 13px 20px;
-  font-weight: 700;
+  border-radius: 10px;
+  font-size: .95rem;
+  font-weight: 750;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .option-dialog-actions button:first-child {
-  background: #edf0ee;
-  color: #46534a;
+  background: #edf1ed;
+  color: #34483a;
 }
 
 .option-dialog-actions button.primary {
-  background: #198754;
+  background: #245c3b;
   color: white;
-  box-shadow: 0 4px 12px rgba(25,135,84,0.25);
 }
 
 .option-dialog-actions button.primary:hover {
-  background: #126b40;
-  transform: translateY(-1px);
+  background: #19452c;
 }
 
-@keyframes optionFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Zusatzoptionen bei Bestellungen */
+.order-item-note {
+  display: inline-block;
+  margin: 5px 0 9px 20px;
+  padding: 6px 11px;
+  background: #e8f1eb;
+  border: 1px solid #cbded0;
+  border-radius: 7px;
+  color: #245c3b;
+  font-size: .84rem;
+  font-weight: 650;
+  line-height: 1.4;
 }
 
-@keyframes optionSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@media (max-width: 380px) {
+/* Handy */
+@media (max-width: 420px) {
   .option-dialog-content {
-    padding: 18px;
+    padding: 19px;
+    border-radius: 15px;
   }
 
   .option-list {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .option-choice {
+    min-height: 53px;
+  }
+
+  .option-dialog-actions button {
+    flex: 1;
+    padding: 11px 8px;
   }
 }
 
