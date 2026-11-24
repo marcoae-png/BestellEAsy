@@ -4420,73 +4420,57 @@ fillPrintForm();
 
 
   
+
 async function submitOrder() {
   if (!cart.size) {
     say('Bitte zuerst Artikel auswählen.', true);
     return;
   }
 
+  const tableEl = $('tableNumber');
+  const methodEl = $('paymentMethod');
+  const button = $('submitOrderBtn');
 
+  if (!tableEl || !button) {
+    console.error('Fehlendes Element:', {
+      tableNumber: !!tableEl,
+      paymentMethod: !!methodEl,
+      submitOrderBtn: !!button
+    });
 
+    say('Bestellung nicht möglich: Tischwahl oder Bestellbutton fehlt.', true);
+    return;
+  }
 
+  const table = Number(tableEl.value);
+  const method = methodEl ? methodEl.value : 'cash';
 
-const tableEl = $('tableNumber');
-const methodEl = $('paymentMethod');
-const button = $('submitOrderBtn');
+  if (!Number.isInteger(table) || table < 1 || table > 30) {
+    say('Bitte einen gültigen Tisch auswählen.', true);
+    return;
+  }
 
-if (!tableEl || !button) {
-  console.error('Fehlendes Element:', {
-    tableNumber: !!tableEl,
-    paymentMethod: !!methodEl,
-    submitOrderBtn: !!button
-  });
-
-  say('Bestellung nicht möglich: Tischwahl oder Bestellbutton fehlt.', true);
-  return;
-}
-
-
-
-console.log('Feldprüfung:', {
-  tableNumber: !!tableEl,
-  paymentMethod: !!methodEl,
-  submitOrderBtn: !!button
-});
-
-
- if (!tableEl || !button) {
-  console.error('Fehlendes Element:', {
-    tableNumber: !!tableEl,
-    submitOrderBtn: !!button
-  });
-
-  say('Bestellung nicht möglich: Tischwahl oder Bestellbutton fehlt.', true);
-  return;
-}
-
- const table = Number(tableEl.value);
-const method = methodEl ? methodEl.value : 'cash';
-
-const items = Array.from(cart.values()).map(i => ({
-  menu_item_id: i.menu_item_id,
-  quantity: i.quantity,
-  special_note: i.special_note || ''
-}));
+  const items = Array.from(cart.values()).map(i => ({
+    menu_item_id: i.menu_item_id,
+    quantity: i.quantity,
+    special_note: i.special_note || ''
+  }));
 
   button.disabled = true;
 
   try {
-const { data, error } = await sb.rpc('create_order', {
-  p_table_number: table,
-  p_payment_method: method,
-  p_items: items,
-  p_festival_name: FESTNAME
-});
+    const { data, error } = await sb.rpc('create_order', {
+      p_table_number: table,
+      p_payment_method: method,
+      p_items: items
+    });
 
     if (error) throw error;
 
     const gedruckteArtikel = Array.from(cart.values());
-    printOrderTickets(data, table, method, gedruckteArtikel).catch(e => console.error('Druck:', e));
+
+    printOrderTickets(data, table, method, gedruckteArtikel)
+      .catch(e => console.error('Druck:', e));
 
     cart.clear();
     renderMenu();
@@ -4496,21 +4480,26 @@ const { data, error } = await sb.rpc('create_order', {
     );
 
     await refreshOrders();
-await loadOpenAmounts();
+    await loadOpenAmounts();
 
-    // Nach dem Senden direkt zur Getränkeabrechnung scrollen
     requestAnimationFrame(() => {
       const ziel = $('drinkPaymentHeading');
-      if (ziel) ziel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (ziel) {
+        ziel.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
     });
+
   } catch (e) {
     console.error('submitOrder:', e);
     say('Bestellung konnte nicht gespeichert werden: ' + e.message, true);
+
   } finally {
     button.disabled = false;
   }
 }
-
 
 
  
