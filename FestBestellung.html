@@ -2016,6 +2016,32 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
   #operatorView .table td:last-child .actions button[data-op-mail],
   #operatorView .table td:last-child .actions button[data-op-delete] { grid-column: 1 / -1; }
 }
+
+/* ===== Tagesübersicht: Diagramme ===== */
+.dcharts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin:16px 0 0}
+.dchart{background:#f7faf8;border:1px solid #dfe8e1;border-radius:12px;padding:14px}
+.dchart h4{margin:0 0 12px;font-size:1rem}
+.dchart.wide{grid-column:1 / -1}
+.dc-stack{display:flex;height:34px;border-radius:9px;overflow:hidden;background:#e3e9e4}
+.dc-stack span{display:block;height:100%;min-width:0}
+.dc-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:12px 0 0;font-size:.9rem}
+.dc-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.dc-legend b{margin-left:4px}
+.dc-row{display:grid;grid-template-columns:minmax(90px,34%) 1fr auto;gap:10px;align-items:center;margin:0 0 9px;font-size:.9rem}
+.dc-row .nm{overflow-wrap:anywhere;line-height:1.2}
+.dc-row .bar{height:20px;background:#e3e9e4;border-radius:6px;overflow:hidden}
+.dc-row .bar span{display:block;height:100%;border-radius:6px}
+.dc-row .val{font-weight:700;white-space:nowrap}
+.dc-cols{display:flex;align-items:flex-end;gap:6px;height:170px;padding-top:8px;border-bottom:2px solid #b8c7bc}
+.dc-col{flex:1 1 0;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+.dc-col .v{font-size:.72rem;color:#435249;margin-bottom:3px;white-space:nowrap}
+.dc-col .b{width:100%;max-width:44px;background:#245c3b;border-radius:6px 6px 0 0;min-height:2px}
+.dc-col.peak .b{background:#f3a22b}
+.dc-labels{display:flex;gap:6px;margin-top:5px}
+.dc-labels span{flex:1 1 0;min-width:0;text-align:center;font-size:.78rem;color:#657168}
+.dc-empty{color:#657168;margin:0}
+@media(max-width:600px){.dcharts{grid-template-columns:1fr}.dc-row{grid-template-columns:minmax(80px,38%) 1fr auto}.dc-col .v{font-size:.62rem}}
+@media print{.dchart{break-inside:avoid;background:#fff}.dc-stack,.dc-row .bar span,.dc-col .b,.dc-legend i{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head>
 <body>
@@ -6357,6 +6383,93 @@ async function toggleMenu(id, active) {
 
 
 
+
+/* ===== Tagesübersicht: Diagramme (reines HTML/CSS, ohne Bibliothek) ===== */
+const DC_KAT_FARBEN = {
+  'essen': '#d98400', 'snacks': '#2f8a4d', 'dessert': '#cf4a8a', 'sonstiges': '#5b6b75',
+  'kalte getränke ohne alkohol': '#1f7ab8', 'kalte getränke mit alkohol': '#b7791f',
+  'warme getränke ohne alkohol': '#d2562b', 'warme getränke mit alkohol': '#9b2c4b',
+  'kalte getränke': '#1f7ab8', 'warme getränke': '#d2562b', 'getränke': '#1f7ab8'
+};
+function dcFarbe(kat) { return DC_KAT_FARBEN[String(kat || '').trim().toLowerCase()] || '#7a4fb5'; }
+
+function dcZahlungen(d) {
+  const teile = [
+    ['Bar', Number(d.cash_total) || 0, '#245c3b'],
+    ['TWINT', Number(d.twint_total) || 0, '#1f7ab8'],
+    ['Noch offen', Number(d.open_amount) || 0, '#f3a22b']
+  ];
+  const sum = teile.reduce((a, t) => a + t[1], 0);
+  if (sum <= 0) return '<p class="dc-empty">Noch keine Umsätze.</p>';
+  return '<div class="dc-stack" role="img" aria-label="Verteilung der Zahlungsarten">' +
+    teile.filter(t => t[1] > 0).map(t =>
+      '<span style="width:' + (t[1] / sum * 100).toFixed(2) + '%;background:' + t[2] + '" title="' + t[0] + ': ' + money(t[1]) + '"></span>'
+    ).join('') + '</div>' +
+    '<div class="dc-legend">' + teile.map(t =>
+      '<span><i style="background:' + t[2] + '"></i>' + t[0] + '<b>' + money(t[1]) + ' (' + Math.round(t[1] / sum * 100) + '%)</b></span>'
+    ).join('') + '</div>';
+}
+
+function dcKategorien(articles) {
+  const map = {};
+  (articles || []).forEach(a => {
+    const k = String(a.category || 'Sonstiges');
+    map[k] = (map[k] || 0) + (Number(a.revenue) || 0);
+  });
+  const liste = Object.entries(map).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
+  if (!liste.length) return '<p class="dc-empty">Keine Artikel verkauft.</p>';
+  const max = liste[0][1];
+  return liste.map(([k, v]) =>
+    '<div class="dc-row"><span class="nm" title="' + esc(k) + '">' + esc(k) + '</span>' +
+    '<span class="bar"><span style="width:' + Math.max(2, v / max * 100).toFixed(1) + '%;background:' + dcFarbe(k) + '"></span></span>' +
+    '<span class="val">' + money(v) + '</span></div>'
+  ).join('');
+}
+
+function dcTopArtikel(articles) {
+  const liste = (articles || []).map(a => [String(a.article_name || ''), Number(a.sold_quantity) || 0, a.category])
+    .filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  if (!liste.length) return '<p class="dc-empty">Keine Artikel verkauft.</p>';
+  const max = liste[0][1];
+  return liste.map(([n, q, k]) =>
+    '<div class="dc-row"><span class="nm" title="' + esc(n) + '">' + esc(n) + '</span>' +
+    '<span class="bar"><span style="width:' + Math.max(2, q / max * 100).toFixed(1) + '%;background:' + dcFarbe(k) + '"></span></span>' +
+    '<span class="val">' + q + ' Stk.</span></div>'
+  ).join('');
+}
+
+function dcStunden(details) {
+  const proStunde = {};
+  (details || []).forEach(x => {
+    if (!x.ordered_at) return;
+    const h = parseInt(new Date(x.ordered_at).toLocaleString('de-CH', { hour: '2-digit', hour12: false, timeZone: 'Europe/Zurich' }), 10);
+    if (isNaN(h)) return;
+    proStunde[h] = (proStunde[h] || 0) + (Number(x.line_total) || 0);
+  });
+  const stunden = Object.keys(proStunde).map(Number).sort((a, b) => a - b);
+  if (!stunden.length) return '<p class="dc-empty">Keine Bestellungen mit Uhrzeit.</p>';
+  const von = stunden[0], bis = stunden[stunden.length - 1];
+  const alle = [];
+  for (let h = von; h <= bis; h++) alle.push(h);
+  const max = Math.max.apply(null, alle.map(h => proStunde[h] || 0));
+  return '<div class="dc-cols" role="img" aria-label="Umsatz pro Stunde">' + alle.map(h => {
+    const v = proStunde[h] || 0;
+    return '<div class="dc-col' + (v === max ? ' peak' : '') + '" title="' + h + ' Uhr: ' + money(v) + '">' +
+      '<span class="v">' + (v ? Math.round(v) : '') + '</span>' +
+      '<span class="b" style="height:' + (max ? (v / max * 100).toFixed(1) : 0) + '%"></span></div>';
+  }).join('') + '</div><div class="dc-labels">' + alle.map(h => '<span>' + h + '</span>').join('') + '</div>' +
+    '<p class="muted" style="margin:8px 0 0;font-size:.82rem">Umsatz in CHF pro Stunde (Uhrzeit der Bestellung). Die stärkste Stunde ist orange.</p>';
+}
+
+function dcHtml(d, articles, details) {
+  return '<div class="dcharts">' +
+    '<div class="dchart"><h4>💳 Zahlungsarten</h4>' + dcZahlungen(d) + '</div>' +
+    '<div class="dchart"><h4>🏆 Meistverkauft (Top 5)</h4>' + dcTopArtikel(articles) + '</div>' +
+    '<div class="dchart"><h4>🍽️ Umsatz nach Kategorie</h4>' + dcKategorien(articles) + '</div>' +
+    '<div class="dchart"><h4>🕒 Umsatz pro Stunde</h4>' + dcStunden(details) + '</div>' +
+    '</div>';
+}
+
 async function calculateClosing() {
   const date = $('closingDate').value;
 
@@ -6509,6 +6622,8 @@ async function calculateClosing() {
           <strong>${Number(d.order_count || 0)}</strong>
         </div>
       </div>
+
+      ${dcHtml(d, articles, details)}
 
       <hr>
 
