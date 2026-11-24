@@ -4665,7 +4665,31 @@ const { data, error } = await sb
 
 
 
+function artikelKlasse(i) {
+  const kategorie = String(i.category || i.category_snapshot || '')
+    .trim()
+    .toLowerCase();
 
+  if (kategorie === 'essen' || kategorie.includes('food')) {
+    return 'kitchen-item-essen';
+  }
+
+  if (
+    kategorie === 'getränke' ||
+    kategorie === 'getraenke' ||
+    kategorie === 'kalte getränke' ||
+    kategorie === 'warme getränke' ||
+    kategorie.includes('drink')
+  ) {
+    return 'kitchen-item-getraenke';
+  }
+
+  if (kategorie === 'dessert') {
+    return 'kitchen-item-dessert';
+  }
+
+  return 'kitchen-item-sonstiges';
+}
 
 
 function orderHTML(o) {
@@ -4677,32 +4701,7 @@ function orderHTML(o) {
   const next = o.status === 'new' ? 'in_progress' : 'done';
   const paymentLabel = o.payment_method === 'twint' ? 'TWINT' : 'Bar';
 
-  function artikelKlasse(i) {
-    const kategorie = String(i.category || i.category_snapshot || '')
-      .trim()
-      .toLowerCase();
-
-    if (kategorie === 'essen' || kategorie.includes('food')) {
-      return 'kitchen-item-essen';
-    }
-
-    if (
-      kategorie === 'getränke' ||
-      kategorie === 'getraenke' ||
-      kategorie === 'kalte getränke' ||
-      kategorie === 'warme getränke' ||
-      kategorie.includes('drink')
-    ) {
-      return 'kitchen-item-getraenke';
-    }
-
-    if (kategorie === 'dessert') {
-      return 'kitchen-item-dessert';
-    }
-
-    return 'kitchen-item-sonstiges';
-  }
-
+  
   return `
     <article
       class="order ${o.status === 'in_progress' ? 'progress' : ''} ${o.status === 'done' ? 'done' : ''}"
