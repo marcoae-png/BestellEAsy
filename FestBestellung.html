@@ -1267,11 +1267,11 @@ module.exports = QRCode;
 
 };
 var QRCode=__req('index');
-window.QRLib={svg:function(text,px){var t=unescape(encodeURIComponent(String(text)));var q=null,type;
+window.QRLib={svg:function(text,px,cross){var t=unescape(encodeURIComponent(String(text)));var q=null,type;
 for(type=2;type<=40;type++){try{q=new QRCode(type,0);q.addData(t);q.make();break;}catch(e){q=null;}}
 if(!q)return '';var n=q.getModuleCount(),m=4,sz=n+2*m,p='';
 for(var r=0;r<n;r++)for(var c=0;c<n;c++)if(q.isDark(r,c))p+='M'+(c+m)+' '+(r+m)+'h1v1h-1z';
-return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+sz+' '+sz+'" width="'+(px||220)+'" height="'+(px||220)+'" shape-rendering="crispEdges" role="img" aria-label="QR-Code"><rect width="'+sz+'" height="'+sz+'" fill="#fff"/><path d="'+p+'" fill="#000"/></svg>';}};
+return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+sz+' '+sz+'" width="'+(px||220)+'" height="'+(px||220)+'" shape-rendering="crispEdges" role="img" aria-label="QR-Code"><rect width="'+sz+'" height="'+sz+'" fill="#fff"/><path d="'+p+'" fill="#000"/>'+(cross?(function(){var w=sz*0.152,x=(sz-w)/2,u=w/7;return '<rect x="'+x+'" y="'+x+'" width="'+w+'" height="'+w+'" fill="#fff"/><rect x="'+(x+u*0.5)+'" y="'+(x+u*0.5)+'" width="'+(w-u)+'" height="'+(w-u)+'" fill="#000"/><path fill="#fff" d="M'+(sz/2-u*0.5)+' '+(x+u*1.2)+'h'+u+'v'+(w-u*2.4)+'h-'+u+'zM'+(x+u*1.2)+' '+(sz/2-u*0.5)+'h'+(w-u*2.4)+'v'+u+'h-'+(w-u*2.4)+'z"/>';})():'')+'</svg>';}};
 })();
 </script>
 <style>
@@ -3978,13 +3978,17 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
 <h3>TWINT-Zahlung</h3>
 <p class="muted">
-  Bei der Getränkeabrechnung zeigt die App bei Zahlungsart «TWINT» einen QR-Code an, den die Gäste scannen.
-  Trage hier den Link ein, der in deinem TWINT-QR-Code steckt (beginnt mit https://). Die Nummer wird zusätzlich als Text angezeigt.
+  Bei Zahlungsart «TWINT» zeigt die App einen QR-Code mit dem Betrag der Auswahl. Die Gäste scannen ihn mit der TWINT-App
+  (oder der Banking-App), der Betrag ist schon eingetragen. Das Geld geht auf das hier angegebene Konto (IBAN) des Vereins.
 </p>
 <div class="panel" style="background:#f3f7f4;box-shadow:none">
   <div class="grid">
-    <div><label for="twintLink">TWINT-Link (für den QR-Code)</label><input id="twintLink" type="url" placeholder="https://…" autocomplete="off"></div>
-    <div><label for="twintNumber">TWINT-Nummer (Anzeige)</label><input id="twintNumber" type="text" placeholder="+41 79 123 45 67" autocomplete="off"></div>
+    <div><label for="twintIban">IBAN des Vereins</label><input id="twintIban" type="text" placeholder="CH93 0076 2011 6238 5295 7" autocomplete="off"></div>
+    <div><label for="twintName">Kontoinhaber</label><input id="twintName" type="text" placeholder="Name des Vereins" maxlength="70" autocomplete="off"></div>
+    <div><label for="twintStreet">Strasse und Nr. (optional)</label><input id="twintStreet" type="text" maxlength="70" autocomplete="off"></div>
+    <div><label for="twintZip">PLZ</label><input id="twintZip" type="text" maxlength="16" autocomplete="off"></div>
+    <div><label for="twintCity">Ort</label><input id="twintCity" type="text" maxlength="35" autocomplete="off"></div>
+    <div><label for="twintNumber">TWINT-Nummer (nur Anzeige, optional)</label><input id="twintNumber" type="text" placeholder="+41 79 123 45 67" autocomplete="off"></div>
   </div>
   <div class="actions" style="margin-top:12px"><button type="button" id="twintSaveBtn">TWINT-Angaben speichern</button></div>
   <div id="twintMsg" class="foot"></div>
@@ -4991,12 +4995,54 @@ document.addEventListener('change', e => {
   if (e.target && e.target.id === 'printEnabled') setPrintingEnabled(e.target.checked);
 });
 
-/* ---------- TWINT-Zahlung (QR-Code) ---------- */
-let twintCfg = { link: '', number: '' }, twintCfgLoaded = false, drinkPayMethod = 'Bar', drinkPayTotal = 0;
+/* ---------- TWINT-Zahlung (QR-Rechnung mit Betrag) ---------- */
+let twintCfg = { iban:'', name:'', street:'', zip:'', city:'', number:'' }, twintCfgLoaded = false;
+let drinkPayMethod = 'Bar', drinkPayTotal = 0, drinkPayTable = '';
 
 function twintStoreKey() { return 'bestelleasy_twint_' + (profile?.organization_id || ''); }
 
-function twintIsUrl(t) { return /^https?:\/\/\S+$/i.test(String(t || '').trim()); }
+function twintCleanIban(v) { return String(v || '').replace(/\s+/g, '').toUpperCase(); }
+
+// IBAN-Prüfsumme (Modulo 97)
+function twintIbanValid(v) {
+  const i = twintCleanIban(v);
+  if (!/^(CH|LI)\d{2}[0-9A-Z]{17}$/.test(i)) return false;
+  const r = i.slice(4) + i.slice(0, 4);
+  let rest = 0;
+  for (const ch of r) {
+    const n = /\d/.test(ch) ? ch : String(ch.charCodeAt(0) - 55);
+    for (const d of n) rest = (rest * 10 + Number(d)) % 97;
+  }
+  return rest === 1;
+}
+
+// QR-IBAN (Bank-ID 30000–31999) verlangt eine QR-Referenz und ist hier nicht möglich
+function twintIsQrIban(v) {
+  const iid = Number(twintCleanIban(v).slice(4, 9));
+  return iid >= 30000 && iid <= 31999;
+}
+
+function twintReady(c) {
+  c = c || twintCfg;
+  return twintIbanValid(c.iban) && !twintIsQrIban(c.iban) && !!String(c.name || '').trim()
+    && !!String(c.zip || '').trim() && !!String(c.city || '').trim();
+}
+
+// Swiss QR Code (QR-Rechnung, Version 2.0) mit Betrag in CHF
+function swissQrPayload(c, amount, message) {
+  const t = v => String(v || '').replace(/[\r\n]+/g, ' ').trim();
+  return [
+    'SPC', '0200', '1',
+    twintCleanIban(c.iban),
+    'S', t(c.name).slice(0, 70), t(c.street).slice(0, 70), '', t(c.zip).slice(0, 16), t(c.city).slice(0, 35), 'CH',
+    '', '', '', '', '', '', '',
+    Number(amount).toFixed(2), 'CHF',
+    '', '', '', '', '', '', '',
+    'NON', '',
+    t(message).slice(0, 140),
+    'EPD'
+  ].join('\n');
+}
 
 async function fetchTwintCfg(force) {
   if (!sb || !profile?.organization_id) return twintCfg;
@@ -5004,45 +5050,58 @@ async function fetchTwintCfg(force) {
   let cfg = null;
   try {
     const { data, error } = await sb.from('org_twint_settings')
-      .select('twint_link, twint_number')
+      .select('iban, account_name, street, zip, city, twint_number')
       .eq('organization_id', profile.organization_id)
       .maybeSingle();
     if (error) throw error;
-    cfg = { link: data?.twint_link || '', number: data?.twint_number || '' };
+    cfg = { iban: data?.iban, name: data?.account_name, street: data?.street, zip: data?.zip, city: data?.city, number: data?.twint_number };
   } catch (e) {
     console.warn('TWINT-Einstellungen nicht aus Datenbank geladen:', e?.message || e);
     try { cfg = JSON.parse(localStorage.getItem(twintStoreKey()) || 'null'); } catch (_) {}
   }
-  twintCfg = { link: cfg?.link || '', number: cfg?.number || '' };
+  twintCfg = {
+    iban: cfg?.iban || '', name: cfg?.name || '', street: cfg?.street || '',
+    zip: cfg?.zip || '', city: cfg?.city || '', number: cfg?.number || ''
+  };
   twintCfgLoaded = true;
   return twintCfg;
 }
 
 function fillTwintForm() {
-  if (!$('twintLink')) return;
-  $('twintLink').value = twintCfg.link;
+  if (!$('twintIban')) return;
+  $('twintIban').value = twintCfg.iban;
+  $('twintName').value = twintCfg.name;
+  $('twintStreet').value = twintCfg.street;
+  $('twintZip').value = twintCfg.zip;
+  $('twintCity').value = twintCfg.city;
   $('twintNumber').value = twintCfg.number;
   const pv = $('twintPreview');
-  if (pv) pv.innerHTML = twintIsUrl(twintCfg.link)
-    ? '<div class="muted" style="margin-bottom:6px">Vorschau:</div>' + window.QRLib.svg(twintCfg.link, 160)
+  if (pv) pv.innerHTML = twintReady()
+    ? '<div class="muted" style="margin-bottom:6px">Vorschau mit Testbetrag CHF 1.00:</div>'
+      + window.QRLib.svg(swissQrPayload(twintCfg, 1, 'Test'), 170, true)
     : '';
 }
 
 async function saveTwintCfg() {
   const msg = $('twintMsg');
-  const link = $('twintLink').value.trim();
-  const number = $('twintNumber').value.trim();
-  if (link && !twintIsUrl(link)) {
-    msg.textContent = '⚠ Der Link muss mit https:// beginnen. Eine Telefonnummer gehört ins Feld «TWINT-Nummer».';
-    return;
-  }
-  twintCfg = { link, number };
-  try { localStorage.setItem(twintStoreKey(), JSON.stringify(twintCfg)); } catch (_) {}
+  const c = {
+    iban: twintCleanIban($('twintIban').value),
+    name: $('twintName').value.trim(),
+    street: $('twintStreet').value.trim(),
+    zip: $('twintZip').value.trim(),
+    city: $('twintCity').value.trim(),
+    number: $('twintNumber').value.trim()
+  };
+  if (c.iban && !twintIbanValid(c.iban)) { msg.textContent = '⚠ Die IBAN ist ungültig (Schweizer IBAN, z. B. CH93 0076 …).'; return; }
+  if (c.iban && twintIsQrIban(c.iban)) { msg.textContent = '⚠ Das ist eine QR-IBAN. Bitte die normale IBAN des Kontos verwenden.'; return; }
+  if (c.iban && (!c.name || !c.zip || !c.city)) { msg.textContent = '⚠ Bitte Kontoinhaber, PLZ und Ort ausfüllen.'; return; }
+  twintCfg = c;
+  try { localStorage.setItem(twintStoreKey(), JSON.stringify(c)); } catch (_) {}
   try {
-    const { error } = await sb.from('org_twint_settings').upsert(
-      { organization_id: profile.organization_id, twint_link: link, twint_number: number },
-      { onConflict: 'organization_id' }
-    );
+    const { error } = await sb.from('org_twint_settings').upsert({
+      organization_id: profile.organization_id, iban: c.iban, account_name: c.name,
+      street: c.street, zip: c.zip, city: c.city, twint_number: c.number
+    }, { onConflict: 'organization_id' });
     if (error) throw error;
     msg.textContent = '✓ TWINT-Angaben gespeichert (für alle Geräte).';
   } catch (e) {
@@ -5057,16 +5116,20 @@ function updateTwintBox() {
   if (!box) return;
   if (drinkPayMethod !== 'TWINT') { box.innerHTML = ''; return; }
   const money = a => new Intl.NumberFormat('de-CH', { style: 'currency', currency: 'CHF' }).format(a);
-  const hasLink = twintIsUrl(twintCfg.link);
-  if (!hasLink && !twintCfg.number) {
-    box.innerHTML = '<p class="muted">TWINT ist noch nicht eingerichtet (Menü verwalten → TWINT-Zahlung).</p>';
+  if (!twintReady()) {
+    box.innerHTML = '<p class="muted">TWINT ist noch nicht eingerichtet (Menü verwalten → TWINT-Zahlung).'
+      + (twintCfg.number ? '<br>Nummer: <strong>' + esc(twintCfg.number) + '</strong>' : '') + '</p>';
     return;
   }
+  if (!(drinkPayTotal > 0)) {
+    box.innerHTML = '<p class="muted">Bitte zuerst Artikel auswählen, dann erscheint der QR-Code mit dem Betrag.</p>';
+    return;
+  }
+  const payload = swissQrPayload(twintCfg, drinkPayTotal, 'Getränke Tisch ' + drinkPayTable);
   box.innerHTML = '<div style="text-align:center;padding:12px;border:1px solid #d8e1da;border-radius:10px;background:#fff">'
     + '<div class="big" style="margin-bottom:8px">Betrag: ' + money(drinkPayTotal) + '</div>'
-    + (hasLink ? window.QRLib.svg(twintCfg.link, 220) : '')
-    + (twintCfg.number ? '<div style="margin-top:8px;font-weight:700">' + esc(twintCfg.number) + '</div>' : '')
-    + '<div class="muted" style="margin-top:6px;font-size:.85rem">Mit der TWINT-App scannen und den Betrag eingeben.</div>'
+    + window.QRLib.svg(payload, 240, true)
+    + '<div class="muted" style="margin-top:6px;font-size:.85rem">In der TWINT-App «Scannen» wählen. Der Betrag ist bereits eingetragen.</div>'
     + '</div>';
 }
 
@@ -5595,6 +5658,7 @@ const tableOrders = orders.filter(o =>
   }
 
   drinkPayTotal = selectedTotal;
+  drinkPayTable = table;
   container.innerHTML = `
     <article class="order">
       <h3>Tisch ${esc(table)} – Artikel abrechnen</h3>
