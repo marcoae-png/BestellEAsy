@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- saved from url=(0076)https://marcoae-png.github.io/bfs-delegiertenversammlung/FestBestellung.html -->
 <html lang="de-CH"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta property="og:type" content="website">
@@ -18,1262 +19,6 @@
 <meta name="theme-color" content="#245c3b">
 <!-- Supabase JavaScript v2 über CDN laden; kein lokaler FestBestellung_files-Ordner nötig -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-/* QR-Code-Encoder: QRCode for JavaScript, (c) 2009 Kazuhiko Arase, MIT-Lizenz (http://www.opensource.org/licenses/mit-license.php) */
-(function(){var __f={},__c={};function __req(n){n=n.replace('./','');if(!__c[n]){var module={exports:{}};__c[n]=module;__f[n](module);}return __c[n].exports;}
-__f['QR8bitByte']=function(module){var QRMode = __req('./QRMode');
-
-function QR8bitByte(data) {
-	this.mode = QRMode.MODE_8BIT_BYTE;
-	this.data = data;
-}
-
-QR8bitByte.prototype = {
-
-	getLength : function() {
-		return this.data.length;
-	},
-	
-	write : function(buffer) {
-		for (var i = 0; i < this.data.length; i++) {
-			// not JIS ...
-			buffer.put(this.data.charCodeAt(i), 8);
-		}
-	}
-};
-
-module.exports = QR8bitByte;
-
-};
-__f['QRBitBuffer']=function(module){function QRBitBuffer() {
-	this.buffer = [];
-	this.length = 0;
-}
-
-QRBitBuffer.prototype = {
-
-	get : function(index) {
-		var bufIndex = Math.floor(index / 8);
-		return ( (this.buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
-	},
-	
-	put : function(num, length) {
-		for (var i = 0; i < length; i++) {
-			this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
-		}
-	},
-	
-	getLengthInBits : function() {
-		return this.length;
-	},
-	
-	putBit : function(bit) {
-	
-		var bufIndex = Math.floor(this.length / 8);
-		if (this.buffer.length <= bufIndex) {
-			this.buffer.push(0);
-		}
-	
-		if (bit) {
-			this.buffer[bufIndex] |= (0x80 >>> (this.length % 8) );
-		}
-	
-		this.length++;
-	}
-};
-
-module.exports = QRBitBuffer;
-
-};
-__f['QRErrorCorrectLevel']=function(module){module.exports = {
-	L : 1,
-	M : 0,
-	Q : 3,
-	H : 2
-};
-
-
-};
-__f['QRMaskPattern']=function(module){module.exports = {
-	PATTERN000 : 0,
-	PATTERN001 : 1,
-	PATTERN010 : 2,
-	PATTERN011 : 3,
-	PATTERN100 : 4,
-	PATTERN101 : 5,
-	PATTERN110 : 6,
-	PATTERN111 : 7
-};
-
-};
-__f['QRMath']=function(module){var QRMath = {
-
-	glog : function(n) {
-	
-		if (n < 1) {
-			throw new Error("glog(" + n + ")");
-		}
-		
-		return QRMath.LOG_TABLE[n];
-	},
-	
-	gexp : function(n) {
-	
-		while (n < 0) {
-			n += 255;
-		}
-	
-		while (n >= 256) {
-			n -= 255;
-		}
-	
-		return QRMath.EXP_TABLE[n];
-	},
-	
-	EXP_TABLE : new Array(256),
-	
-	LOG_TABLE : new Array(256)
-
-};
-	
-for (var i = 0; i < 8; i++) {
-	QRMath.EXP_TABLE[i] = 1 << i;
-}
-for (var i = 8; i < 256; i++) {
-	QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4]
-		^ QRMath.EXP_TABLE[i - 5]
-		^ QRMath.EXP_TABLE[i - 6]
-		^ QRMath.EXP_TABLE[i - 8];
-}
-for (var i = 0; i < 255; i++) {
-	QRMath.LOG_TABLE[QRMath.EXP_TABLE[i] ] = i;
-}
-
-module.exports = QRMath;
-
-};
-__f['QRMode']=function(module){module.exports = {
-    MODE_NUMBER :       1 << 0,
-    MODE_ALPHA_NUM :    1 << 1,
-    MODE_8BIT_BYTE :    1 << 2,
-    MODE_KANJI :        1 << 3
-};
-
-};
-__f['QRPolynomial']=function(module){var QRMath = __req('./QRMath');
-
-function QRPolynomial(num, shift) {
-	if (num.length === undefined) {
-		throw new Error(num.length + "/" + shift);
-	}
-
-	var offset = 0;
-
-	while (offset < num.length && num[offset] === 0) {
-		offset++;
-	}
-
-	this.num = new Array(num.length - offset + shift);
-	for (var i = 0; i < num.length - offset; i++) {
-		this.num[i] = num[i + offset];
-	}
-}
-
-QRPolynomial.prototype = {
-
-	get : function(index) {
-		return this.num[index];
-	},
-	
-	getLength : function() {
-		return this.num.length;
-	},
-	
-	multiply : function(e) {
-	
-		var num = new Array(this.getLength() + e.getLength() - 1);
-	
-		for (var i = 0; i < this.getLength(); i++) {
-			for (var j = 0; j < e.getLength(); j++) {
-				num[i + j] ^= QRMath.gexp(QRMath.glog(this.get(i) ) + QRMath.glog(e.get(j) ) );
-			}
-		}
-	
-		return new QRPolynomial(num, 0);
-	},
-	
-	mod : function(e) {
-	
-		if (this.getLength() - e.getLength() < 0) {
-			return this;
-		}
-	
-		var ratio = QRMath.glog(this.get(0) ) - QRMath.glog(e.get(0) );
-	
-		var num = new Array(this.getLength() );
-		
-		for (var i = 0; i < this.getLength(); i++) {
-			num[i] = this.get(i);
-		}
-		
-		for (var x = 0; x < e.getLength(); x++) {
-			num[x] ^= QRMath.gexp(QRMath.glog(e.get(x) ) + ratio);
-		}
-	
-		// recursive call
-		return new QRPolynomial(num, 0).mod(e);
-	}
-};
-
-module.exports = QRPolynomial;
-
-};
-__f['QRRSBlock']=function(module){var QRErrorCorrectLevel = __req('./QRErrorCorrectLevel');
-
-function QRRSBlock(totalCount, dataCount) {
-	this.totalCount = totalCount;
-	this.dataCount  = dataCount;
-}
-
-QRRSBlock.RS_BLOCK_TABLE = [
-
-	// L
-	// M
-	// Q
-	// H
-
-	// 1
-	[1, 26, 19],
-	[1, 26, 16],
-	[1, 26, 13],
-	[1, 26, 9],
-	
-	// 2
-	[1, 44, 34],
-	[1, 44, 28],
-	[1, 44, 22],
-	[1, 44, 16],
-
-	// 3
-	[1, 70, 55],
-	[1, 70, 44],
-	[2, 35, 17],
-	[2, 35, 13],
-
-	// 4		
-	[1, 100, 80],
-	[2, 50, 32],
-	[2, 50, 24],
-	[4, 25, 9],
-	
-	// 5
-	[1, 134, 108],
-	[2, 67, 43],
-	[2, 33, 15, 2, 34, 16],
-	[2, 33, 11, 2, 34, 12],
-	
-	// 6
-	[2, 86, 68],
-	[4, 43, 27],
-	[4, 43, 19],
-	[4, 43, 15],
-	
-	// 7		
-	[2, 98, 78],
-	[4, 49, 31],
-	[2, 32, 14, 4, 33, 15],
-	[4, 39, 13, 1, 40, 14],
-	
-	// 8
-	[2, 121, 97],
-	[2, 60, 38, 2, 61, 39],
-	[4, 40, 18, 2, 41, 19],
-	[4, 40, 14, 2, 41, 15],
-	
-	// 9
-	[2, 146, 116],
-	[3, 58, 36, 2, 59, 37],
-	[4, 36, 16, 4, 37, 17],
-	[4, 36, 12, 4, 37, 13],
-	
-	// 10		
-	[2, 86, 68, 2, 87, 69],
-	[4, 69, 43, 1, 70, 44],
-	[6, 43, 19, 2, 44, 20],
-	[6, 43, 15, 2, 44, 16],
-
-	// 11
-	[4, 101, 81],
-	[1, 80, 50, 4, 81, 51],
-	[4, 50, 22, 4, 51, 23],
-	[3, 36, 12, 8, 37, 13],
-
-	// 12
-	[2, 116, 92, 2, 117, 93],
-	[6, 58, 36, 2, 59, 37],
-	[4, 46, 20, 6, 47, 21],
-	[7, 42, 14, 4, 43, 15],
-
-	// 13
-	[4, 133, 107],
-	[8, 59, 37, 1, 60, 38],
-	[8, 44, 20, 4, 45, 21],
-	[12, 33, 11, 4, 34, 12],
-
-	// 14
-	[3, 145, 115, 1, 146, 116],
-	[4, 64, 40, 5, 65, 41],
-	[11, 36, 16, 5, 37, 17],
-	[11, 36, 12, 5, 37, 13],
-
-	// 15
-	[5, 109, 87, 1, 110, 88],
-	[5, 65, 41, 5, 66, 42],
-	[5, 54, 24, 7, 55, 25],
-	[11, 36, 12],
-
-	// 16
-	[5, 122, 98, 1, 123, 99],
-	[7, 73, 45, 3, 74, 46],
-	[15, 43, 19, 2, 44, 20],
-	[3, 45, 15, 13, 46, 16],
-
-	// 17
-	[1, 135, 107, 5, 136, 108],
-	[10, 74, 46, 1, 75, 47],
-	[1, 50, 22, 15, 51, 23],
-	[2, 42, 14, 17, 43, 15],
-
-	// 18
-	[5, 150, 120, 1, 151, 121],
-	[9, 69, 43, 4, 70, 44],
-	[17, 50, 22, 1, 51, 23],
-	[2, 42, 14, 19, 43, 15],
-
-	// 19
-	[3, 141, 113, 4, 142, 114],
-	[3, 70, 44, 11, 71, 45],
-	[17, 47, 21, 4, 48, 22],
-	[9, 39, 13, 16, 40, 14],
-
-	// 20
-	[3, 135, 107, 5, 136, 108],
-	[3, 67, 41, 13, 68, 42],
-	[15, 54, 24, 5, 55, 25],
-	[15, 43, 15, 10, 44, 16],
-
-	// 21
-	[4, 144, 116, 4, 145, 117],
-	[17, 68, 42],
-	[17, 50, 22, 6, 51, 23],
-	[19, 46, 16, 6, 47, 17],
-
-	// 22
-	[2, 139, 111, 7, 140, 112],
-	[17, 74, 46],
-	[7, 54, 24, 16, 55, 25],
-	[34, 37, 13],
-
-	// 23
-	[4, 151, 121, 5, 152, 122],
-	[4, 75, 47, 14, 76, 48],
-	[11, 54, 24, 14, 55, 25],
-	[16, 45, 15, 14, 46, 16],
-
-	// 24
-	[6, 147, 117, 4, 148, 118],
-	[6, 73, 45, 14, 74, 46],
-	[11, 54, 24, 16, 55, 25],
-	[30, 46, 16, 2, 47, 17],
-
-	// 25
-	[8, 132, 106, 4, 133, 107],
-	[8, 75, 47, 13, 76, 48],
-	[7, 54, 24, 22, 55, 25],
-	[22, 45, 15, 13, 46, 16],
-
-	// 26
-	[10, 142, 114, 2, 143, 115],
-	[19, 74, 46, 4, 75, 47],
-	[28, 50, 22, 6, 51, 23],
-	[33, 46, 16, 4, 47, 17],
-
-	// 27
-	[8, 152, 122, 4, 153, 123],
-	[22, 73, 45, 3, 74, 46],
-	[8, 53, 23, 26, 54, 24],
-	[12, 45, 15, 28, 46, 16],
-
-	// 28
-	[3, 147, 117, 10, 148, 118],
-	[3, 73, 45, 23, 74, 46],
-	[4, 54, 24, 31, 55, 25],
-	[11, 45, 15, 31, 46, 16],
-
-	// 29
-	[7, 146, 116, 7, 147, 117],
-	[21, 73, 45, 7, 74, 46],
-	[1, 53, 23, 37, 54, 24],
-	[19, 45, 15, 26, 46, 16],
-
-	// 30
-	[5, 145, 115, 10, 146, 116],
-	[19, 75, 47, 10, 76, 48],
-	[15, 54, 24, 25, 55, 25],
-	[23, 45, 15, 25, 46, 16],
-
-	// 31
-	[13, 145, 115, 3, 146, 116],
-	[2, 74, 46, 29, 75, 47],
-	[42, 54, 24, 1, 55, 25],
-	[23, 45, 15, 28, 46, 16],
-
-	// 32
-	[17, 145, 115],
-	[10, 74, 46, 23, 75, 47],
-	[10, 54, 24, 35, 55, 25],
-	[19, 45, 15, 35, 46, 16],
-
-	// 33
-	[17, 145, 115, 1, 146, 116],
-	[14, 74, 46, 21, 75, 47],
-	[29, 54, 24, 19, 55, 25],
-	[11, 45, 15, 46, 46, 16],
-
-	// 34
-	[13, 145, 115, 6, 146, 116],
-	[14, 74, 46, 23, 75, 47],
-	[44, 54, 24, 7, 55, 25],
-	[59, 46, 16, 1, 47, 17],
-
-	// 35
-	[12, 151, 121, 7, 152, 122],
-	[12, 75, 47, 26, 76, 48],
-	[39, 54, 24, 14, 55, 25],
-	[22, 45, 15, 41, 46, 16],
-
-	// 36
-	[6, 151, 121, 14, 152, 122],
-	[6, 75, 47, 34, 76, 48],
-	[46, 54, 24, 10, 55, 25],
-	[2, 45, 15, 64, 46, 16],
-
-	// 37
-	[17, 152, 122, 4, 153, 123],
-	[29, 74, 46, 14, 75, 47],
-	[49, 54, 24, 10, 55, 25],
-	[24, 45, 15, 46, 46, 16],
-
-	// 38
-	[4, 152, 122, 18, 153, 123],
-	[13, 74, 46, 32, 75, 47],
-	[48, 54, 24, 14, 55, 25],
-	[42, 45, 15, 32, 46, 16],
-
-	// 39
-	[20, 147, 117, 4, 148, 118],
-	[40, 75, 47, 7, 76, 48],
-	[43, 54, 24, 22, 55, 25],
-	[10, 45, 15, 67, 46, 16],
-
-	// 40
-	[19, 148, 118, 6, 149, 119],
-	[18, 75, 47, 31, 76, 48],
-	[34, 54, 24, 34, 55, 25],
-	[20, 45, 15, 61, 46, 16]
-];
-
-QRRSBlock.getRSBlocks = function(typeNumber, errorCorrectLevel) {
-	
-	var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
-	
-	if (rsBlock === undefined) {
-		throw new Error("bad rs block @ typeNumber:" + typeNumber + "/errorCorrectLevel:" + errorCorrectLevel);
-	}
-
-	var length = rsBlock.length / 3;
-	
-	var list = [];
-	
-	for (var i = 0; i < length; i++) {
-
-		var count = rsBlock[i * 3 + 0];
-		var totalCount = rsBlock[i * 3 + 1];
-		var dataCount  = rsBlock[i * 3 + 2];
-
-		for (var j = 0; j < count; j++) {
-			list.push(new QRRSBlock(totalCount, dataCount) );	
-		}
-	}
-	
-	return list;
-};
-
-QRRSBlock.getRsBlockTable = function(typeNumber, errorCorrectLevel) {
-
-	switch(errorCorrectLevel) {
-	case QRErrorCorrectLevel.L :
-		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
-	case QRErrorCorrectLevel.M :
-		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
-	case QRErrorCorrectLevel.Q :
-		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
-	case QRErrorCorrectLevel.H :
-		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
-	default :
-		return undefined;
-	}
-};
-
-module.exports = QRRSBlock;
-
-};
-__f['QRUtil']=function(module){var QRMode = __req('./QRMode');
-var QRPolynomial = __req('./QRPolynomial');
-var QRMath = __req('./QRMath');
-var QRMaskPattern = __req('./QRMaskPattern');
-
-var QRUtil = {
-
-    PATTERN_POSITION_TABLE : [
-        [],
-        [6, 18],
-        [6, 22],
-        [6, 26],
-        [6, 30],
-        [6, 34],
-        [6, 22, 38],
-        [6, 24, 42],
-        [6, 26, 46],
-        [6, 28, 50],
-        [6, 30, 54],        
-        [6, 32, 58],
-        [6, 34, 62],
-        [6, 26, 46, 66],
-        [6, 26, 48, 70],
-        [6, 26, 50, 74],
-        [6, 30, 54, 78],
-        [6, 30, 56, 82],
-        [6, 30, 58, 86],
-        [6, 34, 62, 90],
-        [6, 28, 50, 72, 94],
-        [6, 26, 50, 74, 98],
-        [6, 30, 54, 78, 102],
-        [6, 28, 54, 80, 106],
-        [6, 32, 58, 84, 110],
-        [6, 30, 58, 86, 114],
-        [6, 34, 62, 90, 118],
-        [6, 26, 50, 74, 98, 122],
-        [6, 30, 54, 78, 102, 126],
-        [6, 26, 52, 78, 104, 130],
-        [6, 30, 56, 82, 108, 134],
-        [6, 34, 60, 86, 112, 138],
-        [6, 30, 58, 86, 114, 142],
-        [6, 34, 62, 90, 118, 146],
-        [6, 30, 54, 78, 102, 126, 150],
-        [6, 24, 50, 76, 102, 128, 154],
-        [6, 28, 54, 80, 106, 132, 158],
-        [6, 32, 58, 84, 110, 136, 162],
-        [6, 26, 54, 82, 110, 138, 166],
-        [6, 30, 58, 86, 114, 142, 170]
-    ],
-
-    G15 : (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0),
-    G18 : (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0),
-    G15_MASK : (1 << 14) | (1 << 12) | (1 << 10)    | (1 << 4) | (1 << 1),
-
-    getBCHTypeInfo : function(data) {
-        var d = data << 10;
-        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) >= 0) {
-            d ^= (QRUtil.G15 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) ) );    
-        }
-        return ( (data << 10) | d) ^ QRUtil.G15_MASK;
-    },
-
-    getBCHTypeNumber : function(data) {
-        var d = data << 12;
-        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) >= 0) {
-            d ^= (QRUtil.G18 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) ) );    
-        }
-        return (data << 12) | d;
-    },
-
-    getBCHDigit : function(data) {
-
-        var digit = 0;
-
-        while (data !== 0) {
-            digit++;
-            data >>>= 1;
-        }
-
-        return digit;
-    },
-
-    getPatternPosition : function(typeNumber) {
-        return QRUtil.PATTERN_POSITION_TABLE[typeNumber - 1];
-    },
-
-    getMask : function(maskPattern, i, j) {
-        
-        switch (maskPattern) {
-            
-        case QRMaskPattern.PATTERN000 : return (i + j) % 2 === 0;
-        case QRMaskPattern.PATTERN001 : return i % 2 === 0;
-        case QRMaskPattern.PATTERN010 : return j % 3 === 0;
-        case QRMaskPattern.PATTERN011 : return (i + j) % 3 === 0;
-        case QRMaskPattern.PATTERN100 : return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 === 0;
-        case QRMaskPattern.PATTERN101 : return (i * j) % 2 + (i * j) % 3 === 0;
-        case QRMaskPattern.PATTERN110 : return ( (i * j) % 2 + (i * j) % 3) % 2 === 0;
-        case QRMaskPattern.PATTERN111 : return ( (i * j) % 3 + (i + j) % 2) % 2 === 0;
-
-        default :
-            throw new Error("bad maskPattern:" + maskPattern);
-        }
-    },
-
-    getErrorCorrectPolynomial : function(errorCorrectLength) {
-
-        var a = new QRPolynomial([1], 0);
-
-        for (var i = 0; i < errorCorrectLength; i++) {
-            a = a.multiply(new QRPolynomial([1, QRMath.gexp(i)], 0) );
-        }
-
-        return a;
-    },
-
-    getLengthInBits : function(mode, type) {
-
-        if (1 <= type && type < 10) {
-
-            // 1 - 9
-
-            switch(mode) {
-            case QRMode.MODE_NUMBER     : return 10;
-            case QRMode.MODE_ALPHA_NUM  : return 9;
-            case QRMode.MODE_8BIT_BYTE  : return 8;
-            case QRMode.MODE_KANJI      : return 8;
-            default :
-                throw new Error("mode:" + mode);
-            }
-
-        } else if (type < 27) {
-
-            // 10 - 26
-
-            switch(mode) {
-            case QRMode.MODE_NUMBER     : return 12;
-            case QRMode.MODE_ALPHA_NUM  : return 11;
-            case QRMode.MODE_8BIT_BYTE  : return 16;
-            case QRMode.MODE_KANJI      : return 10;
-            default :
-                throw new Error("mode:" + mode);
-            }
-
-        } else if (type < 41) {
-
-            // 27 - 40
-
-            switch(mode) {
-            case QRMode.MODE_NUMBER     : return 14;
-            case QRMode.MODE_ALPHA_NUM  : return 13;
-            case QRMode.MODE_8BIT_BYTE  : return 16;
-            case QRMode.MODE_KANJI      : return 12;
-            default :
-                throw new Error("mode:" + mode);
-            }
-
-        } else {
-            throw new Error("type:" + type);
-        }
-    },
-
-    getLostPoint : function(qrCode) {
-        
-        var moduleCount = qrCode.getModuleCount();
-        var lostPoint = 0;
-        var row = 0; 
-        var col = 0;
-
-        
-        // LEVEL1
-        
-        for (row = 0; row < moduleCount; row++) {
-
-            for (col = 0; col < moduleCount; col++) {
-
-                var sameCount = 0;
-                var dark = qrCode.isDark(row, col);
-
-                for (var r = -1; r <= 1; r++) {
-
-                    if (row + r < 0 || moduleCount <= row + r) {
-                        continue;
-                    }
-
-                    for (var c = -1; c <= 1; c++) {
-
-                        if (col + c < 0 || moduleCount <= col + c) {
-                            continue;
-                        }
-
-                        if (r === 0 && c === 0) {
-                            continue;
-                        }
-
-                        if (dark === qrCode.isDark(row + r, col + c) ) {
-                            sameCount++;
-                        }
-                    }
-                }
-
-                if (sameCount > 5) {
-                    lostPoint += (3 + sameCount - 5);
-                }
-            }
-        }
-
-        // LEVEL2
-
-        for (row = 0; row < moduleCount - 1; row++) {
-            for (col = 0; col < moduleCount - 1; col++) {
-                var count = 0;
-                if (qrCode.isDark(row,     col    ) ) count++;
-                if (qrCode.isDark(row + 1, col    ) ) count++;
-                if (qrCode.isDark(row,     col + 1) ) count++;
-                if (qrCode.isDark(row + 1, col + 1) ) count++;
-                if (count === 0 || count === 4) {
-                    lostPoint += 3;
-                }
-            }
-        }
-
-        // LEVEL3
-
-        for (row = 0; row < moduleCount; row++) {
-            for (col = 0; col < moduleCount - 6; col++) {
-                if (qrCode.isDark(row, col) && 
-                        !qrCode.isDark(row, col + 1) && 
-                         qrCode.isDark(row, col + 2) && 
-                         qrCode.isDark(row, col + 3) && 
-                         qrCode.isDark(row, col + 4) && 
-                        !qrCode.isDark(row, col + 5) && 
-                         qrCode.isDark(row, col + 6) ) {
-                    lostPoint += 40;
-                }
-            }
-        }
-
-        for (col = 0; col < moduleCount; col++) {
-            for (row = 0; row < moduleCount - 6; row++) {
-                if (qrCode.isDark(row, col) &&
-                        !qrCode.isDark(row + 1, col) &&
-                         qrCode.isDark(row + 2, col) &&
-                         qrCode.isDark(row + 3, col) &&
-                         qrCode.isDark(row + 4, col) &&
-                        !qrCode.isDark(row + 5, col) &&
-                         qrCode.isDark(row + 6, col) ) {
-                    lostPoint += 40;
-                }
-            }
-        }
-
-        // LEVEL4
-        
-        var darkCount = 0;
-
-        for (col = 0; col < moduleCount; col++) {
-            for (row = 0; row < moduleCount; row++) {
-                if (qrCode.isDark(row, col) ) {
-                    darkCount++;
-                }
-            }
-        }
-        
-        var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
-        lostPoint += ratio * 10;
-
-        return lostPoint;       
-    }
-
-};
-
-module.exports = QRUtil;
-
-};
-__f['index']=function(module){//---------------------------------------------------------------------
-// QRCode for JavaScript
-//
-// Copyright (c) 2009 Kazuhiko Arase
-//
-// URL: http://www.d-project.com/
-//
-// Licensed under the MIT license:
-//   http://www.opensource.org/licenses/mit-license.php
-//
-// The word "QR Code" is registered trademark of 
-// DENSO WAVE INCORPORATED
-//   http://www.denso-wave.com/qrcode/faqpatent-e.html
-//
-//---------------------------------------------------------------------
-// Modified to work in node for this project (and some refactoring)
-//---------------------------------------------------------------------
-
-var QR8bitByte = __req('./QR8bitByte');
-var QRUtil = __req('./QRUtil');
-var QRPolynomial = __req('./QRPolynomial');
-var QRRSBlock = __req('./QRRSBlock');
-var QRBitBuffer = __req('./QRBitBuffer');
-
-function QRCode(typeNumber, errorCorrectLevel) {
-	this.typeNumber = typeNumber;
-	this.errorCorrectLevel = errorCorrectLevel;
-	this.modules = null;
-	this.moduleCount = 0;
-	this.dataCache = null;
-	this.dataList = [];
-}
-
-QRCode.prototype = {
-	
-	addData : function(data) {
-		var newData = new QR8bitByte(data);
-		this.dataList.push(newData);
-		this.dataCache = null;
-	},
-	
-	isDark : function(row, col) {
-		if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) {
-			throw new Error(row + "," + col);
-		}
-		return this.modules[row][col];
-	},
-
-	getModuleCount : function() {
-		return this.moduleCount;
-	},
-	
-	make : function() {
-		// Calculate automatically typeNumber if provided is < 1
-		if (this.typeNumber < 1 ){
-			var typeNumber = 1;
-			for (typeNumber = 1; typeNumber < 40; typeNumber++) {
-				var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, this.errorCorrectLevel);
-
-				var buffer = new QRBitBuffer();
-				var totalDataCount = 0;
-				for (var i = 0; i < rsBlocks.length; i++) {
-					totalDataCount += rsBlocks[i].dataCount;
-				}
-
-				for (var x = 0; x < this.dataList.length; x++) {
-					var data = this.dataList[x];
-					buffer.put(data.mode, 4);
-					buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
-					data.write(buffer);
-				}
-				if (buffer.getLengthInBits() <= totalDataCount * 8)
-					break;
-			}
-			this.typeNumber = typeNumber;
-		}
-		this.makeImpl(false, this.getBestMaskPattern() );
-	},
-	
-	makeImpl : function(test, maskPattern) {
-		
-		this.moduleCount = this.typeNumber * 4 + 17;
-		this.modules = new Array(this.moduleCount);
-		
-		for (var row = 0; row < this.moduleCount; row++) {
-			
-			this.modules[row] = new Array(this.moduleCount);
-			
-			for (var col = 0; col < this.moduleCount; col++) {
-				this.modules[row][col] = null;//(col + row) % 3;
-			}
-		}
-	
-		this.setupPositionProbePattern(0, 0);
-		this.setupPositionProbePattern(this.moduleCount - 7, 0);
-		this.setupPositionProbePattern(0, this.moduleCount - 7);
-		this.setupPositionAdjustPattern();
-		this.setupTimingPattern();
-		this.setupTypeInfo(test, maskPattern);
-		
-		if (this.typeNumber >= 7) {
-			this.setupTypeNumber(test);
-		}
-	
-		if (this.dataCache === null) {
-			this.dataCache = QRCode.createData(this.typeNumber, this.errorCorrectLevel, this.dataList);
-		}
-	
-		this.mapData(this.dataCache, maskPattern);
-	},
-
-	setupPositionProbePattern : function(row, col)  {
-		
-		for (var r = -1; r <= 7; r++) {
-			
-			if (row + r <= -1 || this.moduleCount <= row + r) continue;
-			
-			for (var c = -1; c <= 7; c++) {
-				
-				if (col + c <= -1 || this.moduleCount <= col + c) continue;
-				
-				if ( (0 <= r && r <= 6 && (c === 0 || c === 6) ) || 
-                     (0 <= c && c <= 6 && (r === 0 || r === 6) ) || 
-                     (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
-					this.modules[row + r][col + c] = true;
-				} else {
-					this.modules[row + r][col + c] = false;
-				}
-			}		
-		}		
-	},
-	
-	getBestMaskPattern : function() {
-	
-		var minLostPoint = 0;
-		var pattern = 0;
-	
-		for (var i = 0; i < 8; i++) {
-			
-			this.makeImpl(true, i);
-	
-			var lostPoint = QRUtil.getLostPoint(this);
-	
-			if (i === 0 || minLostPoint >  lostPoint) {
-				minLostPoint = lostPoint;
-				pattern = i;
-			}
-		}
-	
-		return pattern;
-	},
-	
-	createMovieClip : function(target_mc, instance_name, depth) {
-	
-		var qr_mc = target_mc.createEmptyMovieClip(instance_name, depth);
-		var cs = 1;
-	
-		this.make();
-
-		for (var row = 0; row < this.modules.length; row++) {
-			
-			var y = row * cs;
-			
-			for (var col = 0; col < this.modules[row].length; col++) {
-	
-				var x = col * cs;
-				var dark = this.modules[row][col];
-			
-				if (dark) {
-					qr_mc.beginFill(0, 100);
-					qr_mc.moveTo(x, y);
-					qr_mc.lineTo(x + cs, y);
-					qr_mc.lineTo(x + cs, y + cs);
-					qr_mc.lineTo(x, y + cs);
-					qr_mc.endFill();
-				}
-			}
-		}
-		
-		return qr_mc;
-	},
-
-	setupTimingPattern : function() {
-		
-		for (var r = 8; r < this.moduleCount - 8; r++) {
-			if (this.modules[r][6] !== null) {
-				continue;
-			}
-			this.modules[r][6] = (r % 2 === 0);
-		}
-	
-		for (var c = 8; c < this.moduleCount - 8; c++) {
-			if (this.modules[6][c] !== null) {
-				continue;
-			}
-			this.modules[6][c] = (c % 2 === 0);
-		}
-	},
-	
-	setupPositionAdjustPattern : function() {
-	
-		var pos = QRUtil.getPatternPosition(this.typeNumber);
-		
-		for (var i = 0; i < pos.length; i++) {
-		
-			for (var j = 0; j < pos.length; j++) {
-			
-				var row = pos[i];
-				var col = pos[j];
-				
-				if (this.modules[row][col] !== null) {
-					continue;
-				}
-				
-				for (var r = -2; r <= 2; r++) {
-				
-					for (var c = -2; c <= 2; c++) {
-					
-						if (Math.abs(r) === 2 || 
-                            Math.abs(c) === 2 ||
-                            (r === 0 && c === 0) ) {
-							this.modules[row + r][col + c] = true;
-						} else {
-							this.modules[row + r][col + c] = false;
-						}
-					}
-				}
-			}
-		}
-	},
-	
-	setupTypeNumber : function(test) {
-	
-		var bits = QRUtil.getBCHTypeNumber(this.typeNumber);
-        var mod;
-	
-		for (var i = 0; i < 18; i++) {
-			mod = (!test && ( (bits >> i) & 1) === 1);
-			this.modules[Math.floor(i / 3)][i % 3 + this.moduleCount - 8 - 3] = mod;
-		}
-	
-		for (var x = 0; x < 18; x++) {
-			mod = (!test && ( (bits >> x) & 1) === 1);
-			this.modules[x % 3 + this.moduleCount - 8 - 3][Math.floor(x / 3)] = mod;
-		}
-	},
-	
-	setupTypeInfo : function(test, maskPattern) {
-	
-		var data = (this.errorCorrectLevel << 3) | maskPattern;
-		var bits = QRUtil.getBCHTypeInfo(data);
-        var mod;
-	
-		// vertical		
-		for (var v = 0; v < 15; v++) {
-	
-			mod = (!test && ( (bits >> v) & 1) === 1);
-	
-			if (v < 6) {
-				this.modules[v][8] = mod;
-			} else if (v < 8) {
-				this.modules[v + 1][8] = mod;
-			} else {
-				this.modules[this.moduleCount - 15 + v][8] = mod;
-			}
-		}
-	
-		// horizontal
-		for (var h = 0; h < 15; h++) {
-	
-			mod = (!test && ( (bits >> h) & 1) === 1);
-			
-			if (h < 8) {
-				this.modules[8][this.moduleCount - h - 1] = mod;
-			} else if (h < 9) {
-				this.modules[8][15 - h - 1 + 1] = mod;
-			} else {
-				this.modules[8][15 - h - 1] = mod;
-			}
-		}
-	
-		// fixed module
-		this.modules[this.moduleCount - 8][8] = (!test);
-	
-	},
-	
-	mapData : function(data, maskPattern) {
-		
-		var inc = -1;
-		var row = this.moduleCount - 1;
-		var bitIndex = 7;
-		var byteIndex = 0;
-		
-		for (var col = this.moduleCount - 1; col > 0; col -= 2) {
-	
-			if (col === 6) col--;
-	
-			while (true) {
-	
-				for (var c = 0; c < 2; c++) {
-					
-					if (this.modules[row][col - c] === null) {
-						
-						var dark = false;
-	
-						if (byteIndex < data.length) {
-							dark = ( ( (data[byteIndex] >>> bitIndex) & 1) === 1);
-						}
-	
-						var mask = QRUtil.getMask(maskPattern, row, col - c);
-	
-						if (mask) {
-							dark = !dark;
-						}
-						
-						this.modules[row][col - c] = dark;
-						bitIndex--;
-	
-						if (bitIndex === -1) {
-							byteIndex++;
-							bitIndex = 7;
-						}
-					}
-				}
-								
-				row += inc;
-	
-				if (row < 0 || this.moduleCount <= row) {
-					row -= inc;
-					inc = -inc;
-					break;
-				}
-			}
-		}
-		
-	}
-
-};
-
-QRCode.PAD0 = 0xEC;
-QRCode.PAD1 = 0x11;
-
-QRCode.createData = function(typeNumber, errorCorrectLevel, dataList) {
-	
-	var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
-	
-	var buffer = new QRBitBuffer();
-	
-	for (var i = 0; i < dataList.length; i++) {
-		var data = dataList[i];
-		buffer.put(data.mode, 4);
-		buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
-		data.write(buffer);
-	}
-
-	// calc num max data.
-	var totalDataCount = 0;
-	for (var x = 0; x < rsBlocks.length; x++) {
-		totalDataCount += rsBlocks[x].dataCount;
-	}
-
-	if (buffer.getLengthInBits() > totalDataCount * 8) {
-		throw new Error("code length overflow. (" + 
-            buffer.getLengthInBits() + 
-            ">" +  
-            totalDataCount * 8 + 
-            ")");
-	}
-
-	// end code
-	if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
-		buffer.put(0, 4);
-	}
-
-	// padding
-	while (buffer.getLengthInBits() % 8 !== 0) {
-		buffer.putBit(false);
-	}
-
-	// padding
-	while (true) {
-		
-		if (buffer.getLengthInBits() >= totalDataCount * 8) {
-			break;
-		}
-		buffer.put(QRCode.PAD0, 8);
-		
-		if (buffer.getLengthInBits() >= totalDataCount * 8) {
-			break;
-		}
-		buffer.put(QRCode.PAD1, 8);
-	}
-
-	return QRCode.createBytes(buffer, rsBlocks);
-};
-
-QRCode.createBytes = function(buffer, rsBlocks) {
-
-	var offset = 0;
-	
-	var maxDcCount = 0;
-	var maxEcCount = 0;
-	
-	var dcdata = new Array(rsBlocks.length);
-	var ecdata = new Array(rsBlocks.length);
-	
-	for (var r = 0; r < rsBlocks.length; r++) {
-
-		var dcCount = rsBlocks[r].dataCount;
-		var ecCount = rsBlocks[r].totalCount - dcCount;
-
-		maxDcCount = Math.max(maxDcCount, dcCount);
-		maxEcCount = Math.max(maxEcCount, ecCount);
-		
-		dcdata[r] = new Array(dcCount);
-		
-		for (var i = 0; i < dcdata[r].length; i++) {
-			dcdata[r][i] = 0xff & buffer.buffer[i + offset];
-		}
-		offset += dcCount;
-		
-		var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
-		var rawPoly = new QRPolynomial(dcdata[r], rsPoly.getLength() - 1);
-
-		var modPoly = rawPoly.mod(rsPoly);
-		ecdata[r] = new Array(rsPoly.getLength() - 1);
-		for (var x = 0; x < ecdata[r].length; x++) {
-            var modIndex = x + modPoly.getLength() - ecdata[r].length;
-			ecdata[r][x] = (modIndex >= 0)? modPoly.get(modIndex) : 0;
-		}
-
-	}
-	
-	var totalCodeCount = 0;
-	for (var y = 0; y < rsBlocks.length; y++) {
-		totalCodeCount += rsBlocks[y].totalCount;
-	}
-
-	var data = new Array(totalCodeCount);
-	var index = 0;
-
-	for (var z = 0; z < maxDcCount; z++) {
-		for (var s = 0; s < rsBlocks.length; s++) {
-			if (z < dcdata[s].length) {
-				data[index++] = dcdata[s][z];
-			}
-		}
-	}
-
-	for (var xx = 0; xx < maxEcCount; xx++) {
-		for (var t = 0; t < rsBlocks.length; t++) {
-			if (xx < ecdata[t].length) {
-				data[index++] = ecdata[t][xx];
-			}
-		}
-	}
-
-	return data;
-
-};
-
-module.exports = QRCode;
-
-};
-var QRCode=__req('index');
-window.QRLib={svg:function(text,px,cross){var t=unescape(encodeURIComponent(String(text)));var q=null,type;
-for(type=2;type<=40;type++){try{q=new QRCode(type,0);q.addData(t);q.make();break;}catch(e){q=null;}}
-if(!q)return '';var n=q.getModuleCount(),m=4,sz=n+2*m,p='';
-for(var r=0;r<n;r++)for(var c=0;c<n;c++)if(q.isDark(r,c))p+='M'+(c+m)+' '+(r+m)+'h1v1h-1z';
-return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+sz+' '+sz+'" width="'+(px||220)+'" height="'+(px||220)+'" shape-rendering="crispEdges" role="img" aria-label="QR-Code"><rect width="'+sz+'" height="'+sz+'" fill="#fff"/><path d="'+p+'" fill="#000"/>'+(cross?(function(){var w=sz*0.152,x=(sz-w)/2,u=w/7;return '<rect x="'+x+'" y="'+x+'" width="'+w+'" height="'+w+'" fill="#fff"/><rect x="'+(x+u*0.5)+'" y="'+(x+u*0.5)+'" width="'+(w-u)+'" height="'+(w-u)+'" fill="#000"/><path fill="#fff" d="M'+(sz/2-u*0.5)+' '+(x+u*1.2)+'h'+u+'v'+(w-u*2.4)+'h-'+u+'zM'+(x+u*1.2)+' '+(sz/2-u*0.5)+'h'+(w-u*2.4)+'v'+u+'h-'+(w-u*2.4)+'z"/>';})():'')+'</svg>';}};
-})();
-</script>
 <style>
 :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#17211b;background:#f3f6f3;--green:#245c3b;--light:#e5eee8;--orange:#f3a22b;--red:#b52f2f}*{box-sizing:border-box}body{margin:0}header{background:var(--green);color:white;padding:16px 20px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}h1{font-size:1.35rem;margin:0}header small{opacity:.85}.wrap{max-width:1200px;margin:auto;padding:18px}.panel{background:white;border-radius:14px;padding:18px;margin:0 0 16px;box-shadow:0 2px 10px #17211b0d}.hidden{display:none!important}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}label{display:block;font-weight:650;font-size:.92rem;margin:0 0 6px}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5cd;border-radius:8px;background:white}button{border:0;border-radius:9px;padding:11px 14px;background:var(--green);color:white;font-weight:700;cursor:pointer}button.secondary{background:#e8eee9;color:#183b27}button.warn{background:var(--orange);color:#2a200d}button.danger{background:var(--red)}button:disabled{opacity:.45;cursor:not-allowed}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tabs button[data-tab="service"]{background:#1769aa;color:#fff}.tabs button[data-tab="service"]:hover{background:#12558a}.tabs button[data-tab="orders"]{background:#7b3fa1;color:#fff}.tabs button[data-tab="orders"]:hover{background:#633180}.tabs button.active{outline:3px solid #b6d4c0;outline-offset:2px}.muted{color:#657168}.msg{padding:10px 12px;border-radius:8px;margin:10px 0;background:#e9f1eb}.msg.error{background:#fde8e8;color:#842323}.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}.item{border:1px solid #d8e1da;border-radius:10px;padding:14px;background:#fff;text-align:left;color:#17211b;cursor:pointer;transition:border-color .12s,background .12s,transform .08s;min-height:125px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start}.item:hover{border-color:var(--green);background:#f1f7f2}.item:active{transform:scale(.98)}.item:focus-visible{outline:3px solid #8ab99a;outline-offset:2px}.item.selected{border:2px solid var(--green);background:#eaf4ed;padding:13px}.item h3{font-size:1rem;margin:0 0 6px}.price{font-weight:800;color:var(--green)}.tile-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin-top:auto;padding-top:12px}.cart-count{font-size:.85rem;font-weight:800;background:#e5eee8;border-radius:20px;padding:5px 8px}.tile-hint{font-size:.78rem;color:#657168}.order{border:1px solid #d7dfd9;border-left:7px solid #a5b5aa;border-radius:10px;padding:13px;margin:10px 0}.order.progress{border-left-color:var(--orange);background:#fff8e9}.order.done{border-left-color:#26804a;background:#e8f7ed}.order-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf1ed;font-size:.82rem;font-weight:700}.pill.orange{background:#ffedc8}.pill.green{background:#d9f1e0}.pill.red{background:#ffe1e1}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;border-bottom:1px solid #e3e9e4;padding:9px 7px;vertical-align:top}.right{text-align:right}.big{font-size:1.35rem;font-weight:800}.foot{font-size:.82rem;color:#66716a;margin-top:12px}.statusline{font-size:.9rem}.section-title{margin:0 0 12px;font-size:1.1rem}.totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.totalbox{padding:14px;background:#f3f7f4;border-radius:10px}.totalbox strong{display:block;font-size:1.2rem;margin-top:4px}@media(max-width:600px){.wrap{padding:10px}.panel{padding:13px}header{padding:14px}}
 
@@ -2815,18 +1560,11 @@ button[data-edit-menu]:disabled {
 #tabs button.active::before { box-shadow: 0 0 0 2px rgba(255, 255, 255, .9); }
 #tabs button.active:focus-visible { outline: 3px solid #8ab99a; outline-offset: 2px; }
 
-  
 /* Kopfbereich: Slogan unter dem Titel, Vereinsname neben dem Benutzer */
 #headerSlogan { display: block; opacity: .9; font-size: .9rem; }
 #orgLabel { font-weight: 700; }
 #orgLabel:not(:empty)::after { content: " ·"; margin: 0 4px 0 2px; font-weight: 400; opacity: .8; }
 
-/* Anzeige der Abo-Dauer in der Kopfzeile */
-#subLabel:not(:empty)::after { content: " ·"; margin: 0 4px 0 2px; font-weight: 400; opacity: .8; }
-#subLabel.sub-warn { background: #ffd84d; color: #493700; border-radius: 6px; padding: 2px 8px; margin-right: 6px; font-weight: 700; }
-#subLabel.sub-warn::after { content: none; }
-  .upgrade-btn { display: inline-block; background: #f3a22b; color: #2a200d; font-weight: 700; border-radius: 9px; padding: 11px 14px; text-decoration: none; } 
-  
 /* Impressum und Datenschutz */
 .site-foot { text-align: center; padding: 18px 12px 110px; font-size: .88rem; color: #66716a; }
 .site-foot button, .legal-link {
@@ -2874,7 +1612,56 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 .plan-card h3{margin:0 0 4px}.plan-card .plan-price{font-weight:700}
 .plan-card a{display:inline-block;margin-top:10px;color:#245c3b;font-weight:700;text-decoration:underline}
 
-  
+/* ===== Handy: Kategorien als Register – seitlich wischen, jede Kategorie mit eigener Farbe ===== */
+.pgc-kalt{--pc:#1f7ab8;--pc-bg:#e1f1fb;--pc-bd:#9cc9e6;--pc-dk:#0f4c75;--pc-sel:#bfe0f5}
+.pgc-warm{--pc:#d2562b;--pc-bg:#fde9e0;--pc-bd:#f0b39c;--pc-dk:#8a2f10;--pc-sel:#f9c9b6}
+.pgc-gratis{--pc:#7a4fb5;--pc-bg:#f3edfb;--pc-bd:#b9a3dc;--pc-dk:#3f2a63;--pc-sel:#dccbf3}
+.pgc-essen{--pc:#d98400;--pc-bg:#fff3d6;--pc-bd:#f0cf85;--pc-dk:#6b4300;--pc-sel:#ffe0a0}
+.pgc-snacks{--pc:#2f8a4d;--pc-bg:#e3f4e8;--pc-bd:#9fd1af;--pc-dk:#1d5a31;--pc-sel:#c5e8d0}
+.pgc-dessert{--pc:#cf4a8a;--pc-bg:#fde8f2;--pc-bd:#f1aacb;--pc-dk:#8a2257;--pc-sel:#facce1}
+.pgc-sonstiges{--pc:#5b6b75;--pc-bg:#eceff1;--pc-bd:#c0c9ce;--pc-dk:#2f3b42;--pc-sel:#d6dde1}
+#menuPagerTabs,#menuPagerHint{display:none}
+@keyframes pgInNext{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes pgInPrev{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@media (max-width:700px){
+  #menuPagerTabs{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    position:sticky;top:0;z-index:20;background:#fff;margin:0 0 8px;padding:8px 2px;box-shadow:0 6px 8px -6px rgba(23,33,27,.25)}
+  #menuPagerTabs::-webkit-scrollbar{display:none}
+  #menuPagerHint{display:block;font-size:.85rem;color:#657168;text-align:center;margin:0 0 8px}
+  #menuPagerHint[hidden]{display:none}
+  #menuPagerTabs .pgt{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;min-height:46px;padding:9px 14px;border-radius:999px;
+    background:var(--pc-bg);color:var(--pc-dk);border:2px solid var(--pc-bd);font-size:1rem;font-weight:700;white-space:nowrap}
+  #menuPagerTabs .pgt.active{background:var(--pc);border-color:var(--pc);color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.2)}
+  #menuPagerTabs .pgt-badge{min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--pc);color:#fff;font-size:.8rem;line-height:22px;text-align:center}
+  #menuPagerTabs .pgt-badge[hidden]{display:none}
+  #menuPagerTabs .pgt.active .pgt-badge{background:#fff;color:var(--pc)}
+
+  #menuGrid.pager-on{display:block !important;padding:0;min-height:55vh;touch-action:pan-y;overflow-x:hidden;overflow-x:clip}
+  #menuGrid.pager-on .menu-category{display:none !important;margin:0 !important}
+  #menuGrid.pager-on .menu-category.pg-active,
+  #menuGrid.pager-on .menu-category.pg-hold{display:block !important}
+  #menuGrid.pager-on .drink-subgroup{display:none !important;margin:0 !important}
+  #menuGrid.pager-on .drink-subgroup.pg-active{display:block !important}
+  #menuGrid.pager-on .menu-category-title,
+  #menuGrid.pager-on .drink-subgroup-title{display:none !important}
+  #menuGrid.pager-on .pg-page{border-top:4px solid var(--pc);padding-top:10px}
+  #menuGrid.pager-on .menu-category-grid,
+  #menuGrid.pager-on .menu-category-getränke .menu-category-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8px !important}
+
+  #menuGrid.pager-on .pg-page .item{background:var(--pc-bg) !important;border:2px solid var(--pc-bd) !important;color:var(--pc-dk)}
+  #menuGrid.pager-on .pg-page .item h3{color:var(--pc-dk) !important}
+  #menuGrid.pager-on .pg-page .item .price{color:var(--pc-dk) !important}
+  #menuGrid.pager-on .pg-page .item .tile-hint{color:var(--pc-dk) !important;opacity:.8}
+  #menuGrid.pager-on .pg-page .item .cart-count{background:var(--pc-bd) !important;color:var(--pc-dk) !important}
+  #menuGrid.pager-on .pg-page .item:hover{background:var(--pc-sel) !important;border-color:var(--pc) !important}
+  #menuGrid.pager-on .pg-page .item.selected{background:var(--pc-sel) !important;border:2px solid var(--pc) !important;box-shadow:0 0 0 2px var(--pc)}
+  #menuGrid.pager-on .pg-page .item.selected .cart-count{background:var(--pc) !important;color:#fff !important}
+  #menuGrid.pager-on .pg-in-next{animation:pgInNext .22s ease-out}
+  #menuGrid.pager-on .pg-in-prev{animation:pgInPrev .22s ease-out}
+}
+@media (max-width:700px) and (prefers-reduced-motion:reduce){
+  #menuGrid.pager-on .pg-in-next,#menuGrid.pager-on .pg-in-prev{animation:none}
+}
 </style>
 </head>
 <body>
@@ -2905,7 +1692,6 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
   <div class="actions">
     <span id="orgLabel" class="statusline"></span>
- <span id="subLabel" class="statusline"></span>
     <span id="userLabel" class="statusline"></span>
     <button id="logoutBtn" class="secondary hidden" type="button">
       Abmelden
@@ -3415,7 +2201,7 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
 
 
-<section id="closingView" class="panel hidden"><h2 class="section-title">Tagesabschluss</h2><div class="grid"><div><label for="closingDate">Datum</label><input id="closingDate" type="date"></div><div><label for="closingNotes">Bemerkungen (optional)</label><input id="closingNotes" placeholder="z. B. Kasse übergeben"></div></div><div class="actions" style="margin-top:12px"><button id="previewClosingBtn" class="secondary" type="button">Abrechnung berechnen</button><button id="saveClosingBtn" type="button">Tagesabschluss speichern</button></div><div id="closingSummary" style="margin-top:14px"></div><div id="closingDetails" style="margin-top:14px"></div><div id="closingHistory" style="margin-top:18px"><h3>Letzte Tagesabschlüsse</h3><p class="muted">Noch keine Tagesabschlüsse.</p></div></section>
+<section id="closingView" class="panel hidden"><h2 class="section-title">Tagesabschluss</h2><div class="grid"><div><label for="closingDate">Datum</label><input id="closingDate" type="date"></div><div><label for="closingNotes">Bemerkungen (optional)</label><input id="closingNotes" placeholder="z. B. Kasse übergeben"></div></div><div class="actions" style="margin-top:12px"><button id="previewClosingBtn" class="secondary" type="button">Abrechnung berechnen</button><button id="saveClosingBtn" type="button">Tagesabschluss speichern</button></div><div id="closingSummary" style="margin-top:14px"></div><div id="closingHistory" style="margin-top:18px"><h3>Letzte Tagesabschlüsse</h3><p class="muted">Noch keine Tagesabschlüsse.</p></div></section>
 
 <section id="adminView" class="panel hidden">
   <h2 class="section-title">Administration</h2>
@@ -3976,35 +2762,6 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
 <hr style="margin:28px 0;border:0;border-top:1px solid #d8e1da">
 
-<h3>TWINT-Zahlung</h3>
-<p class="muted">
-  Bei Zahlungsart «TWINT» zeigt die App deinen TWINT-QR-Code und den Betrag als Text. Die Gäste scannen den Code
-  und tippen den Betrag selbst ein. Das ist ein Zusatzpaket für Vereine mit TWINT-Business-Konto.
-</p>
-<div id="twintLocked" class="panel hidden" style="background:#fff8e9;box-shadow:none">
-  <strong>Zusatzpaket «TWINT Business» ist nicht freigeschaltet.</strong>
-  <p class="muted" style="margin:6px 0 0">Wenn dein Verein ein TWINT-Business-Konto hat, melde dich beim Betreiber, damit er das Paket freischaltet.</p>
-  <div class="actions" style="margin-top:10px"><a id="twintRequestBtn" class="upgrade-btn" href="#">Freischaltung anfragen</a></div>
-</div>
-<div id="twintPanel" class="panel" style="background:#f3f7f4;box-shadow:none">
-  <div class="grid">
-    <div><label for="twintNumber">TWINT-Nummer</label><input id="twintNumber" type="tel" placeholder="+41 79 123 45 67" autocomplete="off"></div>
-    <div><label for="twintImage">Eigener TWINT-QR-Code (Bild, optional)</label><input id="twintImage" type="file" accept="image/*"></div>
-  </div>
-  <p class="muted" style="margin:8px 0 0">
-    Lade hier den echten TWINT-QR-Code deines Kontos hoch (Screenshot aus der TWINT-App oder das QR-Bild von deiner Bank,
-    möglichst zugeschnitten). Ein QR-Code, der nur aus einer Nummer erzeugt wird, erkennt die TWINT-App nicht.
-  </p>
-  <div class="actions" style="margin-top:12px">
-    <button type="button" id="twintSaveBtn">TWINT-Angaben speichern</button>
-    <button type="button" id="twintImageRemoveBtn" class="secondary">Bild entfernen</button>
-  </div>
-  <div id="twintMsg" class="foot"></div>
-  <div id="twintPreview" style="margin-top:10px"></div>
-</div>
-
-<hr style="margin:28px 0;border:0;border-top:1px solid #d8e1da">
-
 <h3>Drucker (Netzwerkdrucker)</h3>
 <p class="muted">
   Die Drucker für Küche und Theke sind vorinstalliert und eingestellt. Du musst nur den Haken setzen:
@@ -4016,9 +2773,6 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
     <input type="checkbox" id="printEnabled" style="width:auto"> Bons automatisch drucken (Küche und Theke)
   </label>
   <p class="muted" id="printPlanHint" style="margin:8px 0 0"></p>
-    <div id="printUpgradeBox" class="hidden" style="margin-top:10px">
-    <a id="printUpgradeBtn" class="upgrade-btn" href="#">Auf «Mit Drucker» upgraden</a>
-  </div>
 
   <div class="actions" style="margin-top:14px">
         <button type="button" id="testPrintKitchenBtn" class="secondary">Testdruck Küche</button>
@@ -4055,13 +2809,6 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 <button type="button" id="resetTodayOrdersBtn" class="danger">
   Heutige Bestellungen zurücksetzen
 </button>
-</section>
-
-  <section id="operatorView" class="panel hidden">
-  <h2 class="section-title">Betreiber: Vereine &amp; Zugänge</h2>
-  <p class="muted">Zahlung eingegangen? Paket wählen und die Laufzeit verlängern. Die Verlängerung rechnet ab dem bisherigen Ablauf, oder ab heute, falls er schon vorbei ist.</p>
-  <div class="actions" style="margin-bottom:12px"><button type="button" id="operatorReloadBtn" class="secondary">Liste aktualisieren</button></div>
-  <div id="operatorList"></div>
 </section>
 
 <section id="teamView" class="panel hidden">
@@ -4189,7 +2936,6 @@ function firstTab(){return ['service','orders','closing','admin'].find(allowed) 
 
 
 function allowed(tab) {
-  if (tab === 'operator') return isOperator;
   const erlaubt = {
     admin:   ['service', 'orders', 'bar', 'runner', 'closing', 'admin', 'team'],
     service: ['service', 'orders', 'bar', 'runner'],
@@ -4290,8 +3036,7 @@ function renderTabs() {
     ['runner', 'Läufer'],
     ['closing', 'Tagesabschluss'],
     ['admin', 'Menü verwalten'],
-    ['team', 'Team'],
-    ['operator', 'Betreiber']
+    ['team', 'Team']
   ];
 
   const tabs = $('tabs');
@@ -4342,7 +3087,8 @@ function showTab(tab) {
 
   activeTab = tab;
 
-  ['service', 'orders', 'bar', 'runner', 'closing', 'admin', 'team', 'operator']
+  // Alle Ansichten ausblenden und nur den aktiven Bereich anzeigen
+  ['service', 'orders', 'bar', 'runner', 'closing', 'admin', 'team']
     .forEach(t => {
       const view = $(t + 'View');
       if (view) {
@@ -4350,21 +3096,22 @@ function showTab(tab) {
       }
     });
 
+  // Aktiven Reiter markieren
   $('tabs').querySelectorAll('button').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === tab);
   });
 
-  if (['service', 'orders', 'bar', 'runner'].includes(tab)) {
-    refreshOrders();
-  }
 
-  if (tab === 'service') {
-    loadOpenAmounts();
-  }
+if (['service', 'orders', 'bar', 'runner'].includes(tab)) {
+  refreshOrders();
+}
 
-  if (tab === 'admin') { loadAdmin(); fetchPrintCfg(true).then(fillPrintForm); fetchTwintCfg(true).then(fillTwintForm); }
+if (tab === 'service') {
+  loadOpenAmounts();
+}
+
+  if (tab === 'admin') { loadAdmin(); fetchPrintCfg(true).then(fillPrintForm); }
   if (tab === 'team') loadTeam();
-  if (tab === 'operator') loadOperator();
   if (tab === 'closing') loadClosingHistory();
 
   clearSay();
@@ -4372,10 +3119,182 @@ function showTab(tab) {
 
 
 
+
+
+
 async function loadMenu(){const {data,error}=await sb.from('menu_items').select('id,name,category,price,active').eq('active',true).order('category').order('name');if(error)throw error;menu=data||[];renderMenu();}
 
 
 
+
+/* ===== Handy: Kategorien als Register, per Wischen wechseln ===== */
+const MENU_PAGER_MQ = window.matchMedia('(max-width: 700px)');
+const MENU_PAGER_META = {
+  kalt:       { icon: '🧊', label: 'Kalte Getränke' },
+  warm:       { icon: '☕', label: 'Warme Getränke' },
+  gratis:     { icon: '🎁', label: 'Gratisgetränke' },
+  essen:      { icon: '🍽️', label: 'Essen' },
+  snacks:     { icon: '🥨', label: 'Snacks' },
+  dessert:    { icon: '🍰', label: 'Dessert' },
+  sonstiges:  { icon: '📦', label: 'Sonstiges' }
+};
+const MENU_PAGER_ORDER = Object.keys(MENU_PAGER_META);
+const MENU_SLUG_TO_KEY = {
+  'essen': 'essen', 'snacks': 'snacks', 'kalte-getraenke': 'kalt',
+  'warme-getraenke': 'warm', 'dessert': 'dessert', 'sonstiges': 'sonstiges'
+};
+let menuPagerActive = null;
+let menuPagerKeys = [];
+let menuPagerSig = '';
+let menuPagerHintDone = false;
+
+function menuPagerOff(menuGrid) {
+  menuGrid.classList.remove('pager-on');
+  const bar = document.getElementById('menuPagerTabs');
+  const hint = document.getElementById('menuPagerHint');
+  if (bar) bar.classList.add('hidden');
+  if (hint) hint.hidden = true;
+}
+
+function menuPagerRefresh(menuGrid, animDir) {
+  if (!MENU_PAGER_MQ.matches || !menuGrid.querySelector(':scope > .menu-category')) {
+    menuPagerOff(menuGrid);
+    return;
+  }
+
+  // Seiten (= Register) einsammeln: Unterbereiche der Getränke einzeln, sonst jede Kategorie
+  const pages = [];
+  menuGrid.querySelectorAll(':scope > .menu-category').forEach(sec => {
+    const subs = sec.querySelectorAll(':scope > .drink-subgroup');
+    if (subs.length) {
+      subs.forEach(s => {
+        const cls = [...s.classList].find(c => c.startsWith('drink-subgroup-'));
+        const base = cls ? cls.replace('drink-subgroup-', '') : 'sonstiges';
+        pages.push({ el: s, base: MENU_PAGER_META[base] ? base : 'sonstiges' });
+      });
+    } else {
+      const cls = [...sec.classList].find(c => c.startsWith('menu-category-'));
+      const slug = cls ? cls.replace('menu-category-', '') : 'sonstiges';
+      pages.push({ el: sec, base: MENU_SLUG_TO_KEY[slug] || 'sonstiges' });
+    }
+  });
+  if (!pages.length) { menuPagerOff(menuGrid); return; }
+
+  pages.sort((a, b) => MENU_PAGER_ORDER.indexOf(a.base) - MENU_PAGER_ORDER.indexOf(b.base));
+  const seen = {};
+  pages.forEach(p => {
+    seen[p.base] = (seen[p.base] || 0) + 1;
+    p.key = seen[p.base] > 1 ? p.base + '-' + seen[p.base] : p.base;
+  });
+  menuPagerKeys = pages.map(p => p.key);
+  if (!menuPagerKeys.includes(menuPagerActive)) menuPagerActive = menuPagerKeys[0];
+
+  // Tabs + Hinweis einmalig anlegen
+  let bar = document.getElementById('menuPagerTabs');
+  let hint = document.getElementById('menuPagerHint');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'menuPagerTabs';
+    bar.setAttribute('role', 'tablist');
+    bar.setAttribute('aria-label', 'Kategorien der Karte');
+    bar.addEventListener('click', e => {
+      const b = e.target.closest('[data-pager-key]');
+      if (b) menuPagerGo(b.dataset.pagerKey);
+    });
+    hint = document.createElement('div');
+    hint.id = 'menuPagerHint';
+    hint.textContent = '← Nach links oder rechts wischen, um die Kategorie zu wechseln →';
+    menuGrid.parentNode.insertBefore(bar, menuGrid);
+    menuGrid.parentNode.insertBefore(hint, menuGrid);
+    menuPagerBindSwipe(menuGrid);
+  }
+  bar.classList.remove('hidden');
+  hint.hidden = menuPagerHintDone;
+
+  const sig = menuPagerKeys.join('|');
+  if (sig !== menuPagerSig) {
+    menuPagerSig = sig;
+    bar.innerHTML = pages.map(p => {
+      const m = MENU_PAGER_META[p.base];
+      return '<button type="button" role="tab" class="pgt pgc-' + p.base + '" data-pager-key="' + p.key + '">' +
+        '<span aria-hidden="true">' + m.icon + '</span><span>' + m.label + '</span>' +
+        '<span class="pgt-badge" hidden></span></button>';
+    }).join('');
+  }
+
+  // Aktive Seite markieren, Farben setzen
+  menuGrid.classList.add('pager-on');
+  pages.forEach(p => {
+    p.el.classList.add('pg-page', 'pgc-' + p.base);
+    const aktiv = p.key === menuPagerActive;
+    p.el.classList.toggle('pg-active', aktiv);
+    if (aktiv && animDir) {
+      p.el.classList.add(animDir > 0 ? 'pg-in-next' : 'pg-in-prev');
+      p.el.addEventListener('animationend', () => p.el.classList.remove('pg-in-next', 'pg-in-prev'), { once: true });
+    }
+  });
+  menuGrid.querySelectorAll(':scope > .menu-category').forEach(sec => {
+    sec.classList.toggle('pg-hold', !!sec.querySelector(':scope > .drink-subgroup.pg-active'));
+  });
+
+  // Tabs: aktiv + Anzahl gewählter Artikel je Register
+  bar.querySelectorAll('[data-pager-key]').forEach((b, i) => {
+    const p = pages[i];
+    const aktiv = p.key === menuPagerActive;
+    b.classList.toggle('active', aktiv);
+    b.setAttribute('aria-selected', aktiv ? 'true' : 'false');
+    let n = 0;
+    p.el.querySelectorAll('[data-add-item]').forEach(c => { n += cart.get(c.dataset.addItem)?.quantity || 0; });
+    const badge = b.querySelector('.pgt-badge');
+    badge.textContent = n;
+    badge.hidden = !n;
+    if (aktiv && animDir) {
+      bar.scrollTo({ left: b.offsetLeft - (bar.clientWidth - b.offsetWidth) / 2, behavior: 'smooth' });
+    }
+  });
+}
+
+function menuPagerGo(key) {
+  const menuGrid = document.getElementById('menuGrid');
+  if (!menuGrid || !menuPagerKeys.includes(key) || key === menuPagerActive) return;
+  const dir = menuPagerKeys.indexOf(key) > menuPagerKeys.indexOf(menuPagerActive) ? 1 : -1;
+  menuPagerActive = key;
+  menuPagerHintDone = true;
+  menuPagerRefresh(menuGrid, dir);
+  // Falls weit nach unten gescrollt: zurück zum Anfang der neuen Seite
+  const bar = document.getElementById('menuPagerTabs');
+  const y = menuGrid.getBoundingClientRect().top + window.scrollY - (bar ? bar.offsetHeight : 0);
+  if (window.scrollY > y) window.scrollTo(0, Math.max(0, y));
+}
+
+function menuPagerStep(delta) {
+  const i = menuPagerKeys.indexOf(menuPagerActive) + delta;
+  if (i < 0 || i >= menuPagerKeys.length) return;
+  menuPagerGo(menuPagerKeys[i]);
+}
+
+function menuPagerBindSwipe(menuGrid) {
+  let sx = 0, sy = 0, st = 0, tracking = false;
+  menuGrid.addEventListener('touchstart', e => {
+    if (!menuGrid.classList.contains('pager-on') || e.touches.length !== 1) { tracking = false; return; }
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); tracking = true;
+  }, { passive: true });
+  menuGrid.addEventListener('touchend', e => {
+    if (!tracking) return;
+    tracking = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - sx, dy = t.clientY - sy;
+    if (Date.now() - st > 700) return;
+    if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    menuPagerStep(dx < 0 ? 1 : -1);   // nach links wischen = nächstes Register
+  }, { passive: true });
+  menuGrid.addEventListener('touchcancel', () => { tracking = false; }, { passive: true });
+}
+
+// Bei Drehen/Grössenänderung zwischen Handy- und Desktop-Ansicht umschalten
+MENU_PAGER_MQ.addEventListener('change', () => {
+  if (document.getElementById('menuGrid') && typeof renderMenu === 'function') renderMenu();
+});
 
 function renderMenu() {
   const menuGrid = $('menuGrid');
@@ -4502,6 +3421,9 @@ function renderMenu() {
     btn.addEventListener('keydown', e => e.stopPropagation());
   });
 
+  // Handy: Kategorien als Register mit Wisch-Navigation
+  menuPagerRefresh(menuGrid);
+
   // Warenkorb-Summe und Senden-Button nach jedem Render aktualisieren.
   updateCartTotal();
 }
@@ -4576,21 +3498,8 @@ const PLANS = {
   printer:  { name: 'Mit Drucker', price: 300, text: 'Alles aus Standard plus automatischer Bon-Druck für Küche und Theke' }
 };
 // Betreiber: E-Mail für die Zahlungsmeldung, optional TWINT-Nummer und QR-Bild (Datei twint-qr.png neben dieser Seite)
-const BETREIBER = { email: 'marco.aebersold@bluewin.ch', twint: '+41 79 718 04 01', qrDatei: 'twint-qr.png' };
-let subscriptionActive = false, subscriptionPlan = '', subscriptionUntil = '', payTimer = null;
-
-function updateSubLabel() {
-  const el = $('subLabel');
-  if (!el) return;
-  if (!subscriptionActive || !subscriptionUntil) { el.textContent = ''; el.className = 'statusline'; return; }
-  const heute = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
-  const tage = Math.round((Date.parse(subscriptionUntil) - Date.parse(heute)) / 86400000);
-  const datum = subscriptionUntil.split('-').reverse().join('.');
-  const paket = PLANS[subscriptionPlan]?.name || subscriptionPlan;
-  el.textContent = paket + ' bis ' + datum +
-    (tage <= 0 ? ' (letzter Tag)' : tage === 1 ? ' (noch 1 Tag)' : ' (noch ' + tage + ' Tage)');
-  el.className = 'statusline' + (tage <= 7 ? ' sub-warn' : '');
-}
+const BETREIBER = { email: 'marco.aebersold@bluewin.ch', twint: '', qrDatei: 'twint-qr.png' };
+let subscriptionActive = false, subscriptionPlan = '', payTimer = null;
 
 async function checkSubscription() {
   // Bei jedem Fehler gilt der Zugang als NICHT freigeschaltet (Neuladen darf nichts umgehen)
@@ -4619,8 +3528,6 @@ function startPayPoll() {
 function hidePaywall(sub) {
   subscriptionActive = true;
   subscriptionPlan = sub?.plan || 'standard';
-  subscriptionUntil = sub?.until || '';
-  updateSubLabel();
   stopPayPoll();
   $('payPanel')?.classList.add('hidden');
 }
@@ -4667,7 +3574,7 @@ function renderPaywall(sub) {
     <div class="pay-box">
       <strong>So bezahlst du per TWINT:</strong><br>
       1. Standard: CHF ${PLANS.standard.price} oder Mit Drucker: CHF ${PLANS.printer.price} pro Monat.<br>
-          2. Sende den Betrag per TWINT an Marco Aebersold, <strong>${esc(BETREIBER.twint)}</strong>.<br>
+      2. Sende den Betrag per TWINT an den Betreiber${BETREIBER.twint ? ' (' + esc(BETREIBER.twint) + ')' : ''}.<br>
       3. Schreibe in die Mitteilung: <strong>${esc(verein)}, ${esc(mail)}</strong>
     </div>
     <div class="pay-qr-row">
@@ -4681,8 +3588,6 @@ function renderPaywall(sub) {
 function showPaywall(sub) {
   subscriptionActive = false;
   subscriptionPlan = '';
-  subscriptionUntil = '';
-  updateSubLabel();
   $('loginPanel')?.classList.add('hidden');
   $('orgPanel')?.classList.add('hidden');
   $('appPanel')?.classList.add('hidden');
@@ -4708,132 +3613,9 @@ setInterval(async () => {
   if (!subscriptionActive || !currentUser || !sb || document.hidden) return;
   const s2 = await checkSubscription();
   if (s2.error) return;
-  if (!s2.active) showPaywall(s2);
-  else {
-    subscriptionPlan = s2.plan;
-    subscriptionUntil = s2.until || '';
-    updateSubLabel();
-    fillPrintForm();
-  }
+  if (!s2.active) showPaywall(s2); else subscriptionPlan = s2.plan;
 }, 60000);
 /* =================== Ende Zugang / Freischaltung =================== */
-
-  /* ===================== Betreiber-Bereich ===================== */
-let isOperator = false;
-
-async function checkOperator() {
-  try {
-    const { data, error } = await sb.rpc('is_operator');
-    isOperator = !error && data === true;
-  } catch (e) { isOperator = false; }
-}
-
-async function loadOperator() {
-  const el = $('operatorList');
-  if (!isOperator || !el) return;
-  try {
-    const { data, error } = await sb.rpc('operator_list_orgs');
-    if (error) throw error;
-    const heute = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
-    const twintOn = new Set();
-    try {
-      const tw = await sb.from('org_twint_settings').select('organization_id, business_enabled');
-      (tw.data || []).forEach(r => { if (r.business_enabled) twintOn.add(r.organization_id); });
-    } catch (_) {}
-    const fmt = d => d ? d.split('-').reverse().join('.') : '–';
-    el.innerHTML = (data && data.length)
-      ? `<table class="table"><thead><tr><th>Verein</th><th>Paket</th><th>Bis</th><th>Status</th><th>Mitglieder</th><th>TWINT Business</th><th>Verlängern</th></tr></thead><tbody>${
-        data.map(o => {
-          const aktiv = o.plan !== 'none' && o.paid_until && o.paid_until >= heute;
-          const status = aktiv ? '<span class="pill green">aktiv</span>'
-            : (o.plan !== 'none' && o.paid_until ? '<span class="pill red">abgelaufen</span>' : '<span class="pill">nicht freigeschaltet</span>');
-          const eigener = o.id === profile?.organization_id;
-          return `<tr>
-            <td><strong>${esc(o.name)}</strong></td>
-            <td><select data-op-plan="${esc(o.id)}">${
-              [['none', 'Kein Zugang'], ['standard', 'Standard'], ['printer', 'Mit Drucker']]
-                .map(([k, v]) => `<option value="${k}" ${k === o.plan ? 'selected' : ''}>${v}</option>`).join('')
-            }</select></td>
-            <td>${esc(fmt(o.paid_until))}</td>
-            <td>${status}</td>
-            <td>${Number(o.members)}</td>
-            <td><label style="display:flex;gap:6px;align-items:center;font-weight:600;margin:0"><input type="checkbox" style="width:auto" data-op-twint="${esc(o.id)}" ${twintOn.has(o.id) ? 'checked' : ''}> aktiv</label></td>
-            <td><div class="actions">
-              <button type="button" data-op-org="${esc(o.id)}" data-op-months="1">+1 Monat</button>
-              <button type="button" data-op-org="${esc(o.id)}" data-op-months="3">+3</button>
-              <button type="button" data-op-org="${esc(o.id)}" data-op-months="12">+12</button>
-              <button type="button" class="secondary" data-op-org="${esc(o.id)}" data-op-months="0">Nur Paket speichern</button>
-              <button type="button" class="danger" data-op-delete="${esc(o.id)}" data-op-name="${esc(o.name)}" ${eigener ? 'disabled title="Dein eigener Verein"' : ''}>Löschen</button>
-            </div></td>
-          </tr>`;
-        }).join('')
-      }</tbody></table>`
-      : '<p class="muted">Noch keine Vereine.</p>';
-  } catch (e) {
-    say('Betreiberliste konnte nicht geladen werden: ' + (e?.message || e), true);
-  }
-}
-
-document.addEventListener('change', async e => {
-  const cb = e.target.closest?.('[data-op-twint]');
-  if (!cb || !isOperator) return;
-  cb.disabled = true;
-  try {
-    const { error } = await sb.rpc('operator_set_twint_business', { p_org: cb.dataset.opTwint, p_enabled: cb.checked });
-    if (error) throw error;
-    showSuccessToast(cb.checked ? '✓ TWINT Business freigeschaltet.' : '✓ TWINT Business deaktiviert.');
-  } catch (err) {
-    cb.checked = !cb.checked;
-    say('Konnte nicht gespeichert werden: ' + (err?.message || err), true);
-  } finally { cb.disabled = false; }
-});
-
-document.addEventListener('click', async e => {
-  if (e.target.closest('#operatorReloadBtn')) { loadOperator(); return; }
-  const b = e.target.closest('[data-op-org]');
-  if (!b || !isOperator) return;
-  const id = b.dataset.opOrg;
-  const months = Number(b.dataset.opMonths || 0);
-  const sel = document.querySelector(`[data-op-plan="${CSS.escape(id)}"]`);
-  if (!sel) return;
-  b.disabled = true;
-  try {
-    const { error } = await sb.rpc('operator_set_subscription', { p_org: id, p_plan: sel.value, p_months: months });
-    if (error) throw error;
-    showSuccessToast('✓ Gespeichert.');
-    await loadOperator();
-  } catch (err) {
-    b.disabled = false;
-    say('Konnte nicht gespeichert werden: ' + (err?.message || err), true);
-  }
-});
-/* =================== Ende Betreiber-Bereich =================== */
-
-
-document.addEventListener('click', async e => {
-  const b = e.target.closest('[data-op-delete]');
-  if (!b || !isOperator || b.disabled) return;
-  const name = b.dataset.opName || '';
-  const eingabe = prompt(
-    'Verein «' + name + '» endgültig löschen?\n\n' +
-    'Das entfernt den Verein mit seinen Daten und lässt sich nicht rückgängig machen.\n' +
-    'Zum Bestätigen den Namen des Vereins eintippen:'
-  );
-  if (eingabe === null) return;
-  if (eingabe.trim() !== name) { say('Der Name stimmt nicht überein. Es wurde nichts gelöscht.', true); return; }
-  b.disabled = true;
-  try {
-    const { error } = await sb.rpc('operator_delete_org', { p_org: b.dataset.opDelete });
-    if (error) throw error;
-    showSuccessToast('✓ Verein «' + name + '» wurde gelöscht.');
-    await loadOperator();
-  } catch (err) {
-    b.disabled = false;
-    say('Verein konnte nicht gelöscht werden: ' + (err?.message || err), true);
-  }
-});
-
-  
 
 /* ===================== Drucker-Modul ===================== */
 // Vom Vermieter vorinstalliert (gilt für alle Mietsets, hier einmal anpassen).
@@ -4862,16 +3644,6 @@ async function fetchPrintCfg(force) {
   } catch (e) { console.warn('Druckereinstellungen nicht geladen:', e.message); }
 }
 
-function mailtoUpgrade() {
-  const pl = PLANS.printer;
-  const verein = profile?.org_name || '';
-  const mail = profile?.email || currentUser?.email || '';
-  const betreff = 'BestellEAsy: Upgrade auf ' + pl.name + ' – ' + verein;
-  const text = 'Hallo\n\nIch möchte auf das Paket «' + pl.name + '» (CHF ' + pl.price + ' / Monat) wechseln.\n\n' +
-    'Verein: ' + verein + '\nE-Mail: ' + mail + '\n\nBitte teile mir mit, was ich per TWINT bezahlen muss.';
-  return 'mailto:' + BETREIBER.email + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(text);
-}
-
 function fillPrintForm() {
   const box = $('printEnabled');
   if (!box) return;
@@ -4880,9 +3652,6 @@ function fillPrintForm() {
   box.disabled = !frei;
   const hint = $('printPlanHint');
   if (hint) hint.textContent = frei ? '' : 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten.';
-  $('printUpgradeBox')?.classList.toggle('hidden', frei);
-  const a = $('printUpgradeBtn');
-  if (a && !frei) a.href = mailtoUpgrade();
 }
 
 async function setPrintingEnabled(on) {
@@ -4893,10 +3662,7 @@ async function setPrintingEnabled(on) {
     if (error) throw error;
     printCfgCache = { ...(printCfgCache || {}), enabled: on };
     printCfgFetchedAt = Date.now();
-    msg.textContent = on
-      ? '✓ Bon-Druck ist aktiviert. Küche, Theke und Läufer erscheinen nicht mehr auf dem Bildschirm.'
-      : 'Bon-Druck ist ausgeschaltet. Küche, Theke und Läufer erscheinen wieder auf dem Bildschirm.';
-    renderOrders();
+    msg.textContent = on ? '✓ Bon-Druck ist aktiviert.' : 'Bon-Druck ist ausgeschaltet.';
   } catch (e) {
     msg.textContent = '⚠ Konnte nicht gespeichert werden: ' + (e?.message || e);
     fillPrintForm();
@@ -5021,125 +3787,6 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('change', e => {
   if (e.target && e.target.id === 'printEnabled') setPrintingEnabled(e.target.checked);
-});
-
-/* ---------- TWINT-Zahlung (fester QR-Code) ---------- */
-let twintCfg = { enabled: false, number: '', image: '' }, twintCfgLoaded = false;
-let drinkPayMethod = 'Bar', drinkPayTotal = 0, drinkPayTable = '';
-
-function twintQrText(number) { return String(number || '').replace(/[\s()\-.]/g, ''); }
-
-async function fetchTwintCfg(force) {
-  if (!sb || !profile?.organization_id) return twintCfg;
-  if (twintCfgLoaded && !force) return twintCfg;
-  try {
-    const { data, error } = await sb.from('org_twint_settings')
-      .select('business_enabled, twint_number, twint_image')
-      .eq('organization_id', profile.organization_id)
-      .maybeSingle();
-    if (error) throw error;
-    twintCfg = { enabled: !!data?.business_enabled, number: data?.twint_number || '', image: data?.twint_image || '' };
-  } catch (e) {
-    console.warn('TWINT-Einstellungen nicht geladen:', e?.message || e);
-    twintCfg = { enabled: false, number: '', image: '' };
-  }
-  twintCfgLoaded = true;
-  return twintCfg;
-}
-
-function twintQrHtml(c, px) {
-  if (c.image) return '<img src="' + c.image + '" alt="TWINT QR-Code" style="width:' + px + 'px;max-width:100%;height:auto;background:#fff">';
-  return '';
-}
-
-function fillTwintForm() {
-  if (!$('twintNumber')) return;
-  $('twintPanel')?.classList.toggle('hidden', !twintCfg.enabled);
-  $('twintLocked')?.classList.toggle('hidden', twintCfg.enabled);
-  const rq = $('twintRequestBtn');
-  if (rq) rq.href = 'mailto:' + BETREIBER.email + '?subject=' + encodeURIComponent('BestellEAsy: Zusatzpaket TWINT Business – ' + (profile?.org_name || ''))
-    + '&body=' + encodeURIComponent('Hallo\n\nWir haben ein TWINT-Business-Konto und möchten das Zusatzpaket «TWINT Business» nutzen.\n\nVerein: ' + (profile?.org_name || '') + '\nE-Mail: ' + (profile?.email || currentUser?.email || ''));
-  if (!twintCfg.enabled) return;
-  $('twintNumber').value = twintCfg.number;
-  if ($('twintImage')) $('twintImage').value = '';
-  const pv = $('twintPreview');
-  if (pv) pv.innerHTML = twintCfg.image
-    ? '<div class="muted" style="margin-bottom:6px">Vorschau:</div>' + twintQrHtml(twintCfg, 180)
-    : '';
-}
-
-// Bild verkleinern (max. 600 px) und als Data-URL speichern
-function twintReadImage(file) {
-  return new Promise((resolve, reject) => {
-    const fr = new FileReader();
-    fr.onerror = () => reject(new Error('Bild konnte nicht gelesen werden.'));
-    fr.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error('Datei ist kein gültiges Bild.'));
-      img.onload = () => {
-        const k = Math.min(1, 600 / Math.max(img.width, img.height));
-        const c = document.createElement('canvas');
-        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-        const g = c.getContext('2d');
-        g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
-        g.drawImage(img, 0, 0, c.width, c.height);
-        resolve(c.toDataURL('image/png'));
-      };
-      img.src = fr.result;
-    };
-    fr.readAsDataURL(file);
-  });
-}
-
-async function saveTwintCfg(removeImage) {
-  const msg = $('twintMsg');
-  let image = removeImage ? '' : twintCfg.image;
-  try {
-    const f = $('twintImage')?.files?.[0];
-    if (f && !removeImage) image = await twintReadImage(f);
-  } catch (e) { msg.textContent = '⚠ ' + e.message; return; }
-  const number = $('twintNumber').value.trim();
-  try {
-    const { error } = await sb.rpc('set_twint_settings', { p_number: number, p_image: image });
-    if (error) throw error;
-    twintCfg = { ...twintCfg, number, image };
-    msg.textContent = '✓ TWINT-Angaben gespeichert (für alle Geräte).';
-  } catch (e) {
-    msg.textContent = '⚠ Konnte nicht gespeichert werden: ' + (e?.message || e);
-  }
-  fillTwintForm();
-  updateTwintBox();
-}
-
-function updateTwintBox() {
-  const box = $('twintQrBox');
-  if (!box) return;
-  if (drinkPayMethod !== 'TWINT' || !twintCfg.enabled) { box.innerHTML = ''; return; }
-  const money = a => new Intl.NumberFormat('de-CH', { style: 'currency', currency: 'CHF' }).format(a);
-  const qr = twintQrHtml(twintCfg, 240);
-  if (!qr) {
-    box.innerHTML = '<p class="muted">Kein TWINT-QR-Code hinterlegt (Menü verwalten → TWINT-Zahlung).'
-      + (twintCfg.number ? '<br>Nummer: <strong>' + esc(twintCfg.number) + '</strong>' : '') + '</p>';
-    return;
-  }
-  box.innerHTML = '<div style="text-align:center;padding:12px;border:1px solid #d8e1da;border-radius:10px;background:#fff">'
-    + '<div class="big" style="margin-bottom:8px">Betrag: ' + money(drinkPayTotal) + '</div>'
-    + qr
-    + (twintCfg.number ? '<div style="margin-top:8px;font-weight:700">' + esc(twintCfg.number) + '</div>' : '')
-    + '<div class="muted" style="margin-top:6px;font-size:.85rem">Mit der TWINT-App scannen und den Betrag eintippen.</div>'
-    + '</div>';
-}
-
-document.addEventListener('click', e => {
-  const id = e.target.closest('button')?.id;
-  if (id === 'twintSaveBtn') saveTwintCfg(false);
-  if (id === 'twintImageRemoveBtn') saveTwintCfg(true);
-});
-document.addEventListener('change', e => {
-  if (e.target && e.target.id === 'drinkPaymentMethod') {
-    drinkPayMethod = e.target.value;
-    updateTwintBox();
-  }
 });
 
 /* ---------- Tischnummern drucken ---------- */
@@ -5282,9 +3929,7 @@ const method = methodEl ? methodEl.value : 'cash';
     renderMenu();
 
     showSuccessToast(
-      printerModeActive()
-        ? '✓ Bestellung #' + data + ' wird gedruckt.'
-        : '✓ Bestellung #' + data + ' wurde an die Küche gesendet.'
+      '✓ Bestellung #' + data + ' wurde an die Küche gesendet.'
     );
 
     await refreshOrders();
@@ -5307,19 +3952,10 @@ await loadOpenAmounts();
 
  
 
-// Bon-Druck aktiv (Paket «Mit Drucker» und Haken gesetzt)?
-// Dann erscheinen Bestellungen nicht auf den Bildschirmen von Küche, Theke und Läufer,
-// sondern werden nur gedruckt.
-function printerModeActive() {
-  return subscriptionPlan === 'printer' && !!loadPrintCfg().enabled;
-}
-
 async function refreshOrders() {
   if (!sb || !profile) return;
 
   try {
-    await fetchPrintCfg();
-
     const { data, error } = await sb
       .from('orders')
   
@@ -5656,8 +4292,6 @@ const tableOrders = orders.filter(o =>
     return;
   }
 
-  drinkPayTotal = selectedTotal;
-  drinkPayTable = table;
   container.innerHTML = `
     <article class="order">
       <h3>Tisch ${esc(table)} – Artikel abrechnen</h3>
@@ -5713,10 +4347,9 @@ const tableOrders = orders.filter(o =>
           Zahlungsart dieser Person
         </label>
         <select id="drinkPaymentMethod">
-          <option value="Bar" ${drinkPayMethod === 'Bar' ? 'selected' : ''}>Bar</option>
-          <option value="TWINT" ${drinkPayMethod === 'TWINT' ? 'selected' : ''}>TWINT</option>
+          <option value="Bar">Bar</option>
+          <option value="TWINT">TWINT</option>
         </select>
-        <div id="twintQrBox" style="margin-top:12px"></div>
       </div>
 
       <div class="actions" style="margin-top:14px">
@@ -5733,8 +4366,6 @@ const tableOrders = orders.filter(o =>
       </p>
     </article>
   `;
-
-  fetchTwintCfg().then(updateTwintBox);
 
   container.onclick = async event => {
     const stepButton = event.target.closest('[data-drink-step]');
@@ -5807,7 +4438,6 @@ const tableOrders = orders.filter(o =>
 
       const result = Array.isArray(data) ? data[0] : data;
 
-      drinkPayMethod = 'Bar';
       drinkPaymentSelection.clear();
 
       await refreshOrders();
@@ -6046,18 +4676,6 @@ function renderOrders() {
     );
 
   const isDrink = isDrinkCategory;
-  const printMode = printerModeActive();
-
-  // Mit Bon-Druck: Reiter Küche, Theke und Läufer ausblenden
-  document.querySelectorAll('#tabs [data-tab="orders"], #tabs [data-tab="bar"], #tabs [data-tab="runner"]')
-    .forEach(b => b.classList.toggle('hidden', printMode));
-  if (printMode && ['orders', 'bar', 'runner'].includes(activeTab)) {
-    const ziel = allowed('service') ? 'service' : (allowed('closing') ? 'closing' : null);
-    if (ziel) {
-      showTab(ziel);
-      return;
-    }
-  }
 
   // Älteste Bestellung oben, neue Bestellungen erscheinen unten
   const sortedOrders = [...orders].sort(
@@ -6067,10 +4685,7 @@ function renderOrders() {
   // KÜCHE
   const ordersList = $('ordersList');
 
-  if (ordersList && printMode) {
-    updatePendingCounter('kitchenPendingCount', 0);
-    ordersList.innerHTML = '<p class="muted">Bon-Druck ist aktiv: Bestellungen werden gedruckt und erscheinen hier nicht.</p>';
-  } else if (ordersList) {
+  if (ordersList) {
     const kitchenOrders = sortedOrders.filter(o => {
       const items = (o.order_items || []).filter(i => !isDrink(i));
 
@@ -6091,10 +4706,7 @@ function renderOrders() {
   // THEKE
   const barList = $('barList');
 
-  if (barList && printMode) {
-    updatePendingCounter('barPendingCount', 0);
-    barList.innerHTML = '<p class="muted">Bon-Druck ist aktiv: Bestellungen werden gedruckt und erscheinen hier nicht.</p>';
-  } else if (barList) {
+  if (barList) {
     const barOrders = sortedOrders.filter(o => {
       const items = (o.order_items || []).filter(isDrink);
 
@@ -6129,7 +4741,6 @@ function renderOrders() {
     const drinkItems = items.filter(isDrink);
 
     if (
-      !printMode &&
       foodItems.length &&
       isDone(o.kitchen_status) &&
       o.runner_food_status !== 'delivered'
@@ -6138,7 +4749,6 @@ function renderOrders() {
     }
 
     if (
-      !printMode &&
       drinkItems.length &&
       isDone(o.bar_status) &&
       o.runner_drink_status !== 'delivered'
@@ -6666,74 +5276,7 @@ async function toggleMenu(id, active) {
 
 
 
-
-/* ---------- Tagesabschluss: Bestellungen pro Person und Verkäufe pro Artikel ---------- */
-async function loadClosingDetails(date) {
-  const el = $('closingDetails');
-  if (!el) return;
-  el.innerHTML = '<p class="muted">Auswertung wird geladen …</p>';
-  const chf = n => new Intl.NumberFormat('de-CH', { style: 'currency', currency: 'CHF' }).format(Number(n || 0));
-  try {
-    const von = new Date(date + 'T00:00:00');
-    const bis = new Date(von.getTime()); bis.setDate(bis.getDate() + 1);
-
-    // Artikel pro Bestellung des Tages
-    const { data: rows, error } = await sb.from('orders')
-      .select('id, created_by, order_items(name_snapshot, name, quantity, unit_price, line_total)')
-      .gte('created_at', von.toISOString())
-      .lt('created_at', bis.toISOString())
-      .limit(5000);
-    if (error) throw error;
-    const orders = rows || [];
-
-    // Namen der Mitarbeitenden (nur wenn lesbar)
-    const names = new Map();
-    try {
-      const { data: ppl } = await sb.from('profiles').select('id, display_name, email').eq('organization_id', profile.organization_id);
-      (ppl || []).forEach(m => names.set(m.id, m.display_name || m.email || 'Unbekannt'));
-    } catch (_) {}
-
-    const perPerson = new Map();
-    const perItem = new Map();
-    orders.forEach(o => {
-      const who = o.created_by ? (names.get(o.created_by) || 'Mitarbeiter ' + String(o.created_by).slice(0, 6)) : 'Unbekannt';
-      let sum = 0;
-      (o.order_items || []).forEach(i => {
-        const qty = Number(i.quantity || 0);
-        const amount = Number(i.line_total ?? qty * Number(i.unit_price || 0));
-        sum += amount;
-        const name = i.name_snapshot || i.name || 'Artikel';
-        const it = perItem.get(name) || { qty: 0, amount: 0 };
-        it.qty += qty; it.amount += amount;
-        perItem.set(name, it);
-      });
-      const p = perPerson.get(who) || { count: 0, amount: 0 };
-      p.count += 1; p.amount += sum;
-      perPerson.set(who, p);
-    });
-
-    if (!orders.length) { el.innerHTML = '<p class="muted">An diesem Tag gibt es keine Bestellungen.</p>'; return; }
-
-    const personRows = [...perPerson.entries()].sort((a, b) => b[1].count - a[1].count)
-      .map(([n, v]) => `<tr><td>${esc(n)}</td><td class="right">${v.count}</td><td class="right">${chf(v.amount)}</td></tr>`).join('');
-    const itemRows = [...perItem.entries()].sort((a, b) => b[1].qty - a[1].qty)
-      .map(([n, v]) => `<tr><td>${esc(n)}</td><td class="right">${v.qty}</td><td class="right">${chf(v.amount)}</td></tr>`).join('');
-    const totalQty = [...perItem.values()].reduce((a, v) => a + v.qty, 0);
-    const totalAmt = [...perItem.values()].reduce((a, v) => a + v.amount, 0);
-
-    el.innerHTML = `
-      <h3>Bestellungen pro Person</h3>
-      <table class="table"><thead><tr><th>Person</th><th class="right">Bestellungen</th><th class="right">Umsatz</th></tr></thead><tbody>${personRows}</tbody></table>
-      <h3 style="margin-top:18px">Verkauft pro Artikel</h3>
-      <table class="table"><thead><tr><th>Artikel</th><th class="right">Menge</th><th class="right">Umsatz</th></tr></thead><tbody>${itemRows}
-        <tr><td><strong>Total</strong></td><td class="right"><strong>${totalQty}</strong></td><td class="right"><strong>${chf(totalAmt)}</strong></td></tr></tbody></table>`;
-  } catch (e) {
-    el.innerHTML = '<div class="msg error">Auswertung nicht möglich: ' + esc(e?.message || e)
-      + '<br>Falls die Spalte «created_by» fehlt, bitte das SQL «closing_details.sql» in Supabase ausführen.</div>';
-  }
-}
-
-async function calculateClosing(){const date=$('closingDate').value;if(!date){say('Bitte ein Datum auswählen.',true);return null;}try{const {data,error}=await sb.rpc('get_day_summary',{p_business_date:date});if(error)throw error;const d=Array.isArray(data)?data[0]:data;if(!d)throw new Error('Keine Abrechnung erhalten.');$('closingSummary').innerHTML=`<div class="totals"><div class="totalbox">Umsatz Bestellungen<strong>${money(d.total_sales)}</strong></div><div class="totalbox">Bar bezahlt<strong>${money(d.cash_total)}</strong></div><div class="totalbox">TWINT bezahlt<strong>${money(d.twint_total)}</strong></div><div class="totalbox">Noch offen<strong>${money(d.open_amount)}</strong></div><div class="totalbox">Anzahl Bestellungen<strong>${Number(d.order_count||0)}</strong></div></div>`;loadClosingDetails(date);return d;}catch(e){say('Abrechnung konnte nicht berechnet werden: '+e.message,true);return null;}}
+async function calculateClosing(){const date=$('closingDate').value;if(!date){say('Bitte ein Datum auswählen.',true);return null;}try{const {data,error}=await sb.rpc('get_day_summary',{p_business_date:date});if(error)throw error;const d=Array.isArray(data)?data[0]:data;if(!d)throw new Error('Keine Abrechnung erhalten.');$('closingSummary').innerHTML=`<div class="totals"><div class="totalbox">Umsatz Bestellungen<strong>${money(d.total_sales)}</strong></div><div class="totalbox">Bar bezahlt<strong>${money(d.cash_total)}</strong></div><div class="totalbox">TWINT bezahlt<strong>${money(d.twint_total)}</strong></div><div class="totalbox">Noch offen<strong>${money(d.open_amount)}</strong></div><div class="totalbox">Anzahl Bestellungen<strong>${Number(d.order_count||0)}</strong></div></div>`;return d;}catch(e){say('Abrechnung konnte nicht berechnet werden: '+e.message,true);return null;}}
 
 
 
@@ -6832,53 +5375,33 @@ function normRolle(r) {
 }
 
 async function loadProfile() {
-  const readProfile = () => sb
+  const { data, error } = await sb
     .from('profiles')
     .select('id, email, display_name, role, organization_id')
     .eq('id', currentUser.id)
-    .limit(1)
-    .maybeSingle();
+    .single();
 
-  let data = null;
-  let lastError = null;
-
-  // 1) Lesen mit Wiederholungen (Profil wird nach Registrierung evtl. verzögert per Trigger angelegt)
-  for (let versuch = 0; versuch < 4 && !data; versuch++) {
-    if (versuch > 0) await new Promise(r => setTimeout(r, 400 * versuch));
-    const res = await readProfile();
-    if (res.error) { lastError = res.error; continue; }
-    data = res.data;
-  }
-
-  // 2) Fehlt das Profil, selbst anlegen und erneut lesen
-  if (!data) {
-    const ins = await sb
-      .from('profiles')
-      .upsert({ id: currentUser.id, email: currentUser.email || null },
-              { onConflict: 'id', ignoreDuplicates: true });
-    if (ins.error) lastError = ins.error;
-    const res = await readProfile();
-    if (res.error) lastError = res.error;
-    data = res.data;
+  if (error) {
+    throw new Error('Benutzerprofil konnte nicht geladen werden: ' + error.message);
   }
 
   if (!data) {
-    throw new Error(
-      'Für dein Konto existiert kein lesbares Profil' +
-      (lastError ? ' (' + lastError.message + ')' : '') +
-      '. Bitte SQL-Reparatur für die Tabelle "profiles" in Supabase ausführen.'
-    );
+    throw new Error('Kein Benutzerprofil gefunden.');
   }
 
   profile = {
     id: data.id,
     email: data.email || currentUser.email || '',
-    display_name: data.display_name || data.email || currentUser.email || 'Angemeldeter Benutzer',
+    display_name:
+      data.display_name ||
+      data.email ||
+      currentUser.email ||
+      'Angemeldeter Benutzer',
     role: normRolle(data.role),
     organization_id: data.organization_id || null
   };
-  await checkOperator();
 }
+
 
 
 
@@ -7435,7 +5958,7 @@ document.getElementById('togglePassword')?.addEventListener('click', function ()
   const anzeigen = password.type === 'password';
 
   password.type = anzeigen ? 'text' : 'password';
-  this.textContent = anzeigen ? '👁' : '👁';
+  this.textContent = anzeigen ? '🙈' : '👁';
   this.title = anzeigen ? 'Passwort verbergen' : 'Passwort anzeigen';
   this.setAttribute(
     'aria-label',
@@ -7464,9 +5987,7 @@ document.getElementById('togglePassword')?.addEventListener('click', function ()
     const ziel = document.getElementById('drinkPaymentHeading');
     if (!bar || !ziel) return;
     const sichtbar = ziel.getBoundingClientRect().top < window.innerHeight - 40;
-    // Leiste nur ausblenden, wenn nichts im Warenkorb liegt (sonst fehlt der Senden-Knopf bei kurzen Seiten)
-    const leer = document.getElementById('submitOrderBtn')?.disabled !== false;
-    bar.classList.toggle('cart-bar-hidden', sichtbar && leer);
+    bar.classList.toggle('cart-bar-hidden', sichtbar);
   }
   window.addEventListener('scroll', updateCartBar, { passive: true });
   window.addEventListener('resize', updateCartBar);
