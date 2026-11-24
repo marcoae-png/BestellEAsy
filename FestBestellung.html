@@ -2831,6 +2831,27 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 </button>
 </section>
 
+<section id="operatorView" class="panel hidden">
+  <h2 class="section-title">Betreiber: Vereine &amp; Zugänge</h2>
+
+  <p class="muted">
+    Zahlung eingegangen? Paket wählen und die Laufzeit verlängern.
+    Die Verlängerung rechnet ab dem bisherigen Ablauf, oder ab heute,
+    falls er schon vorbei ist.
+  </p>
+
+  <div class="actions" style="margin-bottom:12px">
+    <button type="button" id="operatorReloadBtn" class="secondary">
+      Liste aktualisieren
+    </button>
+  </div>
+
+  <div id="operatorList"></div>
+</section>
+
+
+
+  
 <section id="teamView" class="panel hidden">
 <h2 class="section-title">Team &amp; Einladungen</h2>
 <p class="muted">Erzeuge einen Code und gib ihn deinen Helferinnen und Helfern. Sie registrieren sich, geben den Code ein und landen mit der gewählten Rolle in deinem Verein.</p>
@@ -2956,12 +2977,18 @@ function firstTab(){return ['service','orders','closing','admin'].find(allowed) 
 
 
 function allowed(tab) {
+  if (tab === 'operator') return isOperator;
+
   const erlaubt = {
-    admin:   ['service', 'orders', 'bar', 'runner', 'closing', 'admin', 'team'],
+    admin: [
+      'service', 'orders', 'bar', 'runner',
+      'closing', 'admin', 'team'
+    ],
     service: ['service', 'orders', 'bar', 'runner'],
     kitchen: ['orders', 'bar'],
     closing: ['closing']
   }[profile?.role] || ['service', 'orders', 'bar', 'runner'];
+
   return erlaubt.includes(tab);
 }
 
@@ -3154,15 +3181,16 @@ document.addEventListener('input', e => {
 });
 
 function renderTabs() {
-  const all = [
-    ['service', 'Neue Bestellung'],
-    ['orders', 'Küche'],
-    ['bar', 'Theke / Ausschank'],
-    ['runner', 'Läufer'],
-    ['closing', 'Tagesabschluss'],
-    ['admin', 'Menü verwalten'],
-    ['team', 'Team']
-  ];
+ const all = [
+  ['service', 'Neue Bestellung'],
+  ['orders', 'Küche'],
+  ['bar', 'Theke / Ausschank'],
+  ['runner', 'Läufer'],
+  ['closing', 'Tagesabschluss'],
+  ['admin', 'Menü verwalten'],
+  ['team', 'Team'],
+  ['operator', 'Betreiber']
+];
 
   const tabs = $('tabs');
   if (!tabs) {
@@ -3207,13 +3235,15 @@ function showTab(tab) {
   activeTab = tab;
 
   // Alle Ansichten ausblenden und nur den aktiven Bereich anzeigen
-  ['service', 'orders', 'bar', 'runner', 'closing', 'admin', 'team']
-    .forEach(t => {
-      const view = $(t + 'View');
-      if (view) {
-        view.classList.toggle('hidden', t !== tab);
-      }
-    });
+[
+  'service', 'orders', 'bar', 'runner',
+  'closing', 'admin', 'team', 'operator'
+].forEach(t => {
+  const view = $(t + 'View');
+  if (view) {
+    view.classList.toggle('hidden', t !== tab);
+  }
+});
 
   // Aktiven Reiter markieren
   $('tabs').querySelectorAll('button').forEach(b => {
@@ -5572,13 +5602,263 @@ async function loadProfile() {
     role: normRolle(data.role),
     organization_id: data.organization_id || null
   };
+
+  await checkOperator();
 }
 
 
 
 
 
+/* ===================== Betreiber-Bereich ===================== */
 
+let isOperator = false;
+
+async function checkOperator() {
+  try {
+    const { data, error } = await sb.rpc('is_operator');
+    isOperator = !error && data === true;
+  } catch (e) {
+    isOperator = false;
+  }
+}
+
+async function loadOperator() {
+  const el = $('operatorList');
+
+  if (!isOperator || !el) return;
+
+  try {
+    const { data, error } = await sb.rpc('operator_list_orgs');
+
+    if (error) throw error;
+
+    const heute = new Date().toLocaleDateString(
+      'en-CA',
+      { timeZone: 'Europe/Zurich' }
+    );
+
+    const fmt = d =>
+      d ? d.split('-').reverse().join('.') : '–';
+
+    el.innerHTML = (data && data.length)
+      ? `<table class="table">
+          <thead>
+            <tr>
+              <th>Verein</th>
+              <th>Paket</th>
+              <th>Bis</th>
+              <th>Status</th>
+              <th>Mitglieder</th>
+              <th>Verlängern</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${
+              data.map(o => {
+                const aktiv =
+                  o.plan !== 'none' &&
+                  o.paid_until &&
+                  o.paid_until >= heute;
+
+                const status = aktiv
+                  ? '<span class="pill green">aktiv</span>'
+                  : (
+                      o.plan !== 'none' && o.paid_until
+                        ? '<span class="pill red">abgelaufen</span>'
+                        : '<span class="pill">nicht freigeschaltet</span>'
+                    );
+
+                const eigener =
+                  o.id === profile?.organization_id;
+
+                return `
+                  <tr>
+                    <td><strong>${esc(o.name)}</strong></td>
+
+                    <td>
+                      <select data-op-plan="${esc(o.id)}">
+                        ${
+                          [
+                            ['none', 'Kein Zugang'],
+                            ['standard', 'Standard'],
+                            ['printer', 'Mit Drucker']
+                          ].map(([k, v]) =>
+                            `<option value="${k}"
+                              ${k === o.plan ? 'selected' : ''}>
+                              ${v}
+                            </option>`
+                          ).join('')
+                        }
+                      </select>
+                    </td>
+
+                    <td>${esc(fmt(o.paid_until))}</td>
+                    <td>${status}</td>
+                    <td>${Number(o.members)}</td>
+
+                    <td>
+                      <div class="actions">
+
+                        <button type="button"
+                          data-op-org="${esc(o.id)}"
+                          data-op-months="1">
+                          +1 Monat
+                        </button>
+
+                        <button type="button"
+                          data-op-org="${esc(o.id)}"
+                          data-op-months="3">
+                          +3
+                        </button>
+
+                        <button type="button"
+                          data-op-org="${esc(o.id)}"
+                          data-op-months="12">
+                          +12
+                        </button>
+
+                        <button type="button"
+                          class="secondary"
+                          data-op-org="${esc(o.id)}"
+                          data-op-months="0">
+                          Nur Paket speichern
+                        </button>
+
+                        <button type="button"
+                          class="danger"
+                          data-op-delete="${esc(o.id)}"
+                          data-op-name="${esc(o.name)}"
+                          ${eigener
+                            ? 'disabled title="Dein eigener Verein"'
+                            : ''}>
+                          Löschen
+                        </button>
+
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join('')
+            }
+          </tbody>
+        </table>`
+      : '<p class="muted">Noch keine Vereine.</p>';
+
+  } catch (e) {
+    say(
+      'Betreiberliste konnte nicht geladen werden: ' +
+      (e?.message || e),
+      true
+    );
+  }
+}
+
+
+// Paket speichern und Laufzeit verlängern
+document.addEventListener('click', async e => {
+
+  if (e.target.closest('#operatorReloadBtn')) {
+    loadOperator();
+    return;
+  }
+
+  const b = e.target.closest('[data-op-org]');
+
+  if (!b || !isOperator) return;
+
+  const id = b.dataset.opOrg;
+  const months = Number(b.dataset.opMonths || 0);
+
+  const sel = document.querySelector(
+    `[data-op-plan="${CSS.escape(id)}"]`
+  );
+
+  if (!sel) return;
+
+  b.disabled = true;
+
+  try {
+    const { error } = await sb.rpc(
+      'operator_set_subscription',
+      {
+        p_org: id,
+        p_plan: sel.value,
+        p_months: months
+      }
+    );
+
+    if (error) throw error;
+
+    showSuccessToast('✓ Gespeichert.');
+
+    await loadOperator();
+
+  } catch (err) {
+    b.disabled = false;
+
+    say(
+      'Konnte nicht gespeichert werden: ' +
+      (err?.message || err),
+      true
+    );
+  }
+});
+
+
+// Verein löschen
+document.addEventListener('click', async e => {
+
+  const b = e.target.closest('[data-op-delete]');
+
+  if (!b || !isOperator || b.disabled) return;
+
+  const name = b.dataset.opName || '';
+
+  const eingabe = prompt(
+    'Verein «' + name + '» endgültig löschen?\n\n' +
+    'Das entfernt den Verein mit seinen Daten und lässt sich nicht rückgängig machen.\n' +
+    'Zum Bestätigen den Namen des Vereins eintippen:'
+  );
+
+  if (eingabe === null) return;
+
+  if (eingabe.trim() !== name) {
+    say(
+      'Der Name stimmt nicht überein. Es wurde nichts gelöscht.',
+      true
+    );
+    return;
+  }
+
+  b.disabled = true;
+
+  try {
+    const { error } = await sb.rpc(
+      'operator_delete_org',
+      { p_org: b.dataset.opDelete }
+    );
+
+    if (error) throw error;
+
+    showSuccessToast(
+      '✓ Verein «' + name + '» wurde gelöscht.'
+    );
+
+    await loadOperator();
+
+  } catch (err) {
+    b.disabled = false;
+
+    say(
+      'Verein konnte nicht gelöscht werden: ' +
+      (err?.message || err),
+      true
+    );
+  }
+});
+
+/* =================== Ende Betreiber-Bereich =================== */
 
 // Ereignisse sicher verbinden
 function onClickIfExists(id, handler) {
