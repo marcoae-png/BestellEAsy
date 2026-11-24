@@ -6758,12 +6758,17 @@ async function loadOperator() {
 
     // Abo-Wünsche der Vereine (optional: fehlt die Funktion, wird einfach nichts angezeigt)
     const wuensche = new Map();
+    let wunschFehler = '';
     try {
       const { data: req, error: reqErr } = await sb.rpc('operator_list_requests');
-      if (!reqErr && Array.isArray(req)) {
+      if (reqErr) throw reqErr;
+      if (Array.isArray(req)) {
         req.forEach(r => wuensche.set(String(r.org_id), r));
       }
-    } catch (e) { console.warn('operator_list_requests:', e); }
+    } catch (e) {
+      console.warn('operator_list_requests:', e);
+      wunschFehler = e?.message || String(e);
+    }
 
     const heute = new Date().toLocaleDateString(
       'en-CA',
@@ -6900,6 +6905,12 @@ async function loadOperator() {
           </tbody>
         </table>`
       : '<p class="muted">Noch keine Vereine.</p>';
+
+    if (wunschFehler) {
+      el.insertAdjacentHTML('afterbegin',
+        '<div class="msg error">Abo-Wünsche konnten nicht geladen werden: ' +
+        esc(wunschFehler) + '</div>');
+    }
 
   } catch (e) {
     say(
