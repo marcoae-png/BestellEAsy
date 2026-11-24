@@ -2489,9 +2489,6 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
       Warme Getränke – mit Alkohol
     </option>
 
-    <option value="Kalte Getränke">Kalte Getränke (alt)</option>
-    <option value="Warme Getränke">Warme Getränke (alt)</option>
-    <option value="Getränke">Getränke (alt)</option>
 
     <option value="Dessert">Dessert</option>
     <option value="Sonstiges">Sonstiges</option>
@@ -2552,9 +2549,6 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
     <option value="Warme Getränke ohne Alkohol">Warme Getränke – ohne Alkohol</option>
     <option value="Warme Getränke mit Alkohol">Warme Getränke – mit Alkohol</option>
 
-    <option value="Kalte Getränke">Kalte Getränke (alt)</option>
-    <option value="Warme Getränke">Warme Getränke (alt)</option>
-    <option value="Getränke">Getränke (alt)</option>
 
     <option value="Dessert">Dessert</option>
     <option value="Sonstiges">Sonstiges</option>
@@ -5982,7 +5976,16 @@ async function editMenuItem(id) {
 
     $('editMenuId').value = item.id;
     $('editMenuName').value = item.name || '';
-    $('editMenuCategory').value = item.category || 'Essen';
+    // Alte Kategorien (Getränke / Kalte Getränke / Warme Getränke) auf die neuen abbilden
+    let kat = item.category || 'Essen';
+    if (['getränke', 'kalte getränke', 'warme getränke'].includes(String(kat).trim().toLowerCase())) {
+      const nm = String(item.name || '');
+      const warm = String(kat).trim().toLowerCase() === 'warme getränke' ||
+        /kaffee|kafi|tee|espresso|cappuccino|latte|schoggi|heiss|punsch|schäfeler/i.test(nm);
+      const alk = /bier|wein|most|luz|schnaps|kafi.*(luz|schnaps)|schäfeler/i.test(nm) && !/alkoholfrei/i.test(nm);
+      kat = (warm ? 'Warme' : 'Kalte') + ' Getränke ' + (alk ? 'mit' : 'ohne') + ' Alkohol';
+    }
+    $('editMenuCategory').value = kat;
     $('editMenuPrice').value = item.price ?? 0;
     $('editMenuNoteOptions').value = item.note_options || '';
 
@@ -6021,9 +6024,10 @@ async function saveMenuEdit() {
   if (![
     'Essen',
     'Snacks',
-    'Kalte Getränke',
-    'Warme Getränke',
-    'Getränke',
+    'Kalte Getränke ohne Alkohol',
+    'Kalte Getränke mit Alkohol',
+    'Warme Getränke ohne Alkohol',
+    'Warme Getränke mit Alkohol',
     'Dessert',
     'Sonstiges'
   ].includes(category)) {
