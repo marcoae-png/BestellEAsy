@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- saved from url=(0076)https://marcoae-png.github.io/bfs-delegiertenversammlung/FestBestellung.html -->
 <html lang="de-CH"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta property="og:type" content="website">
@@ -1672,6 +1671,20 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
   #menuGrid .item-pic{width:44px;height:44px;font-size:1.75rem}
   #menuGrid .menu-category .item h3{font-size:1.1rem !important}
 }
+
+
+
+  .order-item-note {
+  margin: 5px 0 8px 20px;
+  padding: 5px 8px;
+  background: #fff3cd;
+  border-left: 3px solid #d69e00;
+  border-radius: 4px;
+  color: #664d03;
+  font-size: 0.9em;
+}
+
+  
 </style>
 </head>
 <body>
@@ -2255,6 +2268,21 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
     <input id="menuPrice" type="number" min="0" step="0.05" placeholder="8.50">
   </div>
 </div>
+  
+<div>
+  <label for="menuNoteOptions">
+    Zusatzoptionen / Bemerkungen
+  </label>
+  <textarea
+    id="menuNoteOptions"
+    rows="3"
+    placeholder="Ketchup&#10;Mayonnaise&#10;Ketchup und Mayonnaise&#10;Ohne Sauce"
+  ></textarea>
+  <small class="muted">
+    Eine Auswahl pro Zeile. Leer lassen, wenn keine Zusatzoptionen nötig sind.
+  </small>
+</div>
+
 
 <div class="actions" style="margin:10px 0 18px">
   <button id="addMenuBtn" type="button">
@@ -2292,6 +2320,22 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
       <input type="number" id="editMenuPrice" min="0" step="0.05" required="">
     </div>
   </div>
+
+  <div>
+    <label for="editMenuNoteOptions">
+      Zusatzoptionen / Bemerkungen
+    </label>
+    <textarea
+      id="editMenuNoteOptions"
+      rows="3"
+      placeholder="Ketchup&#10;Mayonnaise&#10;Ketchup und Mayonnaise&#10;Ohne Sauce"
+    ></textarea>
+    <small class="muted">
+      Eine Auswahl pro Zeile. Leer lassen, wenn keine Zusatzoptionen nötig sind.
+    </small>
+  </div>
+
+  
 
   <div class="actions" style="margin-top:10px">
     <button type="button" id="saveMenuEdit">
@@ -3272,7 +3316,7 @@ if (tab === 'service') {
 
 
 
-async function loadMenu(){const {data,error}=await sb.from('menu_items').select('id,name,category,price,active').eq('active',true).order('category').order('name');if(error)throw error;menu=data||[];renderMenu();}
+async function loadMenu(){const {data,error}=await sb.from('menu_items').select('id,name,category,price,active,note_options').eq('active',true).order('category').order('name');if(error)throw error;menu=data||[];renderMenu();}
 
 
 
@@ -3644,14 +3688,48 @@ function clearSelection() {
   renderMenu();
 }
 
-function addToCart(id){
-  const item=menu.find(m=>m.id===id);
-  if(!item)return;
-  const current=cart.get(id)?.quantity||0;
-  if(current>=99){say('Maximal 99 Stück pro Produkt möglich.',true);return;}
-  cart.set(id,{menu_item_id:id,quantity:current+1,name:item.name,price:Number(item.price)});
+
+function addToCart(id) {
+  const item = menu.find(m => m.id === id);
+  if (!item) return;
+
+  let specialNote = '';
+
+  const options = String(item.note_options || '')
+    .split('\n')
+    .map(x => x.trim())
+    .filter(Boolean);
+
+  if (options.length) {
+    specialNote = prompt(
+      'Zusatz für ' + item.name + ':\n\n' +
+      options.map((x, i) => (i + 1) + '. ' + x).join('\n') +
+      '\n\nGewünschte Auswahl eingeben:'
+    );
+
+    if (specialNote === null) return;
+    specialNote = specialNote.trim();
+  }
+
+  const key = id + '|' + specialNote;
+  const current = cart.get(key)?.quantity || 0;
+
+  if (current >= 99) {
+    say('Maximal 99 Stück pro Auswahl möglich.', true);
+    return;
+  }
+
+  cart.set(key, {
+    menu_item_id: id,
+    quantity: current + 1,
+    name: item.name,
+    price: Number(item.price),
+    special_note: specialNote
+  });
+
   renderMenu();
 }
+
 function removeFromCart(id){
   const cur=cart.get(id);
   if(!cur)return;
@@ -4061,6 +4139,8 @@ document.addEventListener('DOMContentLoaded', fillPrintForm);
 fillPrintForm();
 /* =================== Ende Drucker-Modul =================== */
 
+
+  
 async function submitOrder() {
   if (!cart.size) {
     say('Bitte zuerst Artikel auswählen.', true);
@@ -4108,10 +4188,11 @@ console.log('Feldprüfung:', {
  const table = Number(tableEl.value);
 const method = methodEl ? methodEl.value : 'cash';
 
-  const items = Array.from(cart.values()).map(i => ({
-    menu_item_id: i.menu_item_id,
-    quantity: i.quantity
-  }));
+const items = Array.from(cart.values()).map(i => ({
+  menu_item_id: i.menu_item_id,
+  quantity: i.quantity,
+  special_note: i.special_note || ''
+}));
 
   button.disabled = true;
 
@@ -4188,6 +4269,7 @@ const { data, error } = await sb
       category,
       quantity,
       unit_price,
+      special_note,
       line_total
     )
   `)
@@ -4339,6 +4421,8 @@ function orderHTML(o) {
       return 'kitchen-item-getraenke';
     }
 
+
+    
     if (kategorie === 'dessert') {
       return 'kitchen-item-dessert';
     }
@@ -4372,14 +4456,24 @@ function orderHTML(o) {
         </div>
       </div>
 
-      <ul>
-        ${(o.order_items || []).map(i => `
-          <li class="${artikelKlasse(i)}">
-            <strong>${esc(String(i.quantity))} × ${esc(String(i.name_snapshot || i.name || 'Artikel'))}</strong>
-            <span class="muted">(${money(i.line_total)})</span>
-          </li>
-        `).join('')}
-      </ul>
+<ul>
+  ${(o.order_items || []).map(i => `
+    <li class="${artikelKlasse(i)}">
+      <strong>
+        ${esc(String(i.quantity))} ×
+        ${esc(String(i.name_snapshot || i.name || 'Artikel'))}
+      </strong>
+      <span class="muted">(${money(i.line_total)})</span>
+
+      ${i.special_note ? `
+        <div class="order-item-note">
+          <strong>Bemerkung:</strong>
+          ${esc(String(i.special_note))}
+        </div>
+      ` : ''}
+    </li>
+  `).join('')}
+</ul>
 
       <div class="actions">
         ${o.status !== 'done'
@@ -5203,7 +5297,40 @@ async function setStatus(id, status) {
 
   
 
-  async function addMenuItem(){const name=$('menuName').value.trim(),category=$('menuCategory').value,price=Number($('menuPrice').value);if(!name||!Number.isFinite(price)||price<0){say('Bitte Name und gültigen Preis erfassen.',true);return;}try{const {error}=await sb.from('menu_items').insert({name,category,price,active:true});if(error)throw error;$('menuName').value='';$('menuPrice').value='';await loadMenu();await loadAdmin();say('Artikel hinzugefügt.');}catch(e){say('Artikel konnte nicht gespeichert werden: '+e.message,true);}}
+async function addMenuItem() {
+  const name = $('menuName').value.trim();
+  const category = $('menuCategory').value;
+  const price = Number($('menuPrice').value);
+  const noteOptions = $('menuNoteOptions').value.trim();
+
+  if (!name || !Number.isFinite(price) || price < 0) {
+    say('Bitte Name und gültigen Preis erfassen.', true);
+    return;
+  }
+
+  try {
+    const { error } = await sb.from('menu_items').insert({
+      name,
+      category,
+      price,
+      note_options: noteOptions || null,
+      active: true
+    });
+
+    if (error) throw error;
+
+    $('menuName').value = '';
+    $('menuPrice').value = '';
+    $('menuNoteOptions').value = '';
+
+    await loadMenu();
+    await loadAdmin();
+
+    say('Artikel hinzugefügt.');
+  } catch (e) {
+    say('Artikel konnte nicht gespeichert werden: ' + e.message, true);
+  }
+}
 
 
 
@@ -5211,9 +5338,9 @@ async function loadAdmin() {
   try {
     const { data, error } = await sb
       .from('menu_items')
-      .select('id,name,category,price,active')
+ .select('id,name,category,price,active,note_options')
       .order('category')
-      .order('name');
+       .order('name');
 
     if (error) throw error;
 
@@ -5373,7 +5500,7 @@ async function editMenuItem(id) {
   try {
     const { data: item, error } = await sb
       .from('menu_items')
-      .select('id,name,category,price')
+      .select('id,name,category,price,note_options')
       .eq('id', id)
       .single();
 
@@ -5383,6 +5510,7 @@ async function editMenuItem(id) {
     $('editMenuName').value = item.name || '';
     $('editMenuCategory').value = item.category || 'Essen';
     $('editMenuPrice').value = item.price ?? 0;
+    $('editMenuNoteOptions').value = item.note_options || '';
 
     $('editMenuForm').classList.remove('hidden');
     $('editMenuName').focus();
@@ -5391,7 +5519,6 @@ async function editMenuItem(id) {
     say('Menüartikel konnte nicht geladen werden: ' + e.message, true);
   }
 }
-
 async function saveMenuEdit() {
   if (!profile || profile.role !== 'admin') {
     say('Keine Berechtigung: Nur Admins dürfen Menüartikel bearbeiten.', true);
@@ -5422,10 +5549,11 @@ async function saveMenuEdit() {
     const { error } = await sb
       .from('menu_items')
       .update({
-        name,
-        category,
-        price
-      })
+  name,
+  category,
+  price,
+  note_options: $('editMenuNoteOptions').value.trim()
+})
       .eq('id', id);
 
     if (error) throw error;
