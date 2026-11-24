@@ -1870,6 +1870,34 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
   font-size: 1rem;
   padding: 7px 12px;
 }
+
+.order-item-note {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 8px 0 10px 20px;
+  padding: 9px 13px;
+  background: #e8f1eb;
+  border: 1px solid #cbded0;
+  border-radius: 9px;
+  color: #245c3b;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.option-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: #245c3b;
+  color: white;
+  font-size: 15px;
+}
+
   
   
 </style>
@@ -4643,6 +4671,7 @@ const { data, error } = await sb
 
 
 
+
 function orderHTML(o) {
   const status =
     o.status === 'new' ? 'Neu' :
@@ -4652,7 +4681,6 @@ function orderHTML(o) {
   const next = o.status === 'new' ? 'in_progress' : 'done';
   const paymentLabel = o.payment_method === 'twint' ? 'TWINT' : 'Bar';
 
-  // Artikel anhand ihrer Kategorie einfärben
   function artikelKlasse(i) {
     const kategorie = String(i.category || i.category_snapshot || '')
       .trim()
@@ -4672,8 +4700,6 @@ function orderHTML(o) {
       return 'kitchen-item-getraenke';
     }
 
-
-    
     if (kategorie === 'dessert') {
       return 'kitchen-item-dessert';
     }
@@ -4707,24 +4733,24 @@ function orderHTML(o) {
         </div>
       </div>
 
-<ul>
-  ${(o.order_items || []).map(i => `
-    <li class="${artikelKlasse(i)}">
-      <strong>
-        ${esc(String(i.quantity))} ×
-        ${esc(String(i.name_snapshot || i.name || 'Artikel'))}
-      </strong>
-      <span class="muted">(${money(i.line_total)})</span>
+      <ul>
+        ${(o.order_items || []).map(i => `
+          <li class="${artikelKlasse(i)}">
+            <strong>
+              ${esc(String(i.quantity))} ×
+              ${esc(String(i.name_snapshot || i.name || 'Artikel'))}
+            </strong>
+            <span class="muted">(${money(i.line_total)})</span>
 
-      ${i.special_note ? `
-        <div class="order-item-note">
-          <strong>Bemerkung:</strong>
-          ${esc(String(i.special_note))}
-        </div>
-      ` : ''}
-    </li>
-  `).join('')}
-</ul>
+            ${i.special_note ? `
+              <div class="order-item-note">
+                <span class="option-check">✓</span>
+                ${esc(String(i.special_note))}
+              </div>
+            ` : ''}
+          </li>
+        `).join('')}
+      </ul>
 
       <div class="actions">
         ${o.status !== 'done'
@@ -5102,6 +5128,7 @@ function isDrinkCategory(item) {
     category.includes('drink');
 }
 
+
 function stationOrderHTML(order, station) {
   const isDrink = isDrinkCategory;
 
@@ -5149,11 +5176,20 @@ function stationOrderHTML(order, station) {
 
       <ul>
         ${items.map(item => `
-          <li>
-            ${esc(String(item.quantity))} ×
-            ${esc(String(
-              item.name_snapshot || item.name || 'Artikel'
-            ))}
+          <li class="${artikelKlasse(item)}">
+            <strong>
+              ${esc(String(item.quantity))} ×
+              ${esc(String(
+                item.name_snapshot || item.name || 'Artikel'
+              ))}
+            </strong>
+
+            ${item.special_note ? `
+              <div class="order-item-note">
+                <span class="option-check">✓</span>
+                ${esc(String(item.special_note))}
+              </div>
+            ` : ''}
           </li>
         `).join('')}
       </ul>
@@ -5169,6 +5205,7 @@ function stationOrderHTML(order, station) {
     </article>
   `;
 }
+
 
 
 
@@ -5589,7 +5626,7 @@ async function loadAdmin() {
   try {
     const { data, error } = await sb
       .from('menu_items')
- .select('id,name,category,price,active,note_options')
+.select('id,name,category,price,active,note_options')
       .order('category')
        .order('name');
 
@@ -5601,39 +5638,55 @@ async function loadAdmin() {
       return;
     }
 
-    adminMenuList.innerHTML = `
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Artikel</th>
-            <th>Kategorie</th>
-            <th>Preis</th>
-            <th>Aktiv</th>
-            <th>Aktionen</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${(data || []).map(m => `
-            <tr>
-              <td>${esc(m.name)}</td>
-              <td>${esc(m.category)}</td>
-              <td>${money(m.price)}</td>
-              <td>${m.active ? 'Ja' : 'Nein'}</td>
-              <td>
-                <button
-                  type="button"
-                  class="secondary"
-                  data-edit-menu="${esc(String(m.id))}">
-                  Bearbeiten
-                </button>
+  adminMenuList.innerHTML = `
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Artikel</th>
+        <th>Kategorie</th>
+        <th>Preis</th>
+        <th>Zusatzoptionen</th>
+        <th>Aktiv</th>
+        <th>Aktionen</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${(data || []).map(m => `
+        <tr>
+          <td>${esc(m.name)}</td>
+          <td>${esc(m.category)}</td>
+          <td>${money(m.price)}</td>
+          <td>
+            ${
+              m.note_options
+                ? m.note_options.split('\n').filter(x => x.trim()).map(x =>
+                    `<span class="admin-option-tag">${esc(x.trim())}</span>`
+                  ).join(' ')
+                : '<span style="color:#999;">Keine</span>'
+            }
+          </td>
+          <td>${m.active ? 'Ja' : 'Nein'}</td>
+          <td>
+            <button
+              type="button"
+              class="secondary"
+              data-edit-menu="${esc(String(m.id))}">
+              Bearbeiten
+            </button>
 
-                <button
-                  type="button"
-                  class="secondary"
-                  data-toggle-menu="${esc(String(m.id))}"
-                  data-active="${m.active}">
-                  ${m.active ? 'Deaktivieren' : 'Aktivieren'}
-                </button>
+            <button
+              type="button"
+              class="secondary"
+              data-toggle-menu="${esc(String(m.id))}"
+              data-active="${m.active}">
+              ${m.active ? 'Deaktivieren' : 'Aktivieren'}
+            </button>
+          </td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+`;
 
                 <button
                   type="button"
@@ -5770,6 +5823,7 @@ async function editMenuItem(id) {
     say('Menüartikel konnte nicht geladen werden: ' + e.message, true);
   }
 }
+
 async function saveMenuEdit() {
   if (!profile || profile.role !== 'admin') {
     say('Keine Berechtigung: Nur Admins dürfen Menüartikel bearbeiten.', true);
@@ -5782,13 +5836,27 @@ async function saveMenuEdit() {
   const priceText = $('editMenuPrice').value.trim();
   const price = Number(priceText);
 
+  const noteOptions = $('editMenuNoteOptions').value
+    .split('\n')
+    .map(option => option.trim())
+    .filter(Boolean)
+    .join('\n');
+
   if (!id || !name || priceText === '' ||
       !Number.isFinite(price) || price < 0) {
     say('Bitte Artikelname und einen gültigen Preis eingeben.', true);
     return;
   }
 
-  if (!['Essen', 'Snacks', 'Kalte Getränke', 'Warme Getränke', 'Getränke', 'Dessert', 'Sonstiges'].includes(category)) {
+  if (![
+    'Essen',
+    'Snacks',
+    'Kalte Getränke',
+    'Warme Getränke',
+    'Getränke',
+    'Dessert',
+    'Sonstiges'
+  ].includes(category)) {
     say('Ungültige Kategorie.', true);
     return;
   }
@@ -5800,11 +5868,11 @@ async function saveMenuEdit() {
     const { error } = await sb
       .from('menu_items')
       .update({
-  name,
-  category,
-  price,
-  note_options: $('editMenuNoteOptions').value.trim()
-})
+        name,
+        category,
+        price,
+        note_options: noteOptions || null
+      })
       .eq('id', id);
 
     if (error) throw error;
@@ -5815,13 +5883,16 @@ async function saveMenuEdit() {
     await loadAdmin();
 
     say('Menüartikel wurde aktualisiert.');
+
   } catch (e) {
     console.error('saveMenuEdit:', e);
     say('Änderungen konnten nicht gespeichert werden: ' + e.message, true);
+
   } finally {
     saveButton.disabled = false;
   }
 }
+
 
 function cancelMenuEdit() {
   $('editMenuForm').classList.add('hidden');
