@@ -3415,7 +3415,7 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
 
 
-<section id="closingView" class="panel hidden"><h2 class="section-title">Tagesabschluss</h2><div class="grid"><div><label for="closingDate">Datum</label><input id="closingDate" type="date"></div><div><label for="closingNotes">Bemerkungen (optional)</label><input id="closingNotes" placeholder="z. B. Kasse übergeben"></div></div><div class="actions" style="margin-top:12px"><button id="previewClosingBtn" class="secondary" type="button">Abrechnung berechnen</button><button id="saveClosingBtn" type="button">Tagesabschluss speichern</button></div><div id="closingSummary" style="margin-top:14px"></div><div id="closingHistory" style="margin-top:18px"><h3>Letzte Tagesabschlüsse</h3><p class="muted">Noch keine Tagesabschlüsse.</p></div></section>
+<section id="closingView" class="panel hidden"><h2 class="section-title">Tagesabschluss</h2><div class="grid"><div><label for="closingDate">Datum</label><input id="closingDate" type="date"></div><div><label for="closingNotes">Bemerkungen (optional)</label><input id="closingNotes" placeholder="z. B. Kasse übergeben"></div></div><div class="actions" style="margin-top:12px"><button id="previewClosingBtn" class="secondary" type="button">Abrechnung berechnen</button><button id="saveClosingBtn" type="button">Tagesabschluss speichern</button></div><div id="closingSummary" style="margin-top:14px"></div><div id="closingDetails" style="margin-top:14px"></div><div id="closingHistory" style="margin-top:18px"><h3>Letzte Tagesabschlüsse</h3><p class="muted">Noch keine Tagesabschlüsse.</p></div></section>
 
 <section id="adminView" class="panel hidden">
   <h2 class="section-title">Administration</h2>
@@ -6666,7 +6666,74 @@ async function toggleMenu(id, active) {
 
 
 
-async function calculateClosing(){const date=$('closingDate').value;if(!date){say('Bitte ein Datum auswählen.',true);return null;}try{const {data,error}=await sb.rpc('get_day_summary',{p_business_date:date});if(error)throw error;const d=Array.isArray(data)?data[0]:data;if(!d)throw new Error('Keine Abrechnung erhalten.');$('closingSummary').innerHTML=`<div class="totals"><div class="totalbox">Umsatz Bestellungen<strong>${money(d.total_sales)}</strong></div><div class="totalbox">Bar bezahlt<strong>${money(d.cash_total)}</strong></div><div class="totalbox">TWINT bezahlt<strong>${money(d.twint_total)}</strong></div><div class="totalbox">Noch offen<strong>${money(d.open_amount)}</strong></div><div class="totalbox">Anzahl Bestellungen<strong>${Number(d.order_count||0)}</strong></div></div>`;return d;}catch(e){say('Abrechnung konnte nicht berechnet werden: '+e.message,true);return null;}}
+
+/* ---------- Tagesabschluss: Bestellungen pro Person und Verkäufe pro Artikel ---------- */
+async function loadClosingDetails(date) {
+  const el = $('closingDetails');
+  if (!el) return;
+  el.innerHTML = '<p class="muted">Auswertung wird geladen …</p>';
+  const chf = n => new Intl.NumberFormat('de-CH', { style: 'currency', currency: 'CHF' }).format(Number(n || 0));
+  try {
+    const von = new Date(date + 'T00:00:00');
+    const bis = new Date(von.getTime()); bis.setDate(bis.getDate() + 1);
+
+    // Artikel pro Bestellung des Tages
+    const { data: rows, error } = await sb.from('orders')
+      .select('id, created_by, order_items(name_snapshot, name, quantity, unit_price, line_total)')
+      .gte('created_at', von.toISOString())
+      .lt('created_at', bis.toISOString())
+      .limit(5000);
+    if (error) throw error;
+    const orders = rows || [];
+
+    // Namen der Mitarbeitenden (nur wenn lesbar)
+    const names = new Map();
+    try {
+      const { data: ppl } = await sb.from('profiles').select('id, display_name, email').eq('organization_id', profile.organization_id);
+      (ppl || []).forEach(m => names.set(m.id, m.display_name || m.email || 'Unbekannt'));
+    } catch (_) {}
+
+    const perPerson = new Map();
+    const perItem = new Map();
+    orders.forEach(o => {
+      const who = o.created_by ? (names.get(o.created_by) || 'Mitarbeiter ' + String(o.created_by).slice(0, 6)) : 'Unbekannt';
+      let sum = 0;
+      (o.order_items || []).forEach(i => {
+        const qty = Number(i.quantity || 0);
+        const amount = Number(i.line_total ?? qty * Number(i.unit_price || 0));
+        sum += amount;
+        const name = i.name_snapshot || i.name || 'Artikel';
+        const it = perItem.get(name) || { qty: 0, amount: 0 };
+        it.qty += qty; it.amount += amount;
+        perItem.set(name, it);
+      });
+      const p = perPerson.get(who) || { count: 0, amount: 0 };
+      p.count += 1; p.amount += sum;
+      perPerson.set(who, p);
+    });
+
+    if (!orders.length) { el.innerHTML = '<p class="muted">An diesem Tag gibt es keine Bestellungen.</p>'; return; }
+
+    const personRows = [...perPerson.entries()].sort((a, b) => b[1].count - a[1].count)
+      .map(([n, v]) => `<tr><td>${esc(n)}</td><td class="right">${v.count}</td><td class="right">${chf(v.amount)}</td></tr>`).join('');
+    const itemRows = [...perItem.entries()].sort((a, b) => b[1].qty - a[1].qty)
+      .map(([n, v]) => `<tr><td>${esc(n)}</td><td class="right">${v.qty}</td><td class="right">${chf(v.amount)}</td></tr>`).join('');
+    const totalQty = [...perItem.values()].reduce((a, v) => a + v.qty, 0);
+    const totalAmt = [...perItem.values()].reduce((a, v) => a + v.amount, 0);
+
+    el.innerHTML = `
+      <h3>Bestellungen pro Person</h3>
+      <table class="table"><thead><tr><th>Person</th><th class="right">Bestellungen</th><th class="right">Umsatz</th></tr></thead><tbody>${personRows}</tbody></table>
+      <h3 style="margin-top:18px">Verkauft pro Artikel</h3>
+      <table class="table"><thead><tr><th>Artikel</th><th class="right">Menge</th><th class="right">Umsatz</th></tr></thead><tbody>${itemRows}
+        <tr><td><strong>Total</strong></td><td class="right"><strong>${totalQty}</strong></td><td class="right"><strong>${chf(totalAmt)}</strong></td></tr></tbody></table>`;
+  } catch (e) {
+    el.innerHTML = '<div class="msg error">Auswertung nicht möglich: ' + esc(e?.message || e)
+      + '<br>Falls die Spalte «created_by» fehlt, bitte das SQL «closing_details.sql» in Supabase ausführen.</div>';
+  }
+}
+
+async function calculateClosing(){const date=$('closingDate').value;if(!date){say('Bitte ein Datum auswählen.',true);return null;}try{const {data,error}=await sb.rpc('get_day_summary',{p_business_date:date});if(error)throw error;const d=Array.isArray(data)?data[0]:data;if(!d)throw new Error('Keine Abrechnung erhalten.');$('closingSummary').innerHTML=`<div class="totals"><div class="totalbox">Umsatz Bestellungen<strong>${money(d.total_sales)}</strong></div><div class="totalbox">Bar bezahlt<strong>${money(d.cash_total)}</strong></div><div class="totalbox">TWINT bezahlt<strong>${money(d.twint_total)}</strong></div><div class="totalbox">Noch offen<strong>${money(d.open_amount)}</strong></div><div class="totalbox">Anzahl Bestellungen<strong>${Number(d.order_count||0)}</strong></div></div>`;loadClosingDetails(date);return d;}catch(e){say('Abrechnung konnte nicht berechnet werden: '+e.message,true);return null;}}
 
 
 
