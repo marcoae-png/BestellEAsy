@@ -4458,13 +4458,19 @@ async function submitOrder() {
 
   button.disabled = true;
 
-  try {
-   const { data, error } = await sb.rpc('create_order', {
-  p_table_number: table,
-  p_payment_method: method,
-  p_items: items,
-  p_festival_name: FESTNAME
-});
+try {
+    const festivalName = String(profile?.org_name || '').trim();
+
+    if (!festivalName) {
+      throw new Error('Der Festname konnte nicht geladen werden. Bitte neu anmelden.');
+    }
+
+    const { data, error } = await sb.rpc('create_order', {
+      p_table_number: table,
+      p_payment_method: method,
+      p_items: items,
+      p_festival_name: festivalName
+    });
 
     if (error) throw error;
 
