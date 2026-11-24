@@ -3978,17 +3978,22 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
 <h3>TWINT-Zahlung</h3>
 <p class="muted">
-  Bei Zahlungsart «TWINT» zeigt die App einen festen QR-Code und den Betrag als Text. Die Gäste scannen den Code
-  und tippen den Betrag selbst ein.
+  Bei Zahlungsart «TWINT» zeigt die App deinen TWINT-QR-Code und den Betrag als Text. Die Gäste scannen den Code
+  und tippen den Betrag selbst ein. Das ist ein Zusatzpaket für Vereine mit TWINT-Business-Konto.
 </p>
-<div class="panel" style="background:#f3f7f4;box-shadow:none">
+<div id="twintLocked" class="panel hidden" style="background:#fff8e9;box-shadow:none">
+  <strong>Zusatzpaket «TWINT Business» ist nicht freigeschaltet.</strong>
+  <p class="muted" style="margin:6px 0 0">Wenn dein Verein ein TWINT-Business-Konto hat, melde dich beim Betreiber, damit er das Paket freischaltet.</p>
+  <div class="actions" style="margin-top:10px"><a id="twintRequestBtn" class="upgrade-btn" href="#">Freischaltung anfragen</a></div>
+</div>
+<div id="twintPanel" class="panel" style="background:#f3f7f4;box-shadow:none">
   <div class="grid">
     <div><label for="twintNumber">TWINT-Nummer</label><input id="twintNumber" type="tel" placeholder="+41 79 123 45 67" autocomplete="off"></div>
     <div><label for="twintImage">Eigener TWINT-QR-Code (Bild, optional)</label><input id="twintImage" type="file" accept="image/*"></div>
   </div>
   <p class="muted" style="margin:8px 0 0">
-    Mit einem hochgeladenen Bild (Screenshot des QR-Codes aus deiner TWINT-App, möglichst zugeschnitten) zeigt die App dieses Bild.
-    Ohne Bild erzeugt sie einen QR-Code aus der Nummer.
+    Lade hier den echten TWINT-QR-Code deines Kontos hoch (Screenshot aus der TWINT-App oder das QR-Bild von deiner Bank,
+    möglichst zugeschnitten). Ein QR-Code, der nur aus einer Nummer erzeugt wird, erkennt die TWINT-App nicht.
   </p>
   <div class="actions" style="margin-top:12px">
     <button type="button" id="twintSaveBtn">TWINT-Angaben speichern</button>
@@ -4730,9 +4735,14 @@ async function loadOperator() {
     const { data, error } = await sb.rpc('operator_list_orgs');
     if (error) throw error;
     const heute = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Zurich' });
+    const twintOn = new Set();
+    try {
+      const tw = await sb.from('org_twint_settings').select('organization_id, business_enabled');
+      (tw.data || []).forEach(r => { if (r.business_enabled) twintOn.add(r.organization_id); });
+    } catch (_) {}
     const fmt = d => d ? d.split('-').reverse().join('.') : '–';
     el.innerHTML = (data && data.length)
-      ? `<table class="table"><thead><tr><th>Verein</th><th>Paket</th><th>Bis</th><th>Status</th><th>Mitglieder</th><th>Verlängern</th></tr></thead><tbody>${
+      ? `<table class="table"><thead><tr><th>Verein</th><th>Paket</th><th>Bis</th><th>Status</th><th>Mitglieder</th><th>TWINT Business</th><th>Verlängern</th></tr></thead><tbody>${
         data.map(o => {
           const aktiv = o.plan !== 'none' && o.paid_until && o.paid_until >= heute;
           const status = aktiv ? '<span class="pill green">aktiv</span>'
@@ -4747,6 +4757,7 @@ async function loadOperator() {
             <td>${esc(fmt(o.paid_until))}</td>
             <td>${status}</td>
             <td>${Number(o.members)}</td>
+            <td><label style="display:flex;gap:6px;align-items:center;font-weight:600;margin:0"><input type="checkbox" style="width:auto" data-op-twint="${esc(o.id)}" ${twintOn.has(o.id) ? 'checked' : ''}> aktiv</label></td>
             <td><div class="actions">
               <button type="button" data-op-org="${esc(o.id)}" data-op-months="1">+1 Monat</button>
               <button type="button" data-op-org="${esc(o.id)}" data-op-months="3">+3</button>
@@ -4762,6 +4773,20 @@ async function loadOperator() {
     say('Betreiberliste konnte nicht geladen werden: ' + (e?.message || e), true);
   }
 }
+
+document.addEventListener('change', async e => {
+  const cb = e.target.closest?.('[data-op-twint]');
+  if (!cb || !isOperator) return;
+  cb.disabled = true;
+  try {
+    const { error } = await sb.rpc('operator_set_twint_business', { p_org: cb.dataset.opTwint, p_enabled: cb.checked });
+    if (error) throw error;
+    showSuccessToast(cb.checked ? '✓ TWINT Business freigeschaltet.' : '✓ TWINT Business deaktiviert.');
+  } catch (err) {
+    cb.checked = !cb.checked;
+    say('Konnte nicht gespeichert werden: ' + (err?.message || err), true);
+  } finally { cb.disabled = false; }
+});
 
 document.addEventListener('click', async e => {
   if (e.target.closest('#operatorReloadBtn')) { loadOperator(); return; }
@@ -4999,45 +5024,46 @@ document.addEventListener('change', e => {
 });
 
 /* ---------- TWINT-Zahlung (fester QR-Code) ---------- */
-let twintCfg = { number: '', image: '' }, twintCfgLoaded = false;
+let twintCfg = { enabled: false, number: '', image: '' }, twintCfgLoaded = false;
 let drinkPayMethod = 'Bar', drinkPayTotal = 0, drinkPayTable = '';
-
-function twintStoreKey() { return 'bestelleasy_twint_' + (profile?.organization_id || ''); }
 
 function twintQrText(number) { return String(number || '').replace(/[\s()\-.]/g, ''); }
 
 async function fetchTwintCfg(force) {
   if (!sb || !profile?.organization_id) return twintCfg;
   if (twintCfgLoaded && !force) return twintCfg;
-  let cfg = null;
   try {
     const { data, error } = await sb.from('org_twint_settings')
-      .select('twint_number, twint_image')
+      .select('business_enabled, twint_number, twint_image')
       .eq('organization_id', profile.organization_id)
       .maybeSingle();
     if (error) throw error;
-    cfg = { number: data?.twint_number, image: data?.twint_image };
+    twintCfg = { enabled: !!data?.business_enabled, number: data?.twint_number || '', image: data?.twint_image || '' };
   } catch (e) {
-    console.warn('TWINT-Einstellungen nicht aus Datenbank geladen:', e?.message || e);
-    try { cfg = JSON.parse(localStorage.getItem(twintStoreKey()) || 'null'); } catch (_) {}
+    console.warn('TWINT-Einstellungen nicht geladen:', e?.message || e);
+    twintCfg = { enabled: false, number: '', image: '' };
   }
-  twintCfg = { number: cfg?.number || '', image: cfg?.image || '' };
   twintCfgLoaded = true;
   return twintCfg;
 }
 
 function twintQrHtml(c, px) {
   if (c.image) return '<img src="' + c.image + '" alt="TWINT QR-Code" style="width:' + px + 'px;max-width:100%;height:auto;background:#fff">';
-  if (twintQrText(c.number)) return window.QRLib.svg(twintQrText(c.number), px);
   return '';
 }
 
 function fillTwintForm() {
   if (!$('twintNumber')) return;
+  $('twintPanel')?.classList.toggle('hidden', !twintCfg.enabled);
+  $('twintLocked')?.classList.toggle('hidden', twintCfg.enabled);
+  const rq = $('twintRequestBtn');
+  if (rq) rq.href = 'mailto:' + BETREIBER.email + '?subject=' + encodeURIComponent('BestellEAsy: Zusatzpaket TWINT Business – ' + (profile?.org_name || ''))
+    + '&body=' + encodeURIComponent('Hallo\n\nWir haben ein TWINT-Business-Konto und möchten das Zusatzpaket «TWINT Business» nutzen.\n\nVerein: ' + (profile?.org_name || '') + '\nE-Mail: ' + (profile?.email || currentUser?.email || ''));
+  if (!twintCfg.enabled) return;
   $('twintNumber').value = twintCfg.number;
   if ($('twintImage')) $('twintImage').value = '';
   const pv = $('twintPreview');
-  if (pv) pv.innerHTML = (twintCfg.image || twintQrText(twintCfg.number))
+  if (pv) pv.innerHTML = twintCfg.image
     ? '<div class="muted" style="margin-bottom:6px">Vorschau:</div>' + twintQrHtml(twintCfg, 180)
     : '';
 }
@@ -5072,16 +5098,14 @@ async function saveTwintCfg(removeImage) {
     const f = $('twintImage')?.files?.[0];
     if (f && !removeImage) image = await twintReadImage(f);
   } catch (e) { msg.textContent = '⚠ ' + e.message; return; }
-  twintCfg = { number: $('twintNumber').value.trim(), image };
-  try { localStorage.setItem(twintStoreKey(), JSON.stringify(twintCfg)); } catch (_) {}
+  const number = $('twintNumber').value.trim();
   try {
-    const { error } = await sb.from('org_twint_settings').upsert({
-      organization_id: profile.organization_id, twint_number: twintCfg.number, twint_image: twintCfg.image
-    }, { onConflict: 'organization_id' });
+    const { error } = await sb.rpc('set_twint_settings', { p_number: number, p_image: image });
     if (error) throw error;
+    twintCfg = { ...twintCfg, number, image };
     msg.textContent = '✓ TWINT-Angaben gespeichert (für alle Geräte).';
   } catch (e) {
-    msg.textContent = '⚠ Nur auf diesem Gerät gespeichert, nicht in der Datenbank: ' + (e?.message || e);
+    msg.textContent = '⚠ Konnte nicht gespeichert werden: ' + (e?.message || e);
   }
   fillTwintForm();
   updateTwintBox();
@@ -5090,11 +5114,12 @@ async function saveTwintCfg(removeImage) {
 function updateTwintBox() {
   const box = $('twintQrBox');
   if (!box) return;
-  if (drinkPayMethod !== 'TWINT') { box.innerHTML = ''; return; }
+  if (drinkPayMethod !== 'TWINT' || !twintCfg.enabled) { box.innerHTML = ''; return; }
   const money = a => new Intl.NumberFormat('de-CH', { style: 'currency', currency: 'CHF' }).format(a);
   const qr = twintQrHtml(twintCfg, 240);
   if (!qr) {
-    box.innerHTML = '<p class="muted">TWINT ist noch nicht eingerichtet (Menü verwalten → TWINT-Zahlung).</p>';
+    box.innerHTML = '<p class="muted">Kein TWINT-QR-Code hinterlegt (Menü verwalten → TWINT-Zahlung).'
+      + (twintCfg.number ? '<br>Nummer: <strong>' + esc(twintCfg.number) + '</strong>' : '') + '</p>';
     return;
   }
   box.innerHTML = '<div style="text-align:center;padding:12px;border:1px solid #d8e1da;border-radius:10px;background:#fff">'
