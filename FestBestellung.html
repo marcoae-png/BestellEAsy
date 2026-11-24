@@ -3989,7 +3989,19 @@ function kategorieHTML(kategorie, artikel) {
     <section class="menu-category menu-category-${slug}">
       <h2 class="menu-category-title">
         <span aria-hidden="true">
-          ${kategorienIcons[kategorie] || '📦'}
+         ${({
+  'Essen': '🍽️',
+  'Snacks': '🥨',
+  'Kalte Getränke ohne Alkohol': '🥤',
+  'Kalte Getränke mit Alkohol': '🍺',
+  'Warme Getränke ohne Alkohol': '☕',
+  'Warme Getränke mit Alkohol': '🍷',
+  'Kalte Getränke': '🧊',
+  'Warme Getränke': '☕',
+  'Getränke': '🥤',
+  'Dessert': '🍰',
+  'Sonstiges': '📦'
+})[kategorie] || '📦'}
         </span>
         ${esc(kategorie)}
         <span class="menu-category-count">
