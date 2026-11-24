@@ -3156,6 +3156,9 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
     <input type="checkbox" id="printEnabled" style="width:auto"> Bons automatisch drucken (Küche und Theke)
   </label>
   <p class="muted" id="printPlanHint" style="margin:8px 0 0"></p>
+  <div class="actions hidden" id="printUpgradeWrap" style="margin-top:10px">
+    <button type="button" id="printUpgradeBtn" class="warn">Upgrade auf «Mit Drucker» anfragen</button>
+  </div>
 
   <div class="actions" style="margin-top:14px">
         <button type="button" id="testPrintKitchenBtn" class="secondary">Testdruck Küche</button>
@@ -4453,7 +4456,22 @@ function fillPrintForm() {
   box.disabled = !frei;
   const hint = $('printPlanHint');
   if (hint) hint.textContent = frei ? '' : 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten.';
+  $('printUpgradeWrap')?.classList.toggle('hidden', frei);
 }
+
+// Upgrade-Anfrage per E-Mail an den Betreiber
+document.addEventListener('click', e => {
+  if (!e.target.closest('#printUpgradeBtn')) return;
+  const pl = PLANS.printer;
+  const verein = profile?.org_name || '';
+  const mail = profile?.email || currentUser?.email || '';
+  const betreff = 'BestellEAsy: Upgrade auf «' + pl.name + '» – ' + verein;
+  const text = 'Hallo\n\nIch möchte unser Paket auf «' + pl.name + '» (CHF ' + pl.price + ' / Monat) upgraden.' +
+    '\n\nVerein: ' + verein + '\nE-Mail: ' + mail +
+    '\n\nBitte um Umstellung und Angaben zur Zahlung.';
+  location.href = 'mailto:' + BETREIBER.email + '?subject=' + encodeURIComponent(betreff) +
+    '&body=' + encodeURIComponent(text);
+});
 
 async function setPrintingEnabled(on) {
   const msg = $('printerMsg');
