@@ -7464,7 +7464,9 @@ document.getElementById('togglePassword')?.addEventListener('click', function ()
     const ziel = document.getElementById('drinkPaymentHeading');
     if (!bar || !ziel) return;
     const sichtbar = ziel.getBoundingClientRect().top < window.innerHeight - 40;
-    bar.classList.toggle('cart-bar-hidden', sichtbar);
+    // Leiste nur ausblenden, wenn nichts im Warenkorb liegt (sonst fehlt der Senden-Knopf bei kurzen Seiten)
+    const leer = document.getElementById('submitOrderBtn')?.disabled !== false;
+    bar.classList.toggle('cart-bar-hidden', sichtbar && leer);
   }
   window.addEventListener('scroll', updateCartBar, { passive: true });
   window.addEventListener('resize', updateCartBar);
