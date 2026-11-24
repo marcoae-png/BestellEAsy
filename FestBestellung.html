@@ -3847,6 +3847,51 @@ const kategorienIcons = {
       </article>`;
   }
 
+
+
+  
+function renderMenu() {
+  const menuGrid = $('menuGrid');
+  if (!menuGrid) return;
+
+  const kategorien = [
+    'Essen',
+    'Snacks',
+    'Kalte Getränke ohne Alkohol',
+    'Kalte Getränke mit Alkohol',
+    'Warme Getränke ohne Alkohol',
+    'Warme Getränke mit Alkohol',
+    'Kalte Getränke',
+    'Warme Getränke',
+    'Getränke',
+    'Dessert',
+    'Sonstiges'
+  ];
+
+  const kategorienIcons = {
+    'Essen': '🍽️',
+    'Snacks': '🥨',
+    'Kalte Getränke ohne Alkohol': '🥤',
+    'Kalte Getränke mit Alkohol': '🍺',
+    'Warme Getränke ohne Alkohol': '☕',
+    'Warme Getränke mit Alkohol': '🍷',
+    'Kalte Getränke': '🧊',
+    'Warme Getränke': '☕',
+    'Getränke': '🥤',
+    'Dessert': '🍰',
+    'Sonstiges': '📦'
+  };
+
+  menuGrid.innerHTML = kategorien.map(kategorie => {
+    const artikel = (menu || []).filter(m =>
+      m.active !== false &&
+      String(m.category || '').trim() === kategorie
+    );
+
+    return kategorieHTML(kategorie, artikel);
+  }).join('');
+}
+
  
 function kategorieHTML(kategorie, artikel) {
   if (!artikel.length) return '';
