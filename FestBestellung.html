@@ -3790,16 +3790,14 @@ MENU_PAGER_MQ.addEventListener('change', () => {
   if (document.getElementById('menuGrid') && typeof renderMenu === 'function') renderMenu();
 });
 
-function renderMenu() {
-  const menuGrid = $('menuGrid');
-  if (!menuGrid) return;
 
- 
 const kategorien = [
   'Essen',
   'Snacks',
   'Kalte Getränke ohne Alkohol',
   'Kalte Getränke mit Alkohol',
+  'Warme Getränke ohne Alkohol',
+  'Warme Getränke mit Alkohol',
   'Kalte Getränke',
   'Warme Getränke',
   'Getränke',
@@ -3812,12 +3810,15 @@ const kategorienIcons = {
   'Snacks': '🥨',
   'Kalte Getränke ohne Alkohol': '🥤',
   'Kalte Getränke mit Alkohol': '🍺',
+  'Warme Getränke ohne Alkohol': '☕',
+  'Warme Getränke mit Alkohol': '🍷',
   'Kalte Getränke': '🧊',
   'Warme Getränke': '☕',
   'Getränke': '🥤',
   'Dessert': '🍰',
   'Sonstiges': '📦'
 };
+
 
 
   function artikelHTML(m) {
@@ -3846,114 +3847,116 @@ const kategorienIcons = {
       </article>`;
   }
 
-  function kategorieHTML(kategorie, artikel) {
-    if (!artikel.length) return '';
-    // Neue Unterkategorien für kalte Getränke
-if (
-  kategorie === 'Kalte Getränke ohne Alkohol' ||
-  kategorie === 'Kalte Getränke mit Alkohol'
-) {
-  const alkohol = kategorie === 'Kalte Getränke mit Alkohol';
+ 
+function kategorieHTML(kategorie, artikel) {
+  if (!artikel.length) return '';
+
+  // Neue Getränkekategorien mit Alkohol-Unterscheidung
+  const getraenkeKategorien = {
+    'Kalte Getränke ohne Alkohol': {
+      icon: '🥤',
+      klasse: 'alkoholfrei'
+    },
+    'Kalte Getränke mit Alkohol': {
+      icon: '🍺',
+      klasse: 'alkohol'
+    },
+    'Warme Getränke ohne Alkohol': {
+      icon: '☕',
+      klasse: 'alkoholfrei'
+    },
+    'Warme Getränke mit Alkohol': {
+      icon: '🍷',
+      klasse: 'alkohol'
+    }
+  };
+
+  if (getraenkeKategorien[kategorie]) {
+    const info = getraenkeKategorien[kategorie];
+
+    return `
+      <section class="menu-category menu-category-${info.klasse}">
+        <h2 class="menu-category-title">
+          <span aria-hidden="true">${info.icon}</span>
+          ${esc(kategorie)}
+          <span class="menu-category-count">
+            ${artikel.length} Artikel
+          </span>
+        </h2>
+
+        <div class="menu-category-grid">
+          ${artikel.map(artikelHTML).join('')}
+        </div>
+      </section>`;
+  }
+
+  const slug = kategorie.toLowerCase()
+    .replace(/ä/g, 'ae')
+    .replace(/ö/g, 'oe')
+    .replace(/ü/g, 'ue')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  // Alte Kategorie Getränke weiterhin anzeigen
+  if (kategorie === 'Getränke') {
+    const istWarm = m =>
+      /kaffee|kafi|tee|espresso|cappuccino|latte|schoggi|heiss|getränk warm|punsch|zwetschgen luz/i
+        .test(String(m.name || ''));
+
+    const istGratis = m =>
+      Number(m.price) === 0 ||
+      /gratis/i.test(String(m.name || ''));
+
+    const gratis = artikel.filter(istGratis);
+    const bezahlt = artikel.filter(m => !istGratis(m));
+    const warm = bezahlt.filter(istWarm);
+    const kalt = bezahlt.filter(m => !istWarm(m));
+
+    const subgroup = (titel, icon, liste, klasse) =>
+      !liste.length ? '' : `
+        <div class="drink-subgroup drink-subgroup-${klasse}">
+          <h3 class="drink-subgroup-title">
+            <span aria-hidden="true">${icon}</span>
+            ${titel}
+            <span class="drink-subgroup-count">${liste.length}</span>
+          </h3>
+          <div class="menu-category-grid">
+            ${liste.map(artikelHTML).join('')}
+          </div>
+        </div>`;
+
+    return `
+      <section class="menu-category menu-category-getränke">
+        <h2 class="menu-category-title">
+          <span aria-hidden="true">🥤</span>
+          Getränke
+          <span class="menu-category-count">
+            ${artikel.length} Artikel
+          </span>
+        </h2>
+        ${subgroup('Kalte Getränke', '🧊', kalt, 'kalt')}
+        ${subgroup('Warme Getränke', '☕', warm, 'warm')}
+        ${subgroup('Gratisgetränke', '🎁', gratis, 'gratis')}
+      </section>`;
+  }
 
   return `
-    <section class="menu-category ${
-      alkohol ? 'menu-category-alkohol' : 'menu-category-alkoholfrei'
-    }">
+    <section class="menu-category menu-category-${slug}">
       <h2 class="menu-category-title">
-        <span aria-hidden="true">${alkohol ? '🍺' : '🥤'}</span>
+        <span aria-hidden="true">
+          ${kategorienIcons[kategorie] || '📦'}
+        </span>
         ${esc(kategorie)}
-        <span class="menu-category-count">${artikel.length} Artikel</span>
+        <span class="menu-category-count">
+          ${artikel.length} Artikel
+        </span>
       </h2>
       <div class="menu-category-grid">
         ${artikel.map(artikelHTML).join('')}
       </div>
     </section>`;
 }
-    const slug = kategorie.toLowerCase()
-      .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
-      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-    // Bereits vorhandene Artikel der alten Kategorie "Getränke" bleiben sichtbar.
-    if (kategorie === 'Getränke') {
-      const istWarm = m => /kaffee|kafi|tee|espresso|cappuccino|latte|schoggi|heiss|getränk warm|punsch|zwetschgen luz/i.test(String(m.name || ''));
-      const istGratis = m => Number(m.price) === 0 || /gratis/i.test(String(m.name || ''));
-      const gratis = artikel.filter(istGratis);
-      const bezahlt = artikel.filter(m => !istGratis(m));
-      const warm = bezahlt.filter(istWarm);
-      const kalt = bezahlt.filter(m => !istWarm(m));
-      const subgroup = (titel, icon, liste, klasse) => !liste.length ? '' : `
-        <div class="drink-subgroup drink-subgroup-${klasse}">
-          <h3 class="drink-subgroup-title"><span aria-hidden="true">${icon}</span> ${titel}<span class="drink-subgroup-count">${liste.length}</span></h3>
-          <div class="menu-category-grid">${liste.map(artikelHTML).join('')}</div>
-        </div>`;
-      return `
-        <section class="menu-category menu-category-getränke">
-          <h2 class="menu-category-title"><span aria-hidden="true">🥤</span> Getränke
-            <span class="menu-category-count">${artikel.length} Artikel</span></h2>
-          ${subgroup('Kalte Getränke', '🧊', kalt, 'kalt')}
-          ${subgroup('Warme Getränke', '☕', warm, 'warm')}
-          ${subgroup('Gratisgetränke', '🎁', gratis, 'gratis')}
-        </section>`;
-    }
-
-    return `
-      <section class="menu-category menu-category-${slug}">
-        <h2 class="menu-category-title">
-          <span aria-hidden="true">${kategorienIcons[kategorie] || '📦'}</span>
-          ${esc(kategorie)}
-          <span class="menu-category-count">${artikel.length} Artikel</span>
-        </h2>
-        <div class="menu-category-grid">${artikel.map(artikelHTML).join('')}</div>
-      </section>`;
-  }
-
-  const bekannte = kategorien.filter(k => k !== 'Sonstiges');
-  const kategorienHTML = bekannte.map(kategorie => {
-    const artikel = menu.filter(m =>
-      String(m.category || '').trim().toLowerCase() === kategorie.toLowerCase()
-    );
-    return kategorieHTML(kategorie, artikel);
-  }).join('');
-
-  const sonstige = menu.filter(m =>
-    !bekannte.some(k =>
-      String(m.category || '').trim().toLowerCase() === k.toLowerCase()
-    )
-  );
-  const sonstigeHTML = kategorieHTML('Sonstiges', sonstige);
-
-  menuGrid.innerHTML = menu.length
-    ? kategorienHTML + sonstigeHTML
-    : '<p class="muted">Noch keine aktiven Menüartikel vorhanden. Admin muss zuerst Artikel erfassen.</p>';
-
-  // Artikelkacheln: Antippen fügt genau ein Stück zum Warenkorb hinzu.
-  menuGrid.querySelectorAll('[data-add-item]').forEach(card => {
-    card.addEventListener('click', () => {
-      addToCart(card.dataset.addItem);
-    });
-    card.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        addToCart(card.dataset.addItem);
-      }
-    });
-  });
-
-  // Minus-Schaltfläche entfernt ein Stück, ohne die Artikelkachel auszulösen.
-  menuGrid.querySelectorAll('[data-remove-item]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      removeFromCart(btn.dataset.removeItem);
-    });
-    btn.addEventListener('keydown', e => e.stopPropagation());
-  });
-
-  // Handy: Kategorien als Register mit Wisch-Navigation
-  menuPagerRefresh(menuGrid);
-
-  // Warenkorb-Summe und Senden-Button nach jedem Render aktualisieren.
-  updateCartTotal();
-}
 
 
 
@@ -5166,6 +5169,7 @@ function showPaymentToast(message) {
 
 
 
+
 function isDrinkCategory(item) {
   const category = String(
     item.category || item.category_snapshot || ''
@@ -5177,9 +5181,12 @@ function isDrinkCategory(item) {
     'kalte getränke',
     'kalte getränke ohne alkohol',
     'kalte getränke mit alkohol',
-    'warme getränke'
+    'warme getränke',
+    'warme getränke ohne alkohol',
+    'warme getränke mit alkohol'
   ].includes(category) || category.includes('drink');
 }
+
 
 
 function stationOrderHTML(order, station) {
