@@ -5622,71 +5622,76 @@ async function addMenuItem() {
 
 
 
+
 async function loadAdmin() {
   try {
     const { data, error } = await sb
       .from('menu_items')
-.select('id,name,category,price,active,note_options')
+      .select('id,name,category,price,active,note_options')
       .order('category')
-       .order('name');
+      .order('name');
 
     if (error) throw error;
 
     const adminMenuList = $('adminMenuList');
+
     if (!adminMenuList) {
       console.error('HTML-Element #adminMenuList fehlt.');
       return;
     }
 
-  adminMenuList.innerHTML = `
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Artikel</th>
-        <th>Kategorie</th>
-        <th>Preis</th>
-        <th>Zusatzoptionen</th>
-        <th>Aktiv</th>
-        <th>Aktionen</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${(data || []).map(m => `
-        <tr>
-          <td>${esc(m.name)}</td>
-          <td>${esc(m.category)}</td>
-          <td>${money(m.price)}</td>
-          <td>
-            ${
-              m.note_options
-                ? m.note_options.split('\n').filter(x => x.trim()).map(x =>
-                    `<span class="admin-option-tag">${esc(x.trim())}</span>`
-                  ).join(' ')
-                : '<span style="color:#999;">Keine</span>'
-            }
-          </td>
-          <td>${m.active ? 'Ja' : 'Nein'}</td>
-          <td>
-            <button
-              type="button"
-              class="secondary"
-              data-edit-menu="${esc(String(m.id))}">
-              Bearbeiten
-            </button>
+    adminMenuList.innerHTML = `
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Artikel</th>
+            <th>Kategorie</th>
+            <th>Preis</th>
+            <th>Zusatzoptionen</th>
+            <th>Aktiv</th>
+            <th>Aktionen</th>
+          </tr>
+        </thead>
 
-            <button
-              type="button"
-              class="secondary"
-              data-toggle-menu="${esc(String(m.id))}"
-              data-active="${m.active}">
-              ${m.active ? 'Deaktivieren' : 'Aktivieren'}
-            </button>
-          </td>
-        </tr>
-      `).join('')}
-    </tbody>
-  </table>
-`;
+        <tbody>
+          ${(data || []).map(m => `
+            <tr>
+              <td>${esc(m.name)}</td>
+              <td>${esc(m.category)}</td>
+              <td>${money(m.price)}</td>
+
+              <td>
+                ${
+                  m.note_options
+                    ? m.note_options
+                        .split('\n')
+                        .filter(x => x.trim())
+                        .map(x => `
+                          <span class="admin-option-tag">
+                            ${esc(x.trim())}
+                          </span>
+                        `).join(' ')
+                    : '<span style="color:#999;">Keine</span>'
+                }
+              </td>
+
+              <td>${m.active ? 'Ja' : 'Nein'}</td>
+
+              <td>
+                <button
+                  type="button"
+                  class="secondary"
+                  data-edit-menu="${esc(String(m.id))}">
+                  Bearbeiten
+                </button>
+
+                <button
+                  type="button"
+                  class="secondary"
+                  data-toggle-menu="${esc(String(m.id))}"
+                  data-active="${m.active}">
+                  ${m.active ? 'Deaktivieren' : 'Aktivieren'}
+                </button>
 
                 <button
                   type="button"
