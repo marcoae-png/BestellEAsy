@@ -106,6 +106,35 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
 .demo-arrows button:disabled{opacity:.4;cursor:not-allowed}
 .demo-note{text-align:center;color:var(--muted);font-size:.86rem;margin:16px 0 0}
 @media(prefers-reduced-motion:reduce){.demo-track{transition:none}}
+
+/* Drucker-Animation: Bons kommen aus dem Drucker aufs Tablar */
+.printers{display:flex;gap:56px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
+.station{--d:10s;width:260px;display:flex;flex-direction:column;align-items:center}
+.station.theke{--dl:1.4s}
+.printer{position:relative;z-index:3;width:260px;height:104px;border-radius:18px 18px 10px 10px;background:linear-gradient(180deg,#2d6a47 0,#173d2b 100%);box-shadow:0 14px 26px #173d2b33,inset 0 2px 0 #ffffff26;padding:17px 20px 0;color:#fff}
+.printer:before{content:"";position:absolute;left:16px;right:16px;top:-9px;height:12px;border-radius:10px 10px 0 0;background:#245c3b;box-shadow:inset 0 2px 0 #ffffff22}
+.printer-top{display:flex;justify-content:space-between;align-items:center;font-weight:800;letter-spacing:.08em;font-size:.78rem;text-transform:uppercase}
+.led{width:11px;height:11px;border-radius:50%;background:#6ee08f;box-shadow:0 0 8px #6ee08f;animation:led var(--d) infinite both;animation-delay:var(--dl,0s)}
+.screen{position:relative;margin-top:10px;height:22px;border-radius:6px;background:#0f2a1d;font:700 .72rem "Courier New",monospace;color:#9be7b1}
+.screen span{position:absolute;left:10px;top:0;line-height:22px;white-space:nowrap}
+.screen .s-print{animation:txtA var(--d) infinite both;animation-delay:var(--dl,0s)}
+.screen .s-done{opacity:0;animation:txtB var(--d) infinite both;animation-delay:var(--dl,0s)}
+.slot{position:absolute;left:25px;right:25px;bottom:-3px;height:9px;border-radius:5px;background:#07170f;box-shadow:inset 0 2px 3px #000}
+.out{position:relative;z-index:1;width:210px;overflow:hidden;margin-top:-4px}
+.out .bon{animation:bonout var(--d) infinite both;animation-delay:var(--dl,0s)}
+.tray{position:relative;z-index:3;width:250px;height:26px;margin-top:-14px;border-radius:8px 8px 16px 16px;background:linear-gradient(#f2f6f2,#c9d6cb);border:1px solid #b3c3b6;box-shadow:0 12px 20px #173d2b26,inset 0 3px 0 #ffffffb0;text-align:center;font-size:.62rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#7b8a80;line-height:25px}
+.printers:not(.go) *{animation-play-state:paused}
+@keyframes bonout{
+ 0%{transform:translateY(-101%);animation-timing-function:steps(16,end)}
+ 26%{transform:translateY(0);animation-timing-function:linear}
+ 88%{transform:translateY(0);opacity:1}
+ 95%{transform:translateY(6px);opacity:0}
+ 100%{transform:translateY(-101%);opacity:0}
+}
+@keyframes led{0%,26%{background:#f3a22b;box-shadow:0 0 10px #f3a22b}27%,100%{background:#6ee08f;box-shadow:0 0 8px #6ee08f}}
+@keyframes txtA{0%,26%{opacity:1}27%,100%{opacity:0}}
+@keyframes txtB{0%,26%{opacity:0}27%,92%{opacity:1}96%,100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.out .bon,.led,.screen span{animation:none}.screen .s-print{opacity:0}.screen .s-done{opacity:1}}
 </style>
 <script type="application/ld+json">
 {
@@ -181,7 +210,7 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
    "name": "Kann ich ein Komplettset mit Druckern mieten?",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "Ja, das Komplettset ist erhältlich. Für Anlässe ohne feste Infrastruktur gibt es ein Komplettset mit Druckern und einem mobilen Router mit SIM-Karte."
+    "text": "Ja, das Komplettset ist erhältlich. Für Anlässe ohne feste Infrastruktur gibt es ein Komplettset mit Druckern und einem mobilen Router mit SIM-Karte. Auf Wunsch wird das Set auch versendet – das Porto bezahlt der Besteller."
    }
   },
   {
@@ -219,6 +248,7 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
  ]
 }
 </script>
+<noscript><style>.printers *{animation-play-state:running!important}</style></noscript>
 </head>
 <body>
 <header>
@@ -318,9 +348,9 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
  <section class="print" id="drucker">
   <div class="container">
    <div class="section-head"><div class="kicker">Optional mit Drucker</div><h2>Der Bon liegt schon auf dem Tablar.</h2><p>Küche und Theke erhalten ihre Bestellung automatisch ausgedruckt. Der Bon wandert mit dem Tablar zum Läufer.</p></div>
-   <div class="bons">
-    <div class="bon"><h4>KÜCHE #42</h4><div class="tisch">TISCH 12</div><small>22.11.2026 18:05 · TWINT</small><p>2 x Bratwurst</p><p>1 x Rösti</p></div>
-    <div class="bon"><h4>THEKE #42</h4><div class="tisch">TISCH 12</div><small>22.11.2026 18:05 · TWINT</small><p>3 x Bier</p><p>1 x Mineral</p></div>
+   <div class="printers" aria-label="Animation: Zwei Drucker drucken je einen Bon und legen ihn aufs Tablar">
+    <div class="station kueche"><div class="printer"><div class="printer-top"><span>Küche-Drucker</span><i class="led"></i></div><div class="screen"><span class="s-print">Druckt …</span><span class="s-done">Bon #42 fertig ✓</span></div><i class="slot"></i></div><div class="out"><div class="bon"><h4>KÜCHE #42</h4><div class="tisch">TISCH 12</div><small>22.11.2026 18:05 · TWINT</small><p>2 x Bratwurst</p><p>1 x Rösti</p></div></div><div class="tray">Tablar</div></div>
+    <div class="station theke"><div class="printer"><div class="printer-top"><span>Theke-Drucker</span><i class="led"></i></div><div class="screen"><span class="s-print">Druckt …</span><span class="s-done">Bon #42 fertig ✓</span></div><i class="slot"></i></div><div class="out"><div class="bon"><h4>THEKE #42</h4><div class="tisch">TISCH 12</div><small>22.11.2026 18:05 · TWINT</small><p>3 x Bier</p><p>1 x Mineral</p></div></div><div class="tray">Tablar</div></div>
    </div>
    <div class="menuquick">
     <div class="mq"><b>1 · Artikel eingeben</b>Name, Kategorie und Preis unter «Menü verwalten» erfassen.</div>
@@ -434,7 +464,7 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
     <details>
       <summary>Kann ich ein Komplettset mit Druckern mieten?</summary>
       <div class="faq-answer">
-        <p>Ja, das Komplettset ist erhältlich. Für Anlässe ohne feste Infrastruktur gibt es ein Komplettset mit Druckern und einem mobilen Router mit SIM-Karte.</p>
+        <p>Ja, das Komplettset ist erhältlich. Für Anlässe ohne feste Infrastruktur gibt es ein Komplettset mit Druckern und einem mobilen Router mit SIM-Karte. Auf Wunsch wird das Set auch versendet – das Porto bezahlt der Besteller.</p>
         <p>Schreib uns an <a href="mailto:marco.aebersold@bluewin.ch">marco.aebersold@bluewin.ch</a> mit Datum, Art des Anlasses und gewünschter Anzahl Drucker.</p>
       </div>
     </details>
@@ -601,6 +631,13 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
   viewport.addEventListener('pointercancel', finish);
 
   go(0, false);
+})();
+</script>
+<script>
+(function(){
+ var p=document.querySelector('.printers');if(!p)return;
+ if(!('IntersectionObserver' in window)){p.classList.add('go');return}
+ new IntersectionObserver(function(e){e.forEach(function(x){p.classList.toggle('go',x.isIntersecting)})},{threshold:.3}).observe(p);
 })();
 </script>
 </body>
