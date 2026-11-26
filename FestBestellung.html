@@ -4720,6 +4720,9 @@ function starWebPrntTablesXml(nums) {
 }
 
 async function sendStarWebPrnt(ip, request, proto = 'https') {
+  if (location.protocol !== 'https:') {
+    throw new Error('Star WebPRNT funktioniert nur mit der über HTTPS veröffentlichten App. Die lokale Datei (file://) kann nicht drucken.');
+  }
   if (typeof window.StarWebPrintTrader !== 'function') {
     throw new Error('Star-WebPRNT-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen.');
   }
