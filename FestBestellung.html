@@ -4706,7 +4706,7 @@ function ticketLines(job) {
     head: STATION_TITLE[job.station] + (job.orderNo ? '  #' + job.orderNo : ''),
     table: 'TISCH ' + job.table,
     sub: zeit + (job.payment ? '  |  ' + job.payment : ''),
-    items: job.items.map(i => i.quantity + ' x ' + i.name)
+    items: job.items.flatMap(i => [i.quantity + ' x ' + i.name].concat(i.note ? ['   + ' + i.note] : []))
   };
 }
 
@@ -4749,7 +4749,7 @@ async function printOrderTickets(orderNo, table, method, cartItems) {
 
   const items = cartItems.map(i => {
     const m = menu.find(x => x.id === i.menu_item_id) || {};
-    return { name: i.name || m.name || '?', quantity: i.quantity, category: m.category || '' };
+    return { name: i.name || m.name || '?', quantity: i.quantity, category: m.category || '', note: String(i.special_note || '').trim() };
   });
   const food = items.filter(i => !isDrinkCategory(i));
   const drinks = items.filter(i => isDrinkCategory(i));
