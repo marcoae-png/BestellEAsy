@@ -18,6 +18,7 @@
 <meta name="theme-color" content="#245c3b">
 <!-- Supabase JavaScript v2 über CDN laden; kein lokaler FestBestellung_files-Ordner nötig -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/gh/star-micronics/starwebprnt-sdk@V1.10.0/Sample/js/StarWebPrintTrader.js"></script>
 <style>
 :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#17211b;background:#f3f6f3;--green:#245c3b;--light:#e5eee8;--orange:#f3a22b;--red:#b52f2f}*{box-sizing:border-box}body{margin:0}header{background:var(--green);color:white;padding:16px 20px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}h1{font-size:1.35rem;margin:0}header small{opacity:.85}.wrap{max-width:1200px;margin:auto;padding:18px}.panel{background:white;border-radius:14px;padding:18px;margin:0 0 16px;box-shadow:0 2px 10px #17211b0d}.hidden{display:none!important}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}label{display:block;font-weight:650;font-size:.92rem;margin:0 0 6px}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5cd;border-radius:8px;background:white}button{border:0;border-radius:9px;padding:11px 14px;background:var(--green);color:white;font-weight:700;cursor:pointer}button.secondary{background:#e8eee9;color:#183b27}button.warn{background:var(--orange);color:#2a200d}button.danger{background:var(--red)}button:disabled{opacity:.45;cursor:not-allowed}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tabs button[data-tab="service"]{background:#1769aa;color:#fff}.tabs button[data-tab="service"]:hover{background:#12558a}.tabs button[data-tab="orders"]{background:#7b3fa1;color:#fff}.tabs button[data-tab="orders"]:hover{background:#633180}.tabs button.active{outline:3px solid #b6d4c0;outline-offset:2px}.muted{color:#657168}.msg{padding:10px 12px;border-radius:8px;margin:10px 0;background:#e9f1eb}.msg.error{background:#fde8e8;color:#842323}.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}.item{border:1px solid #d8e1da;border-radius:10px;padding:14px;background:#fff;text-align:left;color:#17211b;cursor:pointer;transition:border-color .12s,background .12s,transform .08s;min-height:125px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start}.item:hover{border-color:var(--green);background:#f1f7f2}.item:active{transform:scale(.98)}.item:focus-visible{outline:3px solid #8ab99a;outline-offset:2px}.item.selected{border:2px solid var(--green);background:#eaf4ed;padding:13px}.item h3{font-size:1rem;margin:0 0 6px}.price{font-weight:800;color:var(--green)}.tile-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin-top:auto;padding-top:12px}.cart-count{font-size:.85rem;font-weight:800;background:#e5eee8;border-radius:20px;padding:5px 8px}.tile-hint{font-size:.78rem;color:#657168}.order{border:1px solid #d7dfd9;border-left:7px solid #a5b5aa;border-radius:10px;padding:13px;margin:10px 0}.order.progress{border-left-color:var(--orange);background:#fff8e9}.order.done{border-left-color:#26804a;background:#e8f7ed}.order-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf1ed;font-size:.82rem;font-weight:700}.pill.orange{background:#ffedc8}.pill.green{background:#d9f1e0}.pill.red{background:#ffe1e1}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;border-bottom:1px solid #e3e9e4;padding:9px 7px;vertical-align:top}.right{text-align:right}.big{font-size:1.35rem;font-weight:800}.foot{font-size:.82rem;color:#66716a;margin-top:12px}.statusline{font-size:.9rem}.section-title{margin:0 0 12px;font-size:1.1rem}.totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.totalbox{padding:14px;background:#f3f7f4;border-radius:10px}.totalbox strong{display:block;font-size:1.2rem;margin-top:4px}@media(max-width:600px){.wrap{padding:10px}.panel{padding:13px}header{padding:14px}}
 
@@ -2042,6 +2043,19 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 .dc-empty{color:#657168;margin:0}
 @media(max-width:600px){.dcharts{grid-template-columns:1fr}.dc-row{grid-template-columns:minmax(80px,38%) 1fr auto}.dc-col .v{font-size:.62rem}}
 @media print{.dchart{break-inside:avoid;background:#fff}.dc-stack,.dc-row .bar span,.dc-col .b,.dc-legend i{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+/* Interner Support */
+.support-layout{grid-template-columns:minmax(220px,.8fr) minmax(0,1.5fr);align-items:start}
+.support-thread-list{display:grid;gap:8px}
+.support-thread-button{width:100%;text-align:left;background:#f3f7f4;color:#17211b;border:1px solid #d8e1da}
+.support-thread-button.active{outline:3px solid #b6d4c0}
+.support-thread-button small{display:block;font-weight:400;color:#657168;margin-top:4px}
+.support-messages{display:grid;gap:10px;max-height:420px;overflow:auto;padding:4px 2px 12px}
+.support-message{padding:10px 12px;border-radius:10px;background:#edf1ed;white-space:pre-wrap;overflow-wrap:anywhere}
+.support-message.own{background:#e4f1e8;margin-left:10%}
+.support-message small{display:block;color:#657168;margin-bottom:4px}
+.support-screen-video{display:block;width:100%;max-height:65vh;background:#111;border-radius:10px;margin-top:10px}
+@media(max-width:700px){.support-layout{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -3213,8 +3227,8 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
 <h3>Drucker (Netzwerkdrucker)</h3>
 <p class="muted">
-  Die Drucker für Küche und Theke sind vorinstalliert und eingestellt. Du musst nur den Haken setzen:
-  Dann wird beim Absenden einer Bestellung automatisch ein Bon gedruckt, der zusammen mit dem Tablar zum Läufer geht.
+  Der Star-Netzwerkdrucker ist für die Küche eingestellt. Die Theke verwendet weiterhin ihren vorhandenen Drucker.
+  Aktiviere den Haken, damit Bestellbons automatisch gedruckt werden.
 </p>
 
 <div class="panel" style="background:#f3f7f4;box-shadow:none">
@@ -3230,6 +3244,7 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
         <button type="button" id="testPrintKitchenBtn" class="secondary">Testdruck Küche</button>
     <button type="button" id="testPrintBarBtn" class="secondary">Testdruck Theke</button>
   </div>
+  <p class="muted" style="margin-top:10px">Star TSP143IV UE: Küche 192.168.1.177, Theke 192.168.1.179. Beide Drucker verwenden Star WebPRNT über HTTPS; die HTTPS-Verbindung muss eingerichtet und im Browser vertrauenswürdig sein.</p>
   <hr style="margin:20px 0;border:0;border-top:1px solid #d8e1da">
   <h4 style="margin:0 0 6px">Tischnummern drucken</h4>
   <p class="muted" style="margin:0 0 10px">Druckt die Tischnummern aller oben festgelegten Tische – als Bon oder als A4-Tischkarten.</p>
@@ -3302,6 +3317,53 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 <div id="memberList"></div>
 </section>
 
+<section id="supportView" class="panel hidden">
+  <h2 class="section-title">Support</h2>
+  <p class="muted">Stelle deine Frage direkt in der App. Antworten erscheinen hier im Gespräch.</p>
+  <div class="grid support-layout">
+    <div class="panel" style="margin:0;box-shadow:none;background:#f7faf8">
+      <div class="actions" style="justify-content:space-between">
+        <h3 id="supportListHeading" style="margin:0">Meine Fragen</h3>
+        <button type="button" id="supportRefreshBtn" class="secondary">Aktualisieren</button>
+      </div>
+      <div id="supportThreadList" class="support-thread-list" style="margin-top:12px"><p class="muted">Noch keine Fragen.</p></div>
+    </div>
+    <div class="panel" style="margin:0;box-shadow:none;background:#f7faf8">
+      <div class="actions" style="justify-content:space-between;align-items:center">
+        <h3 id="supportConversationTitle" style="margin:0">Gespräch auswählen</h3>
+        <button type="button" id="supportCloseBtn" class="secondary hidden">Frage schliessen</button>
+      </div>
+      <p id="supportThreadStatus" class="muted" style="margin:6px 0 12px"></p>
+      <div id="supportMessages" class="support-messages" aria-live="polite"><p class="muted">Wähle links eine Frage aus.</p></div>
+      <div class="panel" style="margin:12px 0;background:#eef4f0;box-shadow:none">
+        <h4 style="margin:0 0 6px">Bildschirmhilfe</h4>
+        <p id="supportScreenStatus" class="muted" style="margin:0 0 8px">Du kannst deinen Bildschirm nach ausdrücklicher Auswahl im Browser teilen. Der Betreiber kann zusehen, aber dein Gerät nicht steuern.</p>
+        <div class="actions">
+          <button type="button" id="supportShareScreenBtn" class="secondary hidden">Bildschirm freigeben</button>
+          <button type="button" id="supportWatchScreenBtn" class="secondary hidden">Bildschirm ansehen</button>
+          <button type="button" id="supportStopScreenBtn" class="danger hidden">Freigabe beenden</button>
+        </div>
+        <video id="supportScreenVideo" class="support-screen-video hidden" autoplay playsinline controls></video>
+      </div>
+      <label for="supportReplyInput">Antwort</label>
+      <textarea id="supportReplyInput" rows="3" maxlength="5000" placeholder="Nachricht schreiben …" disabled></textarea>
+      <button type="button" id="supportReplyBtn" style="margin-top:8px" disabled>Antwort senden</button>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:16px;background:#f7faf8;box-shadow:none">
+    <h3 style="margin-top:0">Neue Frage stellen</h3>
+    <label for="supportSubjectInput">Betreff</label>
+    <input id="supportSubjectInput" maxlength="120" placeholder="Worum geht es?">
+    <label for="supportQuestionInput" style="margin-top:10px">Deine Frage</label>
+    <textarea id="supportQuestionInput" rows="4" maxlength="5000" placeholder="Beschreibe kurz, wobei du Hilfe brauchst …"></textarea>
+    <button type="button" id="supportSubmitBtn" style="margin-top:10px">Frage senden</button>
+  </div>
+  <div class="panel" style="margin-top:16px;background:#f7faf8;box-shadow:none">
+    <h3 style="margin-top:0">Hilfe am Bildschirm</h3>
+    <p>Starte die Freigabe im geöffneten Supportgespräch. Der Browser fragt jedes Mal, was du teilen möchtest. Wähle wenn möglich nur den BestellEAsy-Tab oder das App-Fenster, damit private Inhalte ausserhalb der App nicht sichtbar werden. Der Betreiber kann zusehen, aber Maus und Tastatur nicht bedienen. Du kannst die Freigabe jederzeit beenden.</p>
+  </div>
+</section>
+
 <div class="foot">BestellEAsy App · Bei vertraulichen Daten nur mit persönlichen Benutzerkonten und aktivierten Datenbankrichtlinien verwenden.</div>
 </section></main>
 
@@ -3343,23 +3405,27 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
       <li>Konto: E-Mail-Adresse und Passwort (das Passwort wird nicht im Klartext gespeichert) sowie, falls angegeben, ein Anzeigename.</li>
       <li>Zugehörigkeit: Name des Vereins bzw. Anlasses, Rolle (zum Beispiel Admin, Service, Küche, Tagesabschluss) und, bei Einladungen, der verwendete Einladungscode.</li>
       <li>Betrieb: Menüartikel und Preise, Bestellungen (Tisch, Artikel, Mengen, Beträge, Zahlungsart Bar oder TWINT, Zeitpunkte, bearbeitende Person), Statusmeldungen von Küche, Theke und Läufern sowie Tagesabschlüsse.</li>
+      <li>Support: Betreff und Nachrichten, Zeitpunkte sowie Name und E-Mail-Adresse der fragenden Person. Bei einer freiwilligen Bildschirmfreigabe wird der ausgewählte Bildschirm live an den Betreiber übertragen; die App speichert den Stream nicht.</li>
       <li>Technische Daten: Beim Aufruf der Seite werden durch die eingesetzten Dienste technisch bedingt die IP-Adresse und Angaben zum Browser verarbeitet.</li>
     </ul>
     <p>Gästedaten wie Namen oder Zahlungsdaten (Kartennummern, TWINT-Konten) werden nicht erfasst. Die Zahlungsart wird nur als Vermerk gespeichert.</p>
 
     <h3>3. Zweck</h3>
     <p>Die Daten dienen ausschliesslich dem Betrieb der App: Anmeldung, Aufnahme und Verteilung von Bestellungen,
-       Abrechnung und Tagesabschluss sowie der Sicherheit und Fehlerbehebung.</p>
+       Abrechnung und Tagesabschluss, der Beantwortung von Supportfragen, einer freiwilligen Live-Bildschirmhilfe sowie der Sicherheit und Fehlerbehebung.</p>
 
     <h3>4. Wer Zugriff hat</h3>
     <p>Mitglieder eines Vereins sehen die Daten ihres eigenen Vereins im Rahmen ihrer Rolle. Admins sehen zusätzlich Name
-       und E-Mail-Adresse der Mitglieder ihres Vereins. Die Daten verschiedener Vereine sind voneinander getrennt.</p>
+       und E-Mail-Adresse der Mitglieder ihres Vereins. Supportfragen sehen nur die fragende Person und der Betreiber der App.
+       Den Bildschirm kann der Betreiber nur während einer vom Nutzer gestarteten und im Browser bestätigten Freigabe sehen.
+       Die Daten verschiedener Vereine sind voneinander getrennt.</p>
 
     <h3>5. Eingesetzte Dienstleister</h3>
     <ul>
       <li><strong>Supabase</strong> (Datenbank und Anmeldung). Standort der Datenbank: Frankfurt (EU).</li>
       <li><strong>GitHub Pages</strong> (Bereitstellung der Webseite).</li>
       <li><strong>jsDelivr</strong> (Auslieferung der Programmbibliothek für die Datenbankanbindung; dabei wird die IP-Adresse übermittelt).</li>
+      <li><strong>Google STUN</strong> wird nur für den Verbindungsaufbau der freiwilligen WebRTC-Bildschirmfreigabe verwendet und verarbeitet dabei Verbindungsdaten wie IP-Adresse und Netzwerkport.</li>
       <li>Für die Bestätigungs-E-Mails bei der Registrierung wird ein E-Mail-Versand verwendet: Supabase (integrierter E-Mail-Versand).</li>
     </ul>
     <p>Diese Anbieter können Daten auch ausserhalb der Schweiz bearbeiten, insbesondere in der EU und in den USA.
@@ -3386,6 +3452,7 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 const $ = id => document.getElementById(id);
 const CONFIG_KEY = 'festbestellung.supabase.config.v1';
 let sb = null, currentUser = null, profile = null, menu = [], cart = new Map(), orders = [], recentlyDone = new Set(), activeTab = 'service';
+let activeSupportThreadId = null, supportThreads = [], supportScreen = null;
 const money = n => new Intl.NumberFormat('de-CH',{style:'currency',currency:'CHF'}).format(Number(n||0));
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function say(text, error=false){const el=$('notice');el.textContent=text;el.className='msg'+(error?' error':'');el.classList.remove('hidden');}
@@ -3398,7 +3465,15 @@ async function connectTest(){const c=getConfig();if(!validConfig(c)){say('Bitte 
 
 
 
-async function onSignedIn(user){currentUser=user;try{await loadProfile();if(!profile.organization_id){showOrgOnboarding();autoJoinPending();return;}clearPendingInvite();await loadOrgName();const sub=await checkSubscription();if(!sub.active){showPaywall(sub);return;}hidePaywall(sub);$('orgPanel')?.classList.add('hidden');$('loginPanel').classList.add('hidden');$('appPanel').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');$('userLabel').textContent=profile.display_name||profile.email||user.email;renderTabs();await fetchTables(true);await loadMenu();await refreshOrders();await loadAdmin();await loadClosingHistory();showTab(firstTab());}catch(e){say('Daten konnten nicht geladen werden: '+e.message+' — bitte Supabase-Berechtigungen prüfen.',true);}}
+function showMenuSetupHintOnce(){
+  if(!profile?.organization_id||!currentUser||!allowed('admin')||menu.length>0)return;
+  const key='bestelleasy.menu-setup-hint.v1.'+profile.organization_id+'.'+currentUser.id;
+  try{if(localStorage.getItem(key))return;localStorage.setItem(key,'1');}catch(e){}
+  showTab('admin');
+  say('Bitte richte zuerst die Menükarte ein: Öffne «Menü verwalten» und erfasse deine Artikel. Danach können Bestellungen aufgenommen werden.');
+}
+
+async function onSignedIn(user){currentUser=user;try{await loadProfile();if(!profile.organization_id){showOrgOnboarding();autoJoinPending();return;}clearPendingInvite();await loadOrgName();const sub=await checkSubscription();if(!sub.active){showPaywall(sub);return;}hidePaywall(sub);$('orgPanel')?.classList.add('hidden');$('loginPanel').classList.add('hidden');$('appPanel').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');$('userLabel').textContent=profile.display_name||profile.email||user.email;renderTabs();await fetchTables(true);await loadMenu();await refreshOrders();await loadAdmin();await loadClosingHistory();showTab(firstTab());showMenuSetupHintOnce();}catch(e){say('Daten konnten nicht geladen werden: '+e.message+' — bitte Supabase-Berechtigungen prüfen.',true);}}
 function firstTab(){return ['service','orders','closing','admin'].find(allowed) || 'orders';}
 
 
@@ -3412,12 +3487,12 @@ function allowed(tab) {
   const erlaubt = {
     admin: [
       'service', 'orders', 'bar', 'runner',
-      'closing', 'admin', 'team'
+      'closing', 'admin', 'team', 'support'
     ],
-    service: ['service', 'orders', 'bar', 'runner'],
-    kitchen: ['orders', 'bar'],
-    closing: ['closing']
-  }[profile?.role] || ['service', 'orders', 'bar', 'runner'];
+    service: ['service', 'orders', 'bar', 'runner', 'support'],
+    kitchen: ['orders', 'bar', 'support'],
+    closing: ['closing', 'support']
+  }[profile?.role] || ['service', 'orders', 'bar', 'runner', 'support'];
 
   return erlaubt.includes(tab);
 }
@@ -3619,6 +3694,7 @@ function renderTabs() {
   ['closing', 'Tagesabschluss'],
   ['admin', 'Menü verwalten'],
   ['team', 'Team'],
+  ['support', 'Support'],
   ['operator', 'Betreiber']
 ];
 
@@ -3662,12 +3738,14 @@ function renderTabs() {
 function showTab(tab) {
   if (!allowed(tab)) return;
 
+  if (activeTab === 'support' && tab !== 'support' && supportScreen) stopSupportScreen(true);
+
   activeTab = tab;
 
   // Alle Ansichten ausblenden und nur den aktiven Bereich anzeigen
 [
   'service', 'orders', 'bar', 'runner',
-  'closing', 'admin', 'team', 'operator'
+  'closing', 'admin', 'team', 'support', 'operator'
 ].forEach(t => {
   const view = $(t + 'View');
   if (view) {
@@ -3692,6 +3770,7 @@ if (tab === 'service') {
 
   if (tab === 'admin') { loadAdmin(); fetchTables(true); fetchPrintCfg(true).then(fillPrintForm); }
   if (tab === 'team') loadTeam();
+  if (tab === 'support') loadSupportThreads(activeSupportThreadId);
   if (tab === 'closing') loadClosingHistory();
 
   clearSay();
@@ -4513,7 +4592,7 @@ setInterval(async () => {
 /* ===================== Drucker-Modul ===================== */
 // Vom Vermieter vorinstalliert (gilt für alle Mietsets, hier einmal anpassen).
 // Mieter können nur «Drucken aktivieren» ein- oder ausschalten.
-const PRINTER_VORGABE = { mode:'epos', proto:'http', ascii:false, kitchenIp:'192.168.10.50', barIp:'192.168.10.51' };
+const PRINTER_VORGABE = { mode:'epos', proto:'http', kitchenMode:'star-webprnt', kitchenProto:'https', barMode:'star-webprnt', barProto:'https', ascii:false, kitchenIp:'192.168.1.177', barIp:'192.168.1.179' };
 const printDefaults = { enabled:false, ...PRINTER_VORGABE };
 
 let printCfgCache = null, printCfgFetchedAt = 0;
@@ -4531,9 +4610,8 @@ async function fetchPrintCfg(force) {
       .maybeSingle();
     if (error) throw error;
     printCfgFetchedAt = Date.now();
+    // Beide Star-Drucker sind für diese Installation fest zugeordnet.
     printCfgCache = { enabled: !!data?.enabled };
-    if (data?.kitchen_ip) printCfgCache.kitchenIp = data.kitchen_ip;
-    if (data?.bar_ip) printCfgCache.barIp = data.bar_ip;
   } catch (e) { console.warn('Druckereinstellungen nicht geladen:', e.message); }
 }
 
@@ -4606,6 +4684,61 @@ function eposXml(job) {
     '<epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print">' + body + '</epos-print></s:Body></s:Envelope>';
 }
 
+function starTextElement(text, options = {}) {
+  const attrs = [];
+  if (options.codepage) attrs.push('codepage="' + options.codepage + '"');
+  if (options.emphasis) attrs.push('emphasis="true"');
+  if (options.width && options.width !== 1) attrs.push('width="' + options.width + '"');
+  if (options.height && options.height !== 1) attrs.push('height="' + options.height + '"');
+  return '<text' + (attrs.length ? ' ' + attrs.join(' ') : '') + '>' + esc(text).replace(/\n/g, '&#10;') + '&#10;</text>';
+}
+
+function starWebPrntXml(job) {
+  const t = ticketLines(job);
+  const ascii = !!loadPrintCfg().ascii;
+  const tr = v => ascii ? String(v).replace(/[äöüÄÖÜßéèà]/g, c => ({'ä':'ae','ö':'oe','ü':'ue','Ä':'Ae','Ö':'Oe','Ü':'Ue','ß':'ss','é':'e','è':'e','à':'a'}[c])) : String(v);
+  let request = '<root><initialization/><alignment position="center"/>';
+  request += starTextElement(tr(t.head), { codepage:'utf8', emphasis:true, width:2, height:2 });
+  request += starTextElement(tr(t.table), { codepage:'utf8', emphasis:true, width:3, height:3 });
+  request += starTextElement(tr(t.sub), { codepage:'utf8' });
+  request += starTextElement('------------------------------', { codepage:'utf8' });
+  request += '<alignment position="left"/>';
+  t.items.forEach(line => { request += starTextElement(tr(line), { codepage:'utf8', emphasis:true, width:2, height:2 }); });
+  request += '<feed line="3"/><cutpaper feed="true" type="partial"/></root>';
+  return request;
+}
+
+function starWebPrntTablesXml(nums) {
+  let request = '<root><initialization/>';
+  nums.forEach(n => {
+    request += '<alignment position="center"/>' +
+      starTextElement('TISCH', { codepage:'utf8', emphasis:true, width:3, height:3 }) +
+      starTextElement(String(n), { codepage:'utf8', emphasis:true, width:6, height:6 }) +
+      starTextElement('', { codepage:'utf8' }) + '<feed line="3"/><cutpaper feed="true" type="partial"/>';
+  });
+  return request + '</root>';
+}
+
+async function sendStarWebPrnt(ip, request, proto = 'https') {
+  if (typeof window.StarWebPrintTrader !== 'function') {
+    throw new Error('Star-WebPRNT-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen.');
+  }
+  const url = (proto === 'https' ? 'https://' : 'http://') + ip + '/StarWebPRNT/SendMessage';
+  await new Promise((resolve, reject) => {
+    const trader = new window.StarWebPrintTrader({ url, checkedblock:true, timeout:15000 });
+    trader.onReceive = response => {
+      if (response?.traderSuccess === true || response?.traderSuccess === 'true') resolve();
+      else reject(new Error('Star-Drucker meldet Fehler (Code ' + (response?.traderCode ?? 'unbekannt') + ').'));
+    };
+    trader.onError = response => {
+      const detail = response?.responseText || (response?.status ? 'HTTP ' + response.status : 'keine Antwort');
+      reject(new Error('Keine Star-WebPRNT-Verbindung (' + detail + '). HTTPS-Zertifikat und Netzwerk prüfen.'));
+    };
+    try { trader.sendMessage({ request }); }
+    catch (e) { reject(e); }
+  });
+}
+
 async function sendEpos(ip, job, proto) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 8000);
@@ -4629,6 +4762,17 @@ async function sendEpos(ip, job, proto) {
   } finally { clearTimeout(timer); }
 }
 
+async function sendStationPrinter(station, ip, job, cfg, starRequest = null) {
+  const mode = cfg[station + 'Mode'] || cfg.mode || 'epos';
+  const proto = cfg[station + 'Proto'] || cfg.proto || 'http';
+  if (mode === 'browser') { browserPrint(job); return; }
+  if (mode === 'star-webprnt') {
+    await sendStarWebPrnt(ip, starRequest || starWebPrntXml(job), proto);
+    return;
+  }
+  await sendEpos(ip, job, proto);
+}
+
 function browserPrint(job) {
   const t = ticketLines(job);
   const w = window.open('', '_blank', 'width=360,height=600');
@@ -4646,10 +4790,9 @@ function browserPrint(job) {
 async function printJob(job, cfg) {
   if (!job.items.length) return null;
   const ipKey = { kitchen:'kitchenIp', bar:'barIp' }[job.station];
-  if (cfg.mode === 'browser') { browserPrint(job); return null; }
   const ip = cfg[ipKey];
   if (!ip) return STATION_TITLE[job.station] + ': keine IP eingetragen';
-  try { await sendEpos(ip, job, cfg.proto); return null; }
+  try { await sendStationPrinter(job.station, ip, job, cfg); return null; }
   catch (e) {
     const grund = e.name === 'AbortError' ? 'keine Antwort (IP, Netzwerk oder Drucker aus?)'
       : (e instanceof TypeError ? 'keine Verbindung (IP prüfen; bei https-Seite: Browser-Freigabe «Lokales Netzwerk» erlauben oder Verbindung auf https stellen)' : e.message);
@@ -4750,7 +4893,8 @@ async function printTables() {
     const ip = target === 'kitchen' ? cfg.kitchenIp : cfg.barIp;
     if (!ip) { msg.textContent = '⚠ Für diese Station ist keine IP-Adresse eingetragen.'; return; }
     msg.textContent = 'Sende an Drucker …';
-    await sendEpos(ip, { rawXml: eposTablesXml(nums) }, cfg.proto);
+    await sendStationPrinter(target, ip, { rawXml: eposTablesXml(nums), items:[], station:target }, cfg,
+      target === 'kitchen' ? starWebPrntTablesXml(nums) : null);
     msg.textContent = '✓ ' + nums.length + ' Tischnummern an den Drucker gesendet.';
   } catch (e) {
     msg.textContent = '⚠ ' + (e.name === 'AbortError' ? 'Keine Antwort vom Drucker (IP, Netzwerk, Drucker aus?)'
@@ -6396,8 +6540,7 @@ function dcFarbe(kat) { return DC_KAT_FARBEN[String(kat || '').trim().toLowerCas
 function dcZahlungen(d) {
   const teile = [
     ['Bar', Number(d.cash_total) || 0, '#245c3b'],
-    ['TWINT', Number(d.twint_total) || 0, '#1f7ab8'],
-    ['Noch offen', Number(d.open_amount) || 0, '#f3a22b']
+    ['TWINT', Number(d.twint_total) || 0, '#1f7ab8']
   ];
   const sum = teile.reduce((a, t) => a + t[1], 0);
   if (sum <= 0) return '<p class="dc-empty">Noch keine Umsätze.</p>';
@@ -6438,6 +6581,20 @@ function dcTopArtikel(articles) {
   ).join('');
 }
 
+function dcServiceOrders(employees) {
+  const liste = (employees || [])
+    .map(emp => [String(emp.employee_name || 'Unbekannt'), Number(emp.order_count) || 0])
+    .filter(e => e[1] > 0)
+    .sort((a, b) => b[1] - a[1]);
+  if (!liste.length) return '<p class="dc-empty">Keine Servicebestellungen vorhanden.</p>';
+  const max = liste[0][1];
+  return liste.map(([name, count]) =>
+    '<div class="dc-row"><span class="nm" title="' + esc(name) + '">' + esc(name) + '</span>' +
+    '<span class="bar"><span style="width:' + Math.max(2, count / max * 100).toFixed(1) + '%;background:#245c3b"></span></span>' +
+    '<span class="val">' + count + (count === 1 ? ' Bestellung' : ' Bestellungen') + '</span></div>'
+  ).join('');
+}
+
 function dcStunden(details) {
   const proStunde = {};
   (details || []).forEach(x => {
@@ -6461,12 +6618,13 @@ function dcStunden(details) {
     '<p class="muted" style="margin:8px 0 0;font-size:.82rem">Umsatz in CHF pro Stunde (Uhrzeit der Bestellung). Die stärkste Stunde ist orange.</p>';
 }
 
-function dcHtml(d, articles, details) {
+function dcHtml(d, articles, details, employees) {
   return '<div class="dcharts">' +
     '<div class="dchart"><h4>💳 Zahlungsarten</h4>' + dcZahlungen(d) + '</div>' +
     '<div class="dchart"><h4>🏆 Meistverkauft (Top 5)</h4>' + dcTopArtikel(articles) + '</div>' +
     '<div class="dchart"><h4>🍽️ Umsatz nach Kategorie</h4>' + dcKategorien(articles) + '</div>' +
     '<div class="dchart"><h4>🕒 Umsatz pro Stunde</h4>' + dcStunden(details) + '</div>' +
+    '<div class="dchart wide"><h4>👥 Bestellungen pro Serviceperson</h4>' + dcServiceOrders(employees) + '</div>' +
     '</div>';
 }
 
@@ -6542,7 +6700,7 @@ async function calculateClosing() {
         <details class="panel" style="margin-top:10px">
           <summary style="cursor:pointer;font-weight:bold">
             ${esc(emp.employee_name)}
-            – ${Number(emp.order_count)} Bestellungen
+            – ${Number(emp.order_count)} Bestellungen aufgenommen
             – ${Number(emp.article_count)} Artikel
             – ${fmt(emp.revenue)}
           </summary>
@@ -6613,21 +6771,16 @@ async function calculateClosing() {
         </div>
 
         <div class="totalbox">
-          Noch offen
-          <strong>${fmt(d.open_amount)}</strong>
-        </div>
-
-        <div class="totalbox">
           Anzahl Bestellungen
           <strong>${Number(d.order_count || 0)}</strong>
         </div>
       </div>
 
-      ${dcHtml(d, articles, details)}
+      ${dcHtml(d, articles, details, employees)}
 
       <hr>
 
-      <h3>Umsatz und Verkäufe pro Mitarbeiter</h3>
+      <h3>Bestellungen pro Serviceperson</h3>
 
       ${employeeHtml || '<p class="muted">Keine Mitarbeiterbestellungen vorhanden.</p>'}
 
@@ -6741,7 +6894,359 @@ async function loadClosingHistory(){try{const {data,error}=await sb.from('day_cl
 
 
 
+function supportStatusText(status) {
+  return ({open:'Offen',answered:'Antwort erhalten',closed:'Geschlossen'})[status] || status;
+}
+
+function supportDate(value) {
+  return value ? new Date(value).toLocaleString('de-CH') : '';
+}
+
+async function loadSupportThreads(preferredId = activeSupportThreadId) {
+  if (!sb || !currentUser || !profile?.organization_id) return;
+  const admin = isOperator;
+  $('supportListHeading').textContent = admin ? 'Alle Supportfragen' : 'Meine Fragen';
+  try {
+    const { data, error } = await sb.from('support_threads')
+      .select('id,organization_id,created_by,requester_name,requester_email,subject,status,created_at,updated_at')
+      .order('updated_at', { ascending: false });
+    if (error) throw error;
+    supportThreads = data || [];
+
+    $('supportThreadList').innerHTML = supportThreads.length
+      ? supportThreads.map(t => `<button type="button" class="support-thread-button${t.id === preferredId ? ' active' : ''}" data-support-thread="${esc(t.id)}"><strong>${esc(t.subject)}</strong><small>${admin ? esc(t.requester_name || t.requester_email || 'Mitglied') + ' · ' : ''}${esc(supportStatusText(t.status))} · ${esc(supportDate(t.updated_at))}</small></button>`).join('')
+      : '<p class="muted">Noch keine Supportfragen.</p>';
+
+    if (!supportThreads.length) {
+      activeSupportThreadId = null;
+      $('supportConversationTitle').textContent = 'Gespräch auswählen';
+      $('supportThreadStatus').textContent = '';
+      $('supportMessages').innerHTML = '<p class="muted">Sende unten eine neue Frage oder wähle eine bestehende aus.</p>';
+      $('supportReplyInput').disabled = true;
+      $('supportReplyBtn').disabled = true;
+      $('supportCloseBtn').classList.add('hidden');
+      $('supportShareScreenBtn').classList.add('hidden');
+      $('supportWatchScreenBtn').classList.add('hidden');
+      $('supportStopScreenBtn').classList.add('hidden');
+      $('supportScreenVideo').classList.add('hidden');
+      return;
+    }
+
+    const selected = supportThreads.some(t => t.id === preferredId) ? preferredId : supportThreads[0].id;
+    await loadSupportConversation(selected);
+  } catch (e) {
+    console.error('loadSupportThreads:', e);
+    say('Supportfragen konnten nicht geladen werden: ' + (e?.message || e), true);
+  }
+}
+
+async function loadSupportConversation(threadId) {
+  const thread = supportThreads.find(t => t.id === threadId);
+  if (!thread) return;
+  if (supportScreen && supportScreen.threadId !== threadId) stopSupportScreen(true);
+  activeSupportThreadId = threadId;
+  $('supportThreadList').querySelectorAll('[data-support-thread]').forEach(b =>
+    b.classList.toggle('active', b.dataset.supportThread === threadId));
+  $('supportConversationTitle').textContent = thread.subject;
+  $('supportThreadStatus').textContent = supportStatusText(thread.status) + ' · Aktualisiert ' + supportDate(thread.updated_at);
+  $('supportCloseBtn').classList.toggle('hidden', !isOperator || thread.status === 'closed');
+  const canReply = isOperator || thread.status !== 'closed';
+  $('supportReplyInput').disabled = !canReply;
+  $('supportReplyBtn').disabled = !canReply;
+  const ownThread = thread.created_by === currentUser.id;
+  const sharingThisThread = supportScreen?.threadId === threadId;
+  $('supportShareScreenBtn').classList.toggle('hidden', isOperator || !ownThread || thread.status === 'closed' || sharingThisThread);
+  $('supportWatchScreenBtn').classList.toggle('hidden', !isOperator || thread.status === 'closed' || sharingThisThread);
+  $('supportStopScreenBtn').classList.toggle('hidden', !sharingThisThread);
+  $('supportScreenVideo').classList.toggle('hidden', !sharingThisThread || (supportScreen.role === 'viewer' && !supportScreen.remoteReady));
+  $('supportScreenStatus').textContent = sharingThisThread
+    ? (supportScreen.role === 'viewer' ? 'Warte auf die freiwillige Bildschirmfreigabe des Nutzers …' : 'Dein Bildschirm wird nach deiner Auswahl im Browser geteilt. Der Betreiber kann ihn ansehen, aber nicht steuern.')
+    : 'Du kannst deinen Bildschirm nach ausdrücklicher Auswahl im Browser teilen. Der Betreiber kann zusehen, aber dein Gerät nicht steuern.';
+
+  try {
+    const { data, error } = await sb.from('support_messages')
+      .select('id,thread_id,author_id,message,created_at')
+      .eq('thread_id', threadId).order('created_at', { ascending: true });
+    if (error) throw error;
+    $('supportMessages').innerHTML = data?.length
+      ? data.map(m => {
+          const own = m.author_id === currentUser.id;
+          const author = own ? 'Du' : (isOperator ? 'Anfragende Person' : 'Support');
+          return `<article class="support-message${own ? ' own' : ''}"><small>${author} · ${esc(supportDate(m.created_at))}</small>${esc(m.message)}</article>`;
+        }).join('')
+      : '<p class="muted">Noch keine Nachrichten in dieser Frage.</p>';
+    $('supportMessages').scrollTop = $('supportMessages').scrollHeight;
+  } catch (e) {
+    console.error('loadSupportConversation:', e);
+    $('supportMessages').innerHTML = '<p class="msg error">Nachrichten konnten nicht geladen werden: ' + esc(e?.message || e) + '</p>';
+  }
+}
+
+async function submitSupportQuestion() {
+  const subject = $('supportSubjectInput').value.trim();
+  const message = $('supportQuestionInput').value.trim();
+  if (!subject || !message) { say('Bitte Betreff und Frage ausfüllen.', true); return; }
+  const button = $('supportSubmitBtn');
+  button.disabled = true;
+  try {
+    const { data: thread, error: threadError } = await sb.from('support_threads')
+      .insert({ organization_id: profile.organization_id, created_by: currentUser.id, subject })
+      .select('id').single();
+    if (threadError) throw threadError;
+    const { error: messageError } = await sb.from('support_messages').insert({
+      thread_id: thread.id, author_id: currentUser.id, message
+    });
+    $('supportSubjectInput').value = '';
+    $('supportQuestionInput').value = '';
+    await loadSupportThreads(thread.id);
+    if (messageError) throw new Error('Die Frage wurde angelegt, aber die Nachricht konnte nicht gespeichert werden: ' + messageError.message);
+    say('Deine Frage wurde gesendet. Antworten findest du hier im Support.');
+  } catch (e) {
+    console.error('submitSupportQuestion:', e);
+    say('Frage konnte nicht gesendet werden: ' + (e?.message || e), true);
+  } finally { button.disabled = false; }
+}
+
+async function sendSupportReply() {
+  const message = $('supportReplyInput').value.trim();
+  if (!activeSupportThreadId || !message) { say('Bitte eine Antwort eingeben.', true); return; }
+  const button = $('supportReplyBtn');
+  button.disabled = true;
+  try {
+    const { error } = await sb.from('support_messages').insert({
+      thread_id: activeSupportThreadId, author_id: currentUser.id, message
+    });
+    if (error) throw error;
+    $('supportReplyInput').value = '';
+    await loadSupportThreads(activeSupportThreadId);
+  } catch (e) {
+    console.error('sendSupportReply:', e);
+    say('Antwort konnte nicht gesendet werden: ' + (e?.message || e), true);
+  } finally { button.disabled = false; }
+}
+
+async function closeSupportThread() {
+  if (!isOperator || !activeSupportThreadId) return;
+  if (supportScreen?.threadId === activeSupportThreadId) await stopSupportScreen(true);
+  try {
+    const { error } = await sb.from('support_threads')
+      .update({ status: 'closed', updated_at: new Date().toISOString() })
+      .eq('id', activeSupportThreadId);
+    if (error) throw error;
+    await loadSupportThreads(activeSupportThreadId);
+  } catch (e) {
+    console.error('closeSupportThread:', e);
+    say('Frage konnte nicht geschlossen werden: ' + (e?.message || e), true);
+  }
+}
+
+async function joinSupportScreenChannel(session) {
+  const channel = sb.channel('support-screen:' + session.threadId, { config: { private: true } });
+  session.channel = channel;
+  channel.on('broadcast', { event: 'signal' }, ({ payload }) => {
+    if (supportScreen === session) handleSupportScreenSignal(session, payload || {});
+  });
+  await new Promise((resolve, reject) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      reject(new Error('Zeitüberschreitung beim Öffnen des sicheren Bildschirmkanals.'));
+    }, 15000);
+    channel.subscribe(status => {
+      if (settled) return;
+      if (status === 'SUBSCRIBED') {
+        settled = true;
+        clearTimeout(timer);
+        resolve();
+      } else if (['CHANNEL_ERROR', 'TIMED_OUT', 'CLOSED'].includes(status)) {
+        settled = true;
+        clearTimeout(timer);
+        reject(new Error('Der Bildschirmkanal konnte nicht geöffnet werden (' + status + ').'));
+      }
+    });
+  });
+}
+
+async function sendSupportScreenSignal(type, data = {}) {
+  const session = supportScreen;
+  if (!session?.channel) return;
+  const result = await session.channel.send({ type: 'broadcast', event: 'signal', payload: { type, ...data } });
+  if (result !== 'ok') throw new Error('Signal konnte nicht übertragen werden.');
+}
+
+async function createSupportScreenPeer(session) {
+  if (session.pc) return session.pc;
+  const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+  session.pc = pc;
+  pc.onicecandidate = event => {
+    if (event.candidate && supportScreen === session) {
+      sendSupportScreenSignal('ice', { candidate: event.candidate.toJSON() }).catch(e => console.warn('Bildschirmfreigabe ICE:', e));
+    }
+  };
+  pc.onconnectionstatechange = () => {
+    if (supportScreen !== session || session.role !== 'viewer') return;
+    if (pc.connectionState === 'connected') $('supportScreenStatus').textContent = 'Bildschirmfreigabe aktiv. Der Betreiber kann zusehen, aber nicht steuern.';
+    else if (pc.connectionState === 'failed') $('supportScreenStatus').textContent = 'Keine direkte Verbindung möglich. Prüfe die Internetverbindung oder starte die Freigabe erneut.';
+    else if (pc.connectionState === 'connecting') $('supportScreenStatus').textContent = 'Bildschirmverbindung wird hergestellt …';
+  };
+  if (session.role === 'sharer') {
+    session.stream.getTracks().forEach(track => pc.addTrack(track, session.stream));
+  } else {
+    pc.addTransceiver('video', { direction: 'recvonly' });
+    pc.ontrack = event => {
+      if (supportScreen !== session) return;
+      const video = $('supportScreenVideo');
+      video.srcObject = event.streams?.[0] || new MediaStream([event.track]);
+      video.classList.remove('hidden');
+      session.remoteReady = true;
+      video.play().catch(() => {});
+      $('supportScreenStatus').textContent = 'Bildschirmfreigabe aktiv. Der Betreiber kann zusehen, aber nicht steuern.';
+    };
+  }
+  return pc;
+}
+
+async function flushSupportScreenIce(session) {
+  if (!session.pc?.remoteDescription) return;
+  for (const candidate of session.pendingIce.splice(0)) {
+    try { await session.pc.addIceCandidate(candidate); }
+    catch (e) { console.warn('Bildschirmfreigabe ICE-Kandidat:', e); }
+  }
+}
+
+async function createSupportScreenOffer(session) {
+  if (session.offerStarted || !session.stream) return;
+  session.offerStarted = true;
+  try {
+    const pc = await createSupportScreenPeer(session);
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    await sendSupportScreenSignal('offer', { description: pc.localDescription });
+    $('supportScreenStatus').textContent = 'Warte auf die Verbindung zum Betreiber …';
+  } catch (e) {
+    console.error('createSupportScreenOffer:', e);
+    $('supportScreenStatus').textContent = 'Verbindung konnte nicht gestartet werden: ' + (e?.message || e);
+  }
+}
+
+async function handleSupportScreenSignal(session, signal) {
+  try {
+    if (signal.type === 'share-ready' && session.role === 'viewer') {
+      await sendSupportScreenSignal('viewer-ready');
+    } else if (signal.type === 'viewer-ready' && session.role === 'sharer') {
+      await createSupportScreenOffer(session);
+    } else if (signal.type === 'offer' && session.role === 'viewer') {
+      const pc = await createSupportScreenPeer(session);
+      await pc.setRemoteDescription(signal.description);
+      await flushSupportScreenIce(session);
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      await sendSupportScreenSignal('answer', { description: pc.localDescription });
+    } else if (signal.type === 'answer' && session.role === 'sharer' && session.pc) {
+      await session.pc.setRemoteDescription(signal.description);
+      await flushSupportScreenIce(session);
+    } else if (signal.type === 'ice' && signal.candidate) {
+      if (session.pc?.remoteDescription) await session.pc.addIceCandidate(signal.candidate);
+      else session.pendingIce.push(signal.candidate);
+    } else if (signal.type === 'stop') {
+      await stopSupportScreen(false);
+    }
+  } catch (e) {
+    console.error('handleSupportScreenSignal:', e);
+    $('supportScreenStatus').textContent = 'Bildschirmverbindung fehlgeschlagen: ' + (e?.message || e);
+  }
+}
+
+async function startSupportScreenShare() {
+  const thread = supportThreads.find(t => t.id === activeSupportThreadId);
+  if (!thread || thread.status === 'closed' || isOperator || thread.created_by !== currentUser?.id) return;
+  if (!navigator.mediaDevices?.getDisplayMedia) {
+    say('Dieser Browser unterstützt keine Bildschirmfreigabe. Bitte öffne die App in einem aktuellen Browser über HTTPS.', true);
+    return;
+  }
+  let capturePromise;
+  try {
+    // Muss unmittelbar auf den Klick folgen: Der Browser fragt jedes Mal nach der Freigabe.
+    capturePromise = navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+  } catch (e) {
+    say('Bildschirmfreigabe konnte nicht gestartet werden: ' + (e?.message || e), true);
+    return;
+  }
+  try {
+    const stream = await capturePromise;
+    if (activeTab !== 'support' || activeSupportThreadId !== thread.id) {
+      stream.getTracks().forEach(track => track.stop());
+      return;
+    }
+    const session = { role: 'sharer', threadId: thread.id, stream, channel: null, pc: null, pendingIce: [], offerStarted: false, remoteReady: true };
+    supportScreen = session;
+    const video = $('supportScreenVideo');
+    video.srcObject = stream;
+    video.muted = true;
+    video.classList.remove('hidden');
+    video.play().catch(() => {});
+    stream.getVideoTracks().forEach(track => track.addEventListener('ended', () => stopSupportScreen(true), { once: true }));
+    $('supportShareScreenBtn').classList.add('hidden');
+    $('supportWatchScreenBtn').classList.add('hidden');
+    $('supportStopScreenBtn').classList.remove('hidden');
+    $('supportScreenStatus').textContent = 'Freigabe aktiv. Der Betreiber kann zusehen, aber nicht steuern. Beende sie hier oder über die Browseranzeige.';
+    await joinSupportScreenChannel(session);
+    await sendSupportScreenSignal('share-ready');
+  } catch (e) {
+    console.error('startSupportScreenShare:', e);
+    await stopSupportScreen(false);
+    say('Bildschirmfreigabe konnte nicht gestartet werden: ' + (e?.message || e), true);
+  }
+}
+
+async function startSupportScreenViewer() {
+  if (!isOperator || !activeSupportThreadId || supportThreads.find(t => t.id === activeSupportThreadId)?.status === 'closed') return;
+  if (supportScreen) await stopSupportScreen(true);
+  const session = { role: 'viewer', threadId: activeSupportThreadId, stream: null, channel: null, pc: null, pendingIce: [], offerStarted: false, remoteReady: false };
+  supportScreen = session;
+  $('supportWatchScreenBtn').classList.add('hidden');
+  $('supportShareScreenBtn').classList.add('hidden');
+  $('supportStopScreenBtn').classList.remove('hidden');
+  $('supportScreenVideo').classList.add('hidden');
+  $('supportScreenStatus').textContent = 'Warte auf die freiwillige Bildschirmfreigabe des Nutzers …';
+  try {
+    await joinSupportScreenChannel(session);
+    await sendSupportScreenSignal('viewer-ready');
+  } catch (e) {
+    console.error('startSupportScreenViewer:', e);
+    await stopSupportScreen(false);
+    say('Bildschirmverbindung konnte nicht gestartet werden: ' + (e?.message || e), true);
+  }
+}
+
+async function stopSupportScreen(notifyPeer = true) {
+  const session = supportScreen;
+  if (!session) return;
+  supportScreen = null;
+  if (notifyPeer && session.channel) {
+    try { await session.channel.send({ type: 'broadcast', event: 'signal', payload: { type: 'stop' } }); }
+    catch (e) { console.warn('Bildschirmfreigabe konnte nicht beendet signalisiert werden:', e); }
+  }
+  try { session.pc?.close(); } catch (e) {}
+  session.stream?.getTracks().forEach(track => { try { track.stop(); } catch (e) {} });
+  if (session.channel && sb) {
+    try { await sb.removeChannel(session.channel); } catch (e) { console.warn('Bildschirmkanal:', e); }
+  }
+  const video = $('supportScreenVideo');
+  video.srcObject = null;
+  video.classList.add('hidden');
+  $('supportStopScreenBtn').classList.add('hidden');
+  $('supportScreenStatus').textContent = 'Bildschirmfreigabe beendet.';
+  const thread = supportThreads.find(t => t.id === activeSupportThreadId);
+  if (thread) {
+    $('supportShareScreenBtn').classList.toggle('hidden', isOperator || thread.created_by !== currentUser?.id);
+    $('supportWatchScreenBtn').classList.toggle('hidden', !isOperator);
+  }
+}
+
 async function logout() {
+  if (supportScreen) await stopSupportScreen(true);
   if (sb) await sb.auth.signOut();
 
   currentUser = null;
@@ -7206,6 +7711,17 @@ onClickIfExists('refreshRunnerBtn', refreshOrders);
 onClickIfExists('addMenuBtn', addMenuItem);
 onClickIfExists('previewClosingBtn', calculateClosing);
 onClickIfExists('saveClosingBtn', saveClosing);
+onClickIfExists('supportSubmitBtn', submitSupportQuestion);
+onClickIfExists('supportReplyBtn', sendSupportReply);
+onClickIfExists('supportRefreshBtn', () => loadSupportThreads(activeSupportThreadId));
+onClickIfExists('supportCloseBtn', closeSupportThread);
+onClickIfExists('supportShareScreenBtn', startSupportScreenShare);
+onClickIfExists('supportWatchScreenBtn', startSupportScreenViewer);
+onClickIfExists('supportStopScreenBtn', () => stopSupportScreen(true));
+$('supportThreadList')?.addEventListener('click', event => {
+  const button = event.target.closest('[data-support-thread]');
+  if (button) loadSupportConversation(button.dataset.supportThread);
+});
 
 
 
