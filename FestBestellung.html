@@ -4706,7 +4706,7 @@ function ticketLines(job) {
     head: STATION_TITLE[job.station] + (job.orderNo ? '  #' + job.orderNo : ''),
     table: 'TISCH ' + job.table,
     sub: zeit + (job.payment ? '  |  ' + job.payment : ''),
-    items: job.items.flatMap(i => [i.quantity + ' x ' + i.name].concat(i.note ? ['   + ' + i.note] : []))
+    items: job.items.flatMap(i => [i.quantity + ' x ' + i.name].concat(i.note ? [' '.repeat(String(i.quantity).length + 3) + i.note] : []))
   };
 }
 
