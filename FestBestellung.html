@@ -4677,7 +4677,7 @@ async function registerCloudPrntPrinter(station) {
     const { data, error } = await sb.rpc('register_cloudprnt_device', { p_station:station, p_mac:mac });
     if (error) throw error;
     const credentials = Array.isArray(data) ? data[0] : data;
-    const url = getConfig().url.replace(/\/$/, '') + '/functions/v1/cloudprnt/server';
+    const url = getConfig().url.replace(/\/$/, '') + '/functions/v1/smooth-handler';
     $('cloudPrntCredentials').textContent = [
       'Drucker-Webkonfiguration → CloudPRNT:',
       'CloudPRNT Service: ENABLE',
