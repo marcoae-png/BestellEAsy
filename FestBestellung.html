@@ -4602,6 +4602,8 @@ setInterval(async () => {
 /* =================== Ende Zugang / Freischaltung =================== */
 
 /* ===================== Drucker-Modul ===================== */
+// Muss vor fillPrintForm() deklariert sein (wird beim Laden der Seite aufgerufen)
+let isOperator = false;
 // Vom Vermieter vorinstalliert (gilt für alle Mietsets, hier einmal anpassen).
 // Mieter können nur «Drucken aktivieren» ein- oder ausschalten.
 const PRINTER_VORGABE = { mode:'cloudprnt', ascii:true };
@@ -7246,7 +7248,6 @@ async function loadProfile() {
 
 /* ===================== Betreiber-Bereich ===================== */
 
-let isOperator = false;
 
 async function checkOperator() {
   try {
