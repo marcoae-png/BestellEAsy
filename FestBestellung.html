@@ -3242,7 +3242,7 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
         <button type="button" id="testPrintKitchenBtn" class="secondary">Testdruck Küche</button>
     <button type="button" id="testPrintBarBtn" class="secondary">Testdruck Theke</button>
   </div>
-  <div class="panel" style="margin-top:14px;background:#fff;box-shadow:none">
+  <div id="cloudPrntSetupBox" class="panel hidden" style="margin-top:14px;background:#fff;box-shadow:none">
     <h4 style="margin:0 0 8px">Star CloudPRNT einmalig verbinden</h4>
     <p class="muted" style="margin:0 0 10px">MAC-Adresse am Selbsttest oder in der Drucker-Webkonfiguration ablesen. Die Küche ist bereits vorbelegt.</p>
     <div class="grid">
@@ -4635,6 +4635,7 @@ function fillPrintForm() {
   const hint = $('printPlanHint');
   if (hint) hint.textContent = frei ? '' : 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten.';
   $('printUpgradeWrap')?.classList.toggle('hidden', frei);
+  $('cloudPrntSetupBox')?.classList.toggle('hidden', !isOperator);
 }
 
 // Upgrade-Anfrage per E-Mail an den Betreiber
@@ -7254,6 +7255,7 @@ async function checkOperator() {
   } catch (e) {
     isOperator = false;
   }
+  $('cloudPrntSetupBox')?.classList.toggle('hidden', !isOperator);
 }
 
 let operatorOrgsCache = new Map();
