@@ -18,7 +18,6 @@
 <meta name="theme-color" content="#245c3b">
 <!-- Supabase JavaScript v2 über CDN laden; kein lokaler FestBestellung_files-Ordner nötig -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/gh/star-micronics/starwebprnt-sdk@V1.10.0/Sample/js/StarWebPrintTrader.js"></script>
 <style>
 :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#17211b;background:#f3f6f3;--green:#245c3b;--light:#e5eee8;--orange:#f3a22b;--red:#b52f2f}*{box-sizing:border-box}body{margin:0}header{background:var(--green);color:white;padding:16px 20px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}h1{font-size:1.35rem;margin:0}header small{opacity:.85}.wrap{max-width:1200px;margin:auto;padding:18px}.panel{background:white;border-radius:14px;padding:18px;margin:0 0 16px;box-shadow:0 2px 10px #17211b0d}.hidden{display:none!important}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}label{display:block;font-weight:650;font-size:.92rem;margin:0 0 6px}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5cd;border-radius:8px;background:white}button{border:0;border-radius:9px;padding:11px 14px;background:var(--green);color:white;font-weight:700;cursor:pointer}button.secondary{background:#e8eee9;color:#183b27}button.warn{background:var(--orange);color:#2a200d}button.danger{background:var(--red)}button:disabled{opacity:.45;cursor:not-allowed}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tabs button[data-tab="service"]{background:#1769aa;color:#fff}.tabs button[data-tab="service"]:hover{background:#12558a}.tabs button[data-tab="orders"]{background:#7b3fa1;color:#fff}.tabs button[data-tab="orders"]:hover{background:#633180}.tabs button.active{outline:3px solid #b6d4c0;outline-offset:2px}.muted{color:#657168}.msg{padding:10px 12px;border-radius:8px;margin:10px 0;background:#e9f1eb}.msg.error{background:#fde8e8;color:#842323}.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}.item{border:1px solid #d8e1da;border-radius:10px;padding:14px;background:#fff;text-align:left;color:#17211b;cursor:pointer;transition:border-color .12s,background .12s,transform .08s;min-height:125px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start}.item:hover{border-color:var(--green);background:#f1f7f2}.item:active{transform:scale(.98)}.item:focus-visible{outline:3px solid #8ab99a;outline-offset:2px}.item.selected{border:2px solid var(--green);background:#eaf4ed;padding:13px}.item h3{font-size:1rem;margin:0 0 6px}.price{font-weight:800;color:var(--green)}.tile-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin-top:auto;padding-top:12px}.cart-count{font-size:.85rem;font-weight:800;background:#e5eee8;border-radius:20px;padding:5px 8px}.tile-hint{font-size:.78rem;color:#657168}.order{border:1px solid #d7dfd9;border-left:7px solid #a5b5aa;border-radius:10px;padding:13px;margin:10px 0}.order.progress{border-left-color:var(--orange);background:#fff8e9}.order.done{border-left-color:#26804a;background:#e8f7ed}.order-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf1ed;font-size:.82rem;font-weight:700}.pill.orange{background:#ffedc8}.pill.green{background:#d9f1e0}.pill.red{background:#ffe1e1}.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;border-bottom:1px solid #e3e9e4;padding:9px 7px;vertical-align:top}.right{text-align:right}.big{font-size:1.35rem;font-weight:800}.foot{font-size:.82rem;color:#66716a;margin-top:12px}.statusline{font-size:.9rem}.section-title{margin:0 0 12px;font-size:1.1rem}.totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.totalbox{padding:14px;background:#f3f7f4;border-radius:10px}.totalbox strong{display:block;font-size:1.2rem;margin-top:4px}@media(max-width:600px){.wrap{padding:10px}.panel{padding:13px}header{padding:14px}}
 
@@ -3227,8 +3226,7 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
 
 <h3>Drucker (Netzwerkdrucker)</h3>
 <p class="muted">
-  Der Star-Netzwerkdrucker ist für die Küche eingestellt. Die Theke verwendet weiterhin ihren vorhandenen Drucker.
-  Aktiviere den Haken, damit Bestellbons automatisch gedruckt werden.
+  Die Star-Drucker holen Bons über eine ausgehende HTTPS-Verbindung ab. Auf den Geräten der Mieter müssen keine Druckerzertifikate installiert werden.
 </p>
 
 <div class="panel" style="background:#f3f7f4;box-shadow:none">
@@ -3244,7 +3242,21 @@ dialog.legal::backdrop { background: rgba(0,0,0,.45); }
         <button type="button" id="testPrintKitchenBtn" class="secondary">Testdruck Küche</button>
     <button type="button" id="testPrintBarBtn" class="secondary">Testdruck Theke</button>
   </div>
-  <p class="muted" style="margin-top:10px">Star TSP143IV UE: Küche 192.168.1.177, Theke 192.168.1.179. Beide Drucker verwenden Star WebPRNT über HTTPS; die HTTPS-Verbindung muss eingerichtet und im Browser vertrauenswürdig sein.</p>
+  <div class="panel" style="margin-top:14px;background:#fff;box-shadow:none">
+    <h4 style="margin:0 0 8px">Star CloudPRNT einmalig verbinden</h4>
+    <p class="muted" style="margin:0 0 10px">MAC-Adresse am Selbsttest oder in der Drucker-Webkonfiguration ablesen. Die Küche ist bereits vorbelegt.</p>
+    <div class="grid">
+      <div><label for="cloudKitchenMac">MAC-Adresse Küche</label><input id="cloudKitchenMac" value="00:11:62:66:CD:03" placeholder="00:11:62:xx:xx:xx" autocomplete="off"></div>
+      <div><label for="cloudBarMac">MAC-Adresse Theke</label><input id="cloudBarMac" placeholder="00:11:62:xx:xx:xx" autocomplete="off"></div>
+    </div>
+    <div class="actions" style="margin-top:10px">
+      <button type="button" id="cloudKitchenRegisterBtn" class="secondary">Küche verbinden</button>
+      <button type="button" id="cloudBarRegisterBtn" class="secondary">Theke verbinden</button>
+      <button type="button" id="copyCloudPrntCredentialsBtn" class="secondary hidden">Daten kopieren</button>
+    </div>
+    <p id="cloudPrntSetupMsg" class="foot"></p>
+    <pre id="cloudPrntCredentials" class="hidden" style="white-space:pre-wrap;overflow-wrap:anywhere;background:#edf1ed;padding:12px;border-radius:8px"></pre>
+  </div>
   <hr style="margin:20px 0;border:0;border-top:1px solid #d8e1da">
   <h4 style="margin:0 0 6px">Tischnummern drucken</h4>
   <p class="muted" style="margin:0 0 10px">Druckt die Tischnummern aller oben festgelegten Tische – als Bon oder als A4-Tischkarten.</p>
@@ -4592,7 +4604,7 @@ setInterval(async () => {
 /* ===================== Drucker-Modul ===================== */
 // Vom Vermieter vorinstalliert (gilt für alle Mietsets, hier einmal anpassen).
 // Mieter können nur «Drucken aktivieren» ein- oder ausschalten.
-const PRINTER_VORGABE = { mode:'epos', proto:'http', kitchenMode:'star-webprnt', kitchenProto:'https', barMode:'star-webprnt', barProto:'https', ascii:false, kitchenIp:'192.168.1.177', barIp:'192.168.1.179' };
+const PRINTER_VORGABE = { mode:'cloudprnt', ascii:true };
 const printDefaults = { enabled:false, ...PRINTER_VORGABE };
 
 let printCfgCache = null, printCfgFetchedAt = 0;
@@ -4605,12 +4617,11 @@ async function fetchPrintCfg(force) {
   if (!force && Date.now() - printCfgFetchedAt < 60000) return;
   try {
     const { data, error } = await sb.from('org_printer_settings')
-      .select('enabled, kitchen_ip, bar_ip')
+      .select('enabled')
       .eq('organization_id', profile.organization_id)
       .maybeSingle();
     if (error) throw error;
     printCfgFetchedAt = Date.now();
-    // Beide Star-Drucker sind für diese Installation fest zugeordnet.
     printCfgCache = { enabled: !!data?.enabled };
   } catch (e) { console.warn('Druckereinstellungen nicht geladen:', e.message); }
 }
@@ -4655,6 +4666,37 @@ async function setPrintingEnabled(on) {
   }
 }
 
+async function registerCloudPrntPrinter(station) {
+  if (profile?.role !== 'admin') { say('Nur Admins können Drucker verbinden.', true); return; }
+  const input = $(station === 'kitchen' ? 'cloudKitchenMac' : 'cloudBarMac');
+  const button = $(station === 'kitchen' ? 'cloudKitchenRegisterBtn' : 'cloudBarRegisterBtn');
+  const mac = input.value.trim();
+  if (!mac) { $('cloudPrntSetupMsg').textContent = 'Bitte zuerst die MAC-Adresse eingeben.'; return; }
+  button.disabled = true;
+  try {
+    const { data, error } = await sb.rpc('register_cloudprnt_device', { p_station:station, p_mac:mac });
+    if (error) throw error;
+    const credentials = Array.isArray(data) ? data[0] : data;
+    const url = getConfig().url.replace(/\/$/, '') + '/functions/v1/cloudprnt/server';
+    $('cloudPrntCredentials').textContent = [
+      'Drucker-Webkonfiguration → CloudPRNT:',
+      'CloudPRNT Service: ENABLE',
+      'Server URL: ' + url,
+      'Polling time: 5 Sekunden',
+      'User Name: ' + credentials.username,
+      'Password: ' + credentials.password,
+      '',
+      'Das Passwort wird nur jetzt angezeigt. Bei erneutem Verbinden ein neues Passwort eintragen.'
+    ].join('\n');
+    $('cloudPrntCredentials').classList.remove('hidden');
+    $('copyCloudPrntCredentialsBtn').classList.remove('hidden');
+    $('cloudPrntSetupMsg').textContent = 'CloudPRNT-Daten erstellt. Trage sie jetzt in der Webkonfiguration des Druckers ein und speichere mit Neustart.';
+  } catch (e) {
+    console.error('registerCloudPrntPrinter:', e);
+    $('cloudPrntSetupMsg').textContent = 'Drucker konnte nicht verbunden werden: ' + (e?.message || e);
+  } finally { button.disabled = false; }
+}
+
 const STATION_TITLE = { kitchen:'KÜCHE', bar:'THEKE' };
 
 function ticketLines(job) {
@@ -4668,139 +4710,35 @@ function ticketLines(job) {
   };
 }
 
-function eposXml(job) {
-  const t = ticketLines(job);
-  const ascii = !!loadPrintCfg().ascii;
-  const tr = v => ascii ? String(v).replace(/[äöüÄÖÜßéèà]/g, c => ({'ä':'ae','ö':'oe','ü':'ue','Ä':'Ae','Ö':'Oe','Ü':'Ue','ß':'ss','é':'e','è':'e','à':'a'}[c])) : String(v);
-  const x = v => tr(v).replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]));
-  let body = '<text align="center" width="2" height="2" em="true"/>' +
-    '<text>' + x(t.head) + '&#10;</text>' +
-    '<text width="3" height="3"/><text>' + x(t.table) + '&#10;</text>' +
-    '<text width="1" height="1" em="false"/><text>' + x(t.sub) + '&#10;</text>' +
-    '<text>------------------------------&#10;</text><text align="left" width="2" height="2"/>';
-  t.items.forEach(l => { body += '<text>' + x(l) + '&#10;</text>'; });
-  body += '<text width="1" height="1"/><text>&#10;&#10;</text><feed line="3"/><cut type="feed"/>';
-  return '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body>' +
-    '<epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print">' + body + '</epos-print></s:Body></s:Envelope>';
-}
-
-function starTextElement(text, options = {}) {
-  const attrs = [];
-  if (options.codepage) attrs.push('codepage="' + options.codepage + '"');
-  if (options.emphasis) attrs.push('emphasis="true"');
-  if (options.width && options.width !== 1) attrs.push('width="' + options.width + '"');
-  if (options.height && options.height !== 1) attrs.push('height="' + options.height + '"');
-  return '<text' + (attrs.length ? ' ' + attrs.join(' ') : '') + '>' + esc(text).replace(/\n/g, '&#10;') + '&#10;</text>';
-}
-
-function starWebPrntXml(job) {
-  const t = ticketLines(job);
-  const ascii = !!loadPrintCfg().ascii;
-  const tr = v => ascii ? String(v).replace(/[äöüÄÖÜßéèà]/g, c => ({'ä':'ae','ö':'oe','ü':'ue','Ä':'Ae','Ö':'Oe','Ü':'Ue','ß':'ss','é':'e','è':'e','à':'a'}[c])) : String(v);
-  let request = '<root><initialization/><alignment position="center"/>';
-  request += starTextElement(tr(t.head), { codepage:'utf8', emphasis:true, width:2, height:2 });
-  request += starTextElement(tr(t.table), { codepage:'utf8', emphasis:true, width:3, height:3 });
-  request += starTextElement(tr(t.sub), { codepage:'utf8' });
-  request += starTextElement('------------------------------', { codepage:'utf8' });
-  request += '<alignment position="left"/>';
-  t.items.forEach(line => { request += starTextElement(tr(line), { codepage:'utf8', emphasis:true, width:2, height:2 }); });
-  request += '<feed line="3"/><cutpaper feed="true" type="partial"/></root>';
-  return request;
-}
-
-function starWebPrntTablesXml(nums) {
-  let request = '<root><initialization/>';
-  nums.forEach(n => {
-    request += '<alignment position="center"/>' +
-      starTextElement('TISCH', { codepage:'utf8', emphasis:true, width:3, height:3 }) +
-      starTextElement(String(n), { codepage:'utf8', emphasis:true, width:6, height:6 }) +
-      starTextElement('', { codepage:'utf8' }) + '<feed line="3"/><cutpaper feed="true" type="partial"/>';
-  });
-  return request + '</root>';
-}
-
-async function sendStarWebPrnt(ip, request, proto = 'https') {
-  if (location.protocol !== 'https:') {
-    throw new Error('Star WebPRNT funktioniert nur mit der über HTTPS veröffentlichten App. Die lokale Datei (file://) kann nicht drucken.');
-  }
-  if (typeof window.StarWebPrintTrader !== 'function') {
-    throw new Error('Star-WebPRNT-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen.');
-  }
-  const url = (proto === 'https' ? 'https://' : 'http://') + ip + '/StarWebPRNT/SendMessage';
-  await new Promise((resolve, reject) => {
-    const trader = new window.StarWebPrintTrader({ url, checkedblock:true, timeout:15000 });
-    trader.onReceive = response => {
-      if (response?.traderSuccess === true || response?.traderSuccess === 'true') resolve();
-      else reject(new Error('Star-Drucker meldet Fehler (Code ' + (response?.traderCode ?? 'unbekannt') + ').'));
-    };
-    trader.onError = response => {
-      const detail = response?.responseText || (response?.status ? 'HTTP ' + response.status : 'keine Antwort');
-      reject(new Error('Keine Star-WebPRNT-Verbindung (' + detail + '). HTTPS-Zertifikat und Netzwerk prüfen.'));
-    };
-    try { trader.sendMessage({ request }); }
-    catch (e) { reject(e); }
-  });
-}
-
-async function sendEpos(ip, job, proto) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 8000);
-  try {
-    const url = (proto === 'https' ? 'https://' : 'http://') + ip +
-      '/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000';
-    const res = await fetch(url, {
-      method: 'POST', signal: ctrl.signal,
-      headers: {
-        'Content-Type': 'text/xml; charset=utf-8',
-        'If-Modified-Since': 'Thu, 01 Jan 1970 00:00:00 GMT',
-        'SOAPAction': '""'
-      },
-      body: job.rawXml || eposXml(job)
-    });
-    const txt = await res.text();
-    if (!/success="true"/.test(txt)) {
-      const m = txt.match(/code="([^"]*)"/);
-      throw new Error('Drucker meldet Fehler' + (m && m[1] ? ' (' + m[1] + ')' : ''));
-    }
-  } finally { clearTimeout(timer); }
-}
-
-async function sendStationPrinter(station, ip, job, cfg, starRequest = null) {
-  const mode = cfg[station + 'Mode'] || cfg.mode || 'epos';
-  const proto = cfg[station + 'Proto'] || cfg.proto || 'http';
-  if (mode === 'browser') { browserPrint(job); return; }
-  if (mode === 'star-webprnt') {
-    await sendStarWebPrnt(ip, starRequest || starWebPrntXml(job), proto);
-    return;
-  }
-  await sendEpos(ip, job, proto);
-}
-
-function browserPrint(job) {
-  const t = ticketLines(job);
-  const w = window.open('', '_blank', 'width=360,height=600');
-  if (!w) throw new Error('Pop-up wurde blockiert.');
-  w.document.write('<html><head><title>' + esc(t.head) + '</title><style>' +
-    'body{font-family:monospace;width:72mm;margin:4mm}h1{font-size:26px;margin:0;text-align:center}' +
-    'h2{font-size:38px;margin:6px 0;text-align:center}p{margin:0;text-align:center;font-size:13px}' +
-    'hr{border:0;border-top:2px dashed #000}li{list-style:none;font-size:22px;font-weight:bold;margin:4px 0}ul{padding:0}' +
-    '</style></head><body><h1>' + esc(t.head) + '</h1><h2>' + esc(t.table) + '</h2><p>' + esc(t.sub) + '</p><hr><ul>' +
-    t.items.map(l => '<li>' + esc(l) + '</li>').join('') + '</ul></body></html>');
-  w.document.close(); w.focus();
-  setTimeout(() => { w.print(); w.close(); }, 300);
-}
-
 async function printJob(job, cfg) {
   if (!job.items.length) return null;
-  const ipKey = { kitchen:'kitchenIp', bar:'barIp' }[job.station];
-  const ip = cfg[ipKey];
-  if (!ip) return STATION_TITLE[job.station] + ': keine IP eingetragen';
-  try { await sendStationPrinter(job.station, ip, job, cfg); return null; }
-  catch (e) {
-    const grund = e.name === 'AbortError' ? 'keine Antwort (IP, Netzwerk oder Drucker aus?)'
-      : (e instanceof TypeError ? 'keine Verbindung (IP prüfen; bei https-Seite: Browser-Freigabe «Lokales Netzwerk» erlauben oder Verbindung auf https stellen)' : e.message);
-    return STATION_TITLE[job.station] + ' (' + ip + '): ' + grund;
+  try {
+    const t = ticketLines(job);
+    const lines = [t.head, t.table, t.sub, '--------------------------------', ...t.items, '', ''];
+    const payload = lines.join('\n').replace(/[äöüÄÖÜßéèà]/g, c => ({'ä':'ae','ö':'oe','ü':'ue','Ä':'Ae','Ö':'Oe','Ü':'Ue','ß':'ss','é':'e','è':'e','à':'a'}[c]));
+    await queueCloudPrntJob(job.station, payload);
+    return null;
   }
+  catch (e) {
+    return STATION_TITLE[job.station] + ' (CloudPRNT): ' + (e?.message || e);
+  }
+}
+
+async function queueCloudPrntJobs(station, payloads) {
+  if (!sb || !profile?.organization_id || !currentUser?.id) throw new Error('Bitte zuerst anmelden.');
+  const { data:device, error:deviceError } = await sb.from('cloudprnt_devices')
+    .select('mac_address').eq('organization_id', profile.organization_id)
+    .eq('station', station).eq('enabled', true).maybeSingle();
+  if (deviceError) throw deviceError;
+  if (!device) throw new Error('Für diese Station ist noch kein CloudPRNT-Drucker verbunden.');
+  const { error } = await sb.from('cloudprnt_jobs').insert(payloads.map(payload => ({
+    organization_id:profile.organization_id, station, payload, created_by:currentUser.id
+  })));
+  if (error) throw error;
+}
+
+async function queueCloudPrntJob(station, payload) {
+  return queueCloudPrntJobs(station, [payload]);
 }
 
 async function printOrderTickets(orderNo, table, method, cartItems) {
@@ -4828,16 +4766,20 @@ async function printOrderTickets(orderNo, table, method, cartItems) {
 
 async function testPrint(station) {
   if (subscriptionPlan !== 'printer') { $('printerMsg').textContent = 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten.'; return; }
-  const cfg = { ...loadPrintCfg(), enabled:true };
   const err = await printJob({ station, orderNo:'TEST', table:'0', time:Date.now(), payment:'Test',
-    items:[{ name:'Testdruck äöü ÄÖÜ ß', quantity:1 }, { name:'Bratwurst, Getränk', quantity:2 }] }, cfg);
-  $('printerMsg').textContent = err ? '⚠ ' + err : '✓ Testdruck gesendet.';
+    items:[{ name:'Testdruck äöü ÄÖÜ ß', quantity:1 }, { name:'Bratwurst, Getränk', quantity:2 }] }, loadPrintCfg());
+  $('printerMsg').textContent = err ? '⚠ ' + err : '✓ Testbon in die CloudPRNT-Warteschlange gestellt. Der Drucker holt ihn automatisch ab.';
 }
 
 document.addEventListener('click', e => {
   const id = e.target.closest('button')?.id;
   if (id === 'testPrintKitchenBtn') testPrint('kitchen');
   if (id === 'testPrintBarBtn') testPrint('bar');
+  if (id === 'cloudKitchenRegisterBtn') registerCloudPrntPrinter('kitchen');
+  if (id === 'cloudBarRegisterBtn') registerCloudPrntPrinter('bar');
+  if (id === 'copyCloudPrntCredentialsBtn') navigator.clipboard?.writeText($('cloudPrntCredentials').textContent)
+    .then(() => { $('cloudPrntSetupMsg').textContent = 'CloudPRNT-Daten kopiert.'; })
+    .catch(() => { $('cloudPrntSetupMsg').textContent = 'Daten bitte im Feld markieren und kopieren.'; });
 });
 document.addEventListener('change', e => {
   if (e.target && e.target.id === 'printEnabled') setPrintingEnabled(e.target.checked);
@@ -4846,17 +4788,6 @@ document.addEventListener('change', e => {
 /* ---------- Tischnummern drucken ---------- */
 function tableNumbers() {
   return tableList.length ? [...tableList] : null;
-}
-
-function eposTablesXml(nums) {
-  let body = '';
-  nums.forEach(n => {
-    body += '<text align="center" width="3" height="3" em="true"/><text>TISCH&#10;</text>' +
-      '<text width="8" height="8"/><text>' + n + '&#10;</text>' +
-      '<text width="1" height="1" em="false"/><text>&#10;</text><feed line="3"/><cut type="feed"/>';
-  });
-  return '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body>' +
-    '<epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print">' + body + '</epos-print></s:Body></s:Envelope>';
 }
 
 function tableCardsHtml(nums) {
@@ -4893,15 +4824,11 @@ async function printTables() {
     if (subscriptionPlan !== 'printer') { msg.textContent = 'Der Bon-Druck ist im Paket «Mit Drucker» enthalten. A4-Tischkarten gehen in jedem Paket.'; return; }
     await fetchPrintCfg();
     const cfg = loadPrintCfg();
-    const ip = target === 'kitchen' ? cfg.kitchenIp : cfg.barIp;
-    if (!ip) { msg.textContent = '⚠ Für diese Station ist keine IP-Adresse eingetragen.'; return; }
-    msg.textContent = 'Sende an Drucker …';
-    await sendStationPrinter(target, ip, { rawXml: eposTablesXml(nums), items:[], station:target }, cfg,
-      target === 'kitchen' ? starWebPrntTablesXml(nums) : null);
-    msg.textContent = '✓ ' + nums.length + ' Tischnummern an den Drucker gesendet.';
+    msg.textContent = 'Stelle Tischnummern in die CloudPRNT-Warteschlange …';
+    await queueCloudPrntJobs(target, nums.map(n => 'TISCH\n\n' + n + '\n\nBestellEAsy'));
+    msg.textContent = '✓ ' + nums.length + ' Tischnummern in die CloudPRNT-Warteschlange gestellt.';
   } catch (e) {
-    msg.textContent = '⚠ ' + (e.name === 'AbortError' ? 'Keine Antwort vom Drucker (IP, Netzwerk, Drucker aus?)'
-      : (e instanceof TypeError ? 'Keine Verbindung zum Drucker (IP prüfen, Browser-Freigabe «Lokales Netzwerk» erlauben oder Verbindung auf https stellen)' : e.message));
+    msg.textContent = '⚠ CloudPRNT: ' + (e?.message || e);
   }
 }
 
