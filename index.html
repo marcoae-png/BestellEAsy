@@ -135,7 +135,22 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
 @keyframes txtA{0%,26%{opacity:1}27%,100%{opacity:0}}
 @keyframes txtB{0%,26%{opacity:0}27%,92%{opacity:1}96%,100%{opacity:0}}
 @media(prefers-reduced-motion:reduce){.out .bon,.led,.screen span{animation:none}.screen .s-print{opacity:0}.screen .s-done{opacity:1}}
-</style>
+.mode-switch{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:-16px auto 28px}
+.mode-switch button{border:1px solid #cbd9ce;border-radius:999px;background:#fff;color:#245c3b;padding:11px 20px;font:inherit;font-weight:750;cursor:pointer;transition:background .2s,color .2s,transform .2s,box-shadow .2s}
+.mode-switch button[aria-pressed="true"]{background:#245c3b;color:#fff;border-color:#245c3b;box-shadow:0 6px 16px #173d2b25}
+.mode-switch button:hover{transform:translateY(-2px)}
+.mode-panel[hidden]{display:none!important}
+.screenflow{--flow-ink:#173d2b;max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1.6fr 38px .8fr 38px 2fr 38px 1.3fr;align-items:center;gap:10px;padding:22px;background:linear-gradient(135deg,#f4f8f4,#eaf2eb);border:1px solid #dce5dd;border-radius:22px;box-shadow:0 18px 42px #173d2b12}
+.flow-card{min-height:150px;padding:18px 14px;border:1px solid #dce5dd;border-radius:16px;background:#fff;text-align:center;box-shadow:0 8px 20px #173d2b0d}
+.flow-icon{font-size:2rem;display:block;margin-bottom:6px}.flow-card strong{display:block;color:var(--flow-ink);font-size:1rem}.flow-card small{color:#68766d}
+.service-device{width:min(100%,280px);justify-self:center}.service-screen{min-height:168px}.service-table{display:flex;justify-content:space-between;align-items:center;margin:6px 0;padding:5px 7px;border:1px solid #dce5dd;border-radius:6px;color:#435249}.service-table b{color:#173d2b}.service-categories{display:flex;gap:4px;margin:6px 0}.service-categories span{padding:3px 5px;border-radius:5px;background:#e8f1eb;color:#245c3b;font-size:.62rem;font-weight:800}.service-menu{display:grid;grid-template-columns:1fr 1fr;gap:4px}.service-menu span{padding:4px 5px;border:1px solid #dce5dd;border-radius:5px;color:#435249}.service-menu b{float:right;color:#245c3b}.service-cart{margin-top:6px;color:#526258;font-size:.65rem}.flow-network{padding:16px 10px;border-radius:16px;background:#e3f1e7;border:1px solid #c9dfcf;text-align:center;color:#245c3b}.flow-network .flow-icon{font-size:1.8rem}.flow-network strong{display:block}.flow-network small{font-size:.76rem;color:#526b59}
+.flow-devices{display:grid;grid-template-columns:1fr;gap:12px;width:100%;max-width:330px;justify-self:center}.flow-device{min-width:0;padding:6px;border:5px solid #263b2e;border-radius:15px;background:#263b2e;box-shadow:0 8px 18px #173d2b22;animation:flow-ready 2.4s ease-in-out infinite}.flow-device.bar{animation-delay:.6s}.flow-device.runner-device{border-radius:24px;max-width:190px;justify-self:center;animation-delay:1s}.device-label{display:flex;justify-content:space-between;align-items:center;gap:4px;color:#fff;font-size:.72rem;font-weight:800;padding:2px 3px 6px}.device-online{color:#b8f2c5;white-space:nowrap}.flow-screen{min-height:112px;padding:8px;background:#fff;border-radius:8px;color:#24352a;font-size:.73rem}.device-top{display:flex;justify-content:space-between;gap:4px;padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid #e4eae5;color:#245c3b;font-size:.68rem;font-weight:800}.device-order{font-weight:800;margin-bottom:5px}.device-line{display:flex;justify-content:space-between;gap:4px;margin:3px 0;color:#536258}.device-action{display:block;margin-top:7px;padding:5px 4px;border-radius:6px;background:#e5f3e8;color:#24603a;text-align:center;font-size:.68rem;font-weight:800}.runner-jobs{display:grid;gap:6px}.runner-job{padding:6px;border:1px solid #efd9ad;border-radius:7px;background:#fff6e5}.runner-job.drinks{border-color:#c8dff0;background:#edf6ff}.runner-job-title{display:flex;justify-content:space-between;gap:4px;font-weight:900;font-size:.66rem;color:#754b09}.runner-job.drinks .runner-job-title{color:#155179}.runner-job-items{margin:3px 0;color:#536258;font-size:.62rem}.runner-job-actions{display:flex;gap:3px}.runner-job-actions span{flex:1;padding:3px 2px;border-radius:4px;background:#e5f3e8;color:#24603a;text-align:center;font-size:.55rem;font-weight:800}.runner-job-actions span+span{background:#f3ebd7;color:#76591d}.flow-arrow{height:4px;border-radius:4px;background:#cbd9ce;position:relative}.flow-arrow:after{content:"";position:absolute;top:-5px;left:0;width:14px;height:14px;border-radius:50%;background:#f3a22b;box-shadow:0 0 0 5px #f3a22b33;animation:flow-travel 2.6s ease-in-out infinite}.flow-arrow.last:after{animation-delay:1.3s}
+.flow-caption{max-width:850px;margin:20px auto 0;text-align:center;color:#435249;font-size:1rem}.screenflow:not(.go) *{animation-play-state:paused!important}
+@keyframes flow-travel{0%{left:0;opacity:0}12%{opacity:1}85%{opacity:1}100%{left:calc(100% - 14px);opacity:0}}
+@keyframes flow-ready{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 #39835300}50%{transform:translateY(-3px);box-shadow:0 8px 18px #39835320}}
+@media(max-width:1050px){.screenflow{grid-template-columns:1fr;gap:10px;padding:16px}.flow-card{min-height:0}.flow-network{justify-self:center;min-width:180px}.flow-arrow{width:4px;height:30px;margin:auto}.flow-arrow:after{top:0;left:-5px;animation-name:flow-travel-vertical}.flow-arrow.last:after{animation-delay:1.3s}@keyframes flow-travel-vertical{0%{top:0;opacity:0}12%{opacity:1}85%{opacity:1}100%{top:calc(100% - 14px);opacity:0}}}
+@media(max-width:560px){.flow-devices{grid-template-columns:1fr}.flow-device{width:min(100%,300px);justify-self:center}.flow-screen{min-height:0}}
+@media(prefers-reduced-motion:reduce){.flow-arrow:after,.flow-device{animation:none!important}.flow-arrow:after{left:calc(100% - 14px);opacity:1}}</style>
 <script type="application/ld+json">
 {
  "@context": "https://schema.org",
@@ -248,7 +263,9 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
  ]
 }
 </script>
-<noscript><style>.printers *{animation-play-state:running!important}</style></noscript>
+<noscript><style>.printers *{animation-play-state:running!important}
+
+</style></noscript>
 </head>
 <body>
 <header>
@@ -347,19 +364,39 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
 
  <section class="print" id="drucker">
   <div class="container">
-   <div class="section-head"><div class="kicker">Optional mit Drucker</div><h2>Der Bon liegt schon auf dem Tablar.</h2><p>Küche und Theke erhalten ihre Bestellung automatisch ausgedruckt. Der Bon wandert mit dem Tablar zum Läufer.</p></div>
-   <div class="printers" aria-label="Animation: Zwei Drucker drucken je einen Bon und legen ihn aufs Tablar">
-    <div class="station kueche"><div class="printer"><div class="printer-top"><span>Küche-Drucker</span><i class="led"></i></div><div class="screen"><span class="s-print">Druckt …</span><span class="s-done">Bon #42 fertig ✓</span></div><i class="slot"></i></div><div class="out"><div class="bon"><h4>KÜCHE #42</h4><div class="tisch">TISCH 12</div><small>22.11.2026 18:05 · TWINT</small><p>2 x Bratwurst</p><p>1 x Rösti</p></div></div><div class="tray">Tablar</div></div>
-    <div class="station theke"><div class="printer"><div class="printer-top"><span>Theke-Drucker</span><i class="led"></i></div><div class="screen"><span class="s-print">Druckt …</span><span class="s-done">Bon #42 fertig ✓</span></div><i class="slot"></i></div><div class="out"><div class="bon"><h4>THEKE #42</h4><div class="tisch">TISCH 12</div><small>22.11.2026 18:05 · TWINT</small><p>3 x Bier</p><p>1 x Mineral</p></div></div><div class="tray">Tablar</div></div>
+   <div class="section-head"><div class="kicker">Mit oder ohne Papier</div><h2>Der Auftrag kommt an.</h2><p>Wähle, wie du den Weg der Bestellung zeigen möchtest: mit ausgedruckten Bons oder komplett digital auf den Stationsgeräten.</p></div>
+   <div class="mode-switch" role="group" aria-label="Ablaufanimation auswählen">
+    <button type="button" data-mode="print" aria-pressed="true">Mit Drucker</button>
+    <button type="button" data-mode="screen" aria-pressed="false">Ohne Drucker</button>
    </div>
-   <div class="menuquick">
-    <div class="mq"><b>1 · Artikel eingeben</b>Name, Kategorie und Preis unter «Menü verwalten» erfassen.</div>
-    <div class="mq"><b>2 · Bon-Druck aktivieren</b>Die Drucker sind vorinstalliert. Unter «Menü verwalten» nur den Haken «Bons automatisch drucken» setzen.</div>
-    <div class="mq"><b>3 · Losbestellen</b>Die Karte erscheint sofort in der Bestellansicht, die Bons drucken automatisch.</div>
+   <div class="mode-panel" id="printVersion" data-mode-panel="print">
+    <div class="printers" aria-label="Animation: Zwei Drucker drucken je einen Bon und legen ihn aufs Tablar">
+     <div class="station kueche"><div class="printer"><div class="printer-top"><span>Küche-Drucker</span><i class="led"></i></div><div class="screen"><span class="s-print">Druckt …</span><span class="s-done">Bon #42 fertig ✓</span></div><i class="slot"></i></div><div class="out"><div class="bon"><h4>KÜCHE #42</h4><div class="tisch">TISCH 12</div><small>22.11.2026 18:05 · TWINT</small><p>2 x Bratwurst</p><p>1 x Rösti</p></div></div><div class="tray">Tablar</div></div>
+     <div class="station theke"><div class="printer"><div class="printer-top"><span>Theke-Drucker</span><i class="led"></i></div><div class="screen"><span class="s-print">Druckt …</span><span class="s-done">Bon #42 fertig ✓</span></div><i class="slot"></i></div><div class="out"><div class="bon"><h4>THEKE #42</h4><div class="tisch">TISCH 12</div><small>22.11.2026 18:05 · TWINT</small><p>3 x Bier</p><p>1 x Mineral</p></div></div><div class="tray">Tablar</div></div>
+    </div>
+    <div class="menuquick">
+     <div class="mq"><b>1 · Artikel eingeben</b>Name, Kategorie und Preis unter «Menü verwalten» erfassen.</div>
+     <div class="mq"><b>2 · Bon-Druck aktivieren</b>Die Drucker sind vorinstalliert. Unter «Menü verwalten» nur den Haken «Bons automatisch drucken» setzen.</div>
+     <div class="mq"><b>3 · Losbestellen</b>Die Karte erscheint sofort in der Bestellansicht, die Bons drucken automatisch.</div>
+    </div>
+   </div>
+   <div class="mode-panel" id="screenVersion" data-mode-panel="screen" hidden>
+    <div class="screenflow" aria-label="Ohne Drucker: Service über Internet zu Tablet in der Küche, Tablet an der Theke und Smartphone beim Läufer">
+          <div class="flow-device service-device"><div class="device-label"><span>🧾 Service · Bestellansicht</span><span class="device-online">● Online</span></div><div class="flow-screen service-screen"><div class="device-top"><span>BestellEAsy</span><span>Neue Bestellung</span></div><div class="service-table"><span>Tisch</span><b>12 ▾</b></div><div class="service-categories"><span>Getränke</span><span>Essen</span><span>Dessert</span></div><div class="service-menu"><span>Bratwurst <b>＋</b></span><span>Bier <b>＋</b></span></div><div class="service-cart">Warenkorb · 2 Positionen</div><span class="device-action">Bestellung abschicken</span></div></div>
+     <div class="flow-arrow" aria-hidden="true"></div>
+     <div class="flow-network"><span class="flow-icon" aria-hidden="true">☁️</span><strong>Internet</strong><small>Auftrag wird live geteilt</small></div>
+     <div class="flow-arrow" aria-hidden="true"></div>
+     <div class="flow-devices">
+      <div class="flow-device kitchen"><div class="device-label"><span>🍽️ ESSEN · Küchen-Tablet</span><span class="device-online">● Online</span></div><div class="flow-screen"><div class="device-top"><span>BestellEAsy</span><span>Neue Aufträge</span></div><div class="device-order">Tisch 12 · #42</div><div class="device-line"><span>2 × Bratwurst</span><span>1 × Rösti</span></div><span class="device-action">In Arbeit → Fertig melden</span></div></div>
+      <div class="flow-device bar"><div class="device-label"><span>🥤 GETRÄNKE · Theken-Tablet</span><span class="device-online">● Online</span></div><div class="flow-screen"><div class="device-top"><span>BestellEAsy</span><span>Neue Aufträge</span></div><div class="device-order">Tisch 12 · #42</div><div class="device-line"><span>3 × Bier</span><span>1 × Mineral</span></div><span class="device-action">In Arbeit → Fertig melden</span></div></div>
+     </div>
+     <div class="flow-arrow last" aria-hidden="true"></div>
+          <div class="flow-device runner-device"><div class="device-label"><span>🏃 Smartphone · Läufer</span><span class="device-online">● Online</span></div><div class="flow-screen"><div class="device-top"><span>BestellEAsy</span><span>Bereit</span></div><div class="runner-jobs"><div class="runner-job food"><div class="runner-job-title"><span>🍽️ ESSEN · #42</span><span>Tisch 12</span></div><div class="runner-job-items">2 × Bratwurst · 1 × Rösti</div><div class="runner-job-actions"><span>In Auslieferung übernehmen</span><span>Ausgeliefert</span></div></div><div class="runner-job drinks"><div class="runner-job-title"><span>🥤 GETRÄNKE · #42</span><span>Tisch 12</span></div><div class="runner-job-items">3 × Bier · 1 × Mineral</div><div class="runner-job-actions"><span>In Auslieferung übernehmen</span><span>Ausgeliefert</span></div></div></div></div></div>
+    </div>
+    <p class="flow-caption"><strong>Ohne Drucker heisst: digital statt Papier.</strong> Küche und Theke haben je ein eigenes internetfähiges Tablet. Der Läufer erhält Essen und Getränke als getrennte Aufträge auf seinem Gerät und verwaltet beide Lieferungen unabhängig. Küche und Theke melden ihre Positionen am jeweiligen Tablet als fertig.</p>
    </div>
   </div>
  </section>
-
  <section id="vorteile">
   <div class="container split">
    <div>
@@ -640,5 +677,27 @@ footer{padding:28px 0;background:#102d20;color:#d6e2d9;font-size:.86rem}.footer-
  new IntersectionObserver(function(e){e.forEach(function(x){p.classList.toggle('go',x.isIntersecting)})},{threshold:.3}).observe(p);
 })();
 </script>
+<script>
+(function(){
+ var buttons=document.querySelectorAll('[data-mode]'), panels=document.querySelectorAll('[data-mode-panel]');
+ buttons.forEach(function(button){button.addEventListener('click',function(){
+  var mode=button.getAttribute('data-mode');
+  buttons.forEach(function(item){item.setAttribute('aria-pressed',item===button?'true':'false')});
+  panels.forEach(function(panel){panel.hidden=panel.getAttribute('data-mode-panel')!==mode});
+  if(mode==='print')document.querySelector('.printers')?.classList.add('go');
+ });});
+ var flow=document.querySelector('.screenflow');
+ if(flow&&'IntersectionObserver'in window){new IntersectionObserver(function(entries){entries.forEach(function(entry){flow.classList.toggle('go',entry.isIntersecting)})},{threshold:.25}).observe(flow)}
+})();
+</script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
